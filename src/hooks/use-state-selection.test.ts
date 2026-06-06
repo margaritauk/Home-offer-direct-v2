@@ -33,4 +33,15 @@ describe("useStateSelection", () => {
     const { result } = renderHook(() => useStateSelection());
     expect(result.current.stateCode).toBe("NY");
   });
+
+  it("syncs across hook instances in the same tab", () => {
+    // Mirrors the /states page: a picker and a guide mounted together.
+    const picker = renderHook(() => useStateSelection());
+    const guide = renderHook(() => useStateSelection());
+
+    act(() => picker.result.current.selectState("CA"));
+
+    // The second instance must see the change without a storage event.
+    expect(guide.result.current.stateCode).toBe("CA");
+  });
 });
