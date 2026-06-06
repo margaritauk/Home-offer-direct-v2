@@ -4,6 +4,22 @@ import { notFound } from "next/navigation";
 import { flattenedSteps, getStep, stepNeighbors } from "@/lib/journey";
 import { getTerms } from "@/lib/glossary";
 import { StepChecklist } from "@/components/step-checklist";
+import { StateAwareCallout, type StateTopic } from "@/components/state-aware-callout";
+
+/**
+ * Steps whose guidance depends on the buyer's state. Maps to the topic the
+ * state-aware callout should surface. Keyed by `${stageSlug}/${stepSlug}` or by
+ * stage slug alone (applies to every step in that stage).
+ */
+const STATE_TOPICS: Record<string, StateTopic> = {
+  "title-and-escrow": "closing",
+  "closing-settlement": "closing",
+  "search/understand-disclosures": "disclosure",
+};
+
+function stateTopicFor(stageSlug: string, stepSlug: string): StateTopic | undefined {
+  return STATE_TOPICS[`${stageSlug}/${stepSlug}`] ?? STATE_TOPICS[stageSlug];
+}
 
 export function generateStaticParams() {
   return flattenedSteps().map(({ stage, step }) => ({
@@ -34,6 +50,7 @@ export default async function StepPage({
   const { stage, step } = found;
   const { prev, next } = stepNeighbors(stageSlug, stepSlug);
   const relatedTerms = step.terms ? getTerms(step.terms) : [];
+  const stateTopic = stateTopicFor(stage.slug, step.slug);
 
   return (
     <div className="container-page py-12 lg:py-16">
@@ -77,6 +94,12 @@ export default async function StepPage({
                 🔑 Doing this without an agent
               </p>
               <p className="mt-1 text-sm text-ink-soft">{step.withoutAnAgent}</p>
+            </div>
+          ) : null}
+
+          {stateTopic ? (
+            <div className="mt-4">
+              <StateAwareCallout topic={stateTopic} />
             </div>
           ) : null}
 

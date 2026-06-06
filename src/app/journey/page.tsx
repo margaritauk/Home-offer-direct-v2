@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getStages, totalSteps, totalTasks } from "@/lib/journey";
 import { JourneyOverview } from "@/components/journey-overview";
 
@@ -25,6 +26,19 @@ export default function JourneyPage() {
           progress saves automatically on this device — no account needed.
         </p>
       </div>
+      <Link
+        href="/states"
+        className="mt-8 flex items-center justify-between gap-4 rounded-lg border border-brand-200 bg-brand-50 px-5 py-4 transition hover:border-brand-300"
+      >
+        <span className="text-sm text-brand-900">
+          📍 <strong>Tell us your state</strong> to personalize closing,
+          disclosure, and transfer-tax guidance throughout your journey.
+        </span>
+        <span className="hidden whitespace-nowrap font-medium text-brand-700 sm:inline">
+          Pick your state →
+        </span>
+      </Link>
+
       <div className="mt-10">
         <JourneyOverview stages={stages} />
       </div>

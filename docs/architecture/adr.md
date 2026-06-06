@@ -74,20 +74,47 @@ data-driven per-state engine in MVP.
 effort. We surface the *distinction* and prompt the buyer to confirm their
 state's path — enough to be trustworthy — and defer the generative legal layer.
 
+## ADR-008: Per-state legal engine (Sprint 2 — supersedes the deferral in ADR-007)
+
+**Decision:** Promote the state layer from inline notes to a **data-driven
+engine**. A typed `StateProfile` per US jurisdiction (50 states + DC) captures
+the closing path (attorney / escrow / either), whether an attorney is legally
+required at closing, the disclosure regime and statutory form name, who
+customarily pays transfer tax, and links to official state sources. The buyer
+picks their state (persisted in `localStorage`, like progress); relevant journey
+steps then render a state-aware callout, and a dedicated guide page summarizes
+the jurisdiction.
+
+**Scope guardrail (still honoring ADR-007's spirit):** the engine provides
+*guidance and official-form references*, not generated legal documents. We name
+the required disclosure form and link to the authoritative source; we do not
+draft or fill contracts. This keeps us clear of the unauthorized practice of
+law while delivering the trust-critical state awareness the research demanded.
+
+**Why:** Research flagged the state layer as non-negotiable for trust and
+legality (attorney-vs-escrow closing, widely varying disclosure rules). It's
+fully buildable as typed data with zero external dependencies, and it's the
+clearest differentiator versus static educational sites.
+
 ## Sprint backlog
 
-### Sprint 1 — Core journey MVP
+### Sprint 1 — Core journey MVP ✅
 - [x] `JourneyStage`/`JourneyStep`/`GlossaryTerm` domain types
-- [ ] Author 14-stage journey content
-- [ ] Landing page (hero, how-it-works, savings teaser, white-space, CTA)
-- [ ] Journey overview page with progress
-- [ ] Stage detail + step detail pages (static generation)
-- [ ] `useProgress` localStorage hook + checklist UI + progress bars
+- [x] Author 14-stage journey content (22 steps, 94 tasks, 25 glossary terms)
+- [x] Landing page (hero, how-it-works, savings teaser, white-space, CTA)
+- [x] Journey overview page with progress
+- [x] Stage detail + step detail pages (static generation)
+- [x] `useProgress` localStorage hook + checklist UI + progress bars
+- [x] Savings calculator (pure `lib/savings.ts` + UI)
+- [x] Glossary page with client-side search
+- [x] Trust callout component (wire-fraud / CD 3-day / walkthrough)
+- [x] Unit tests (savings, progress) + E2E happy path
+- [x] CI workflow (typecheck, lint, build, test) + Vercel deploy config + README
 
-### Sprint 2 — Tools, polish & quality
-- [ ] Savings calculator (pure `lib/savings.ts` + UI)
-- [ ] Glossary page with client-side search
-- [ ] Trust callout component (wire-fraud / CD 3-day / walkthrough)
-- [ ] Unit tests (savings, progress) + E2E happy path
-- [ ] CI workflow (typecheck, lint, build, test) + Vercel deploy config
-- [ ] README
+### Sprint 2 — Per-state legal engine
+- [ ] `StateProfile` domain type + selectors (`lib/states`)
+- [ ] Author 50-state + DC dataset (closing path, disclosures, transfer tax, sources)
+- [ ] `useStateSelection` localStorage hook + state picker component
+- [ ] State guide page(s): `/states` overview + `/states/[code]` (static)
+- [ ] State-aware callout injected into relevant journey steps (closing, disclosures)
+- [ ] Unit tests (state data integrity + selectors) + E2E (pick state → see guidance)

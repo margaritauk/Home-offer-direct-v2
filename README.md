@@ -32,6 +32,10 @@ decisions.
 - **Glossary** — searchable, plain-English definitions of home-buying jargon.
 - **Trust callouts** — wire-fraud, the Closing Disclosure 3-day rule, and the
   final walkthrough surfaced loudly.
+- **Per-state legal engine** — pick your state to see its closing path (attorney
+  vs escrow), required seller disclosures, and transfer-tax customs for all 50
+  states + DC. State-aware guidance is injected into the relevant journey steps.
+  Guidance and official-form references only — never generated legal documents.
 
 ## Tech stack
 
@@ -66,12 +70,16 @@ src/
   app/                     Routes (App Router)
     page.tsx               Landing
     journey/               Overview + [stage] + [stage]/[step]
+    states/                State guide + [code] (50 states + DC)
     tools/savings-calculator/
     glossary/
   components/              UI + client components
-  hooks/use-progress.ts    localStorage progress tracking
+  hooks/
+    use-progress.ts        localStorage progress tracking
+    use-state-selection.ts localStorage state selection
   lib/
     journey/               Domain types + 14-stage content + selectors
+    states/                StateProfile type + 51-jurisdiction data + selectors
     glossary.ts            Glossary terms + helpers
     savings.ts             Savings math (pure, fully unit-tested)
 docs/                      Research, PRD, ADRs
