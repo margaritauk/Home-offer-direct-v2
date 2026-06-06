@@ -16,8 +16,9 @@ test("the pro directory lists samples and real finder services", async ({ page }
 test("filtering by role narrows the directory", async ({ page }) => {
   await page.goto("/pros");
   await page.getByLabel(/type of pro/i).selectOption("inspector");
-  // At least one inspector finder service should be visible (InterNACHI/ASHI).
-  await expect(page.getByText(/inspector/i).first()).toBeVisible();
+  // An inspector-specific finder service should be visible. Use a distinct
+  // name (not "inspector", which also matches the hidden <option> label).
+  await expect(page.getByText(/InterNACHI/i).first()).toBeVisible();
 });
 
 test("a state-relevant journey step offers a pro handoff", async ({ page }) => {
