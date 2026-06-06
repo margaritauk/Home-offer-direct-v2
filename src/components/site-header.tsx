@@ -3,6 +3,7 @@ import Link from "next/link";
 const navLinks = [
   { href: "/journey", label: "The Journey" },
   { href: "/states", label: "Your State" },
+  { href: "/pros", label: "Find Pros" },
   { href: "/tools/savings-calculator", label: "Savings Calculator" },
   { href: "/glossary", label: "Glossary" },
 ];
