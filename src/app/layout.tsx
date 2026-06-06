@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { CloudSync } from "@/components/cloud-sync";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="flex min-h-screen flex-col">
+        <CloudSync />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { defaultOffsets, type DeadlineOffsets } from "@/lib/deadlines";
+import { emitLocalChange } from "@/lib/sync/local-store";
 
 const STORAGE_KEY = "hod:tracker:v1";
 
@@ -54,6 +55,7 @@ export function useTracker() {
     } catch {
       /* best-effort */
     }
+    emitLocalChange();
   }, []);
 
   const setDates = useCallback(
@@ -65,6 +67,7 @@ export function useTracker() {
         } catch {
           /* best-effort */
         }
+        emitLocalChange();
         return next;
       });
     },
@@ -79,6 +82,7 @@ export function useTracker() {
       } catch {
         /* best-effort */
       }
+      emitLocalChange();
       return next;
     });
   }, []);
@@ -94,6 +98,7 @@ export function useTracker() {
       } catch {
         /* best-effort */
       }
+      emitLocalChange();
       return next;
     });
   }, []);
