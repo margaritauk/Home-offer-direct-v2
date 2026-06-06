@@ -9,6 +9,7 @@ export function SiteFooter() {
           <Link href="/journey" className="hover:text-brand-700">Journey</Link>
           <Link href="/states" className="hover:text-brand-700">Your State</Link>
           <Link href="/pros" className="hover:text-brand-700">Find Pros</Link>
+          <Link href="/tracker" className="hover:text-brand-700">Tracker</Link>
           <Link href="/glossary" className="hover:text-brand-700">Glossary</Link>
           <Link href="/tools/savings-calculator" className="hover:text-brand-700">Calculator</Link>
         </nav>

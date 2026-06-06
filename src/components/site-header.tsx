@@ -8,7 +8,8 @@ const navLinks = [
   { href: "/journey", label: "The Journey" },
   { href: "/states", label: "Your State" },
   { href: "/pros", label: "Find Pros" },
-  { href: "/tools/savings-calculator", label: "Savings Calculator" },
+  { href: "/tracker", label: "Tracker" },
+  { href: "/tools/savings-calculator", label: "Calculator" },
   { href: "/glossary", label: "Glossary" },
 ];
 

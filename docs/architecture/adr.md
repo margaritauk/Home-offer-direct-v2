@@ -122,6 +122,32 @@ risk-mitigation for going agent-free (a flat-fee attorney neutralizes most
 agentless legal risk). The directory + contextual handoffs deliver that without
 external dependencies or compliance exposure.
 
+## ADR-010: Document & deadline tracker (Sprint 4)
+
+**Decision:** Add a `/tracker` tool that turns the two dates a buyer knows — the
+date they went under contract and the target closing date — into a concrete,
+countdown-driven timeline of the deadlines that matter (earnest money,
+inspection / appraisal / financing contingencies, title review, the Closing
+Disclosure 3-business-day rule, final walkthrough, closing). Plus a
+phase-grouped document checklist (what to gather and keep). All state persists
+in `localStorage` (consistent with the no-account approach).
+
+**Design:** The date math lives in a pure, fully unit-tested module
+(`lib/deadlines.ts`) — milestone offsets from the contract date, business-day
+math for the CD rule, and a relative status (overdue / due today / soon /
+upcoming) computed against "today". Contingency offsets ship as an editable
+template with sensible defaults. The UI and a `useTracker` localStorage hook sit
+on top.
+
+**Why:** The riskiest part of an agent-free purchase is blowing a contingency
+deadline (research §2). A buyer normally leans on an agent to track these; this
+tool replaces that safety net. Pure date logic is high-value, regression-prone,
+and trivially testable — exactly where tests earn their keep (cf. the savings
+engine).
+
+**Guardrail:** offsets are *typical* defaults, not legal terms — the buyer's
+actual contract governs. The UI says so and lets them edit every offset.
+
 ## Sprint backlog
 
 ### Sprint 1 — Core journey MVP ✅
@@ -145,10 +171,18 @@ external dependencies or compliance exposure.
 - [x] State-aware callout injected into relevant journey steps (closing, disclosures)
 - [x] Unit tests (state data integrity + selectors) + E2E (pick state → see guidance)
 
-### Sprint 3 — Professional directory + handoffs
-- [ ] `ProProfile` / `ProRole` / finder-resource domain types + selectors (`lib/pros`)
-- [ ] Data: real official finder services per role + clearly-labeled sample listings
-- [ ] `/pros` directory page: search + filter by role and state
-- [ ] Pro card + finder-resources section (state-aware: uses selected state)
-- [ ] Contextual handoff component injected at the relevant journey steps
-- [ ] Unit tests (data integrity + filtering) + E2E (filter directory, see handoff)
+### Sprint 3 — Professional directory + handoffs ✅
+- [x] `ProProfile` / `ProRole` / finder-resource domain types + selectors (`lib/pros`)
+- [x] Data: real official finder services per role + clearly-labeled sample listings
+- [x] `/pros` directory page: search + filter by role and state
+- [x] Pro card + finder-resources section (state-aware: uses selected state)
+- [x] Contextual handoff component injected at the relevant journey steps
+- [x] Unit tests (data integrity + filtering) + E2E (filter directory, see handoff)
+- [x] Mobile navigation menu (fast-follow fix)
+
+### Sprint 4 — Document & deadline tracker
+- [ ] Pure `lib/deadlines.ts`: milestone offsets, business-day math (CD rule), status
+- [ ] Document checklist data (phase-grouped) + types
+- [ ] `useTracker` localStorage hook (dates, offsets, doc statuses)
+- [ ] `/tracker` page: date inputs → computed timeline + document checklist
+- [ ] Unit tests (deadline math + hook) + E2E (enter dates → see deadlines)
