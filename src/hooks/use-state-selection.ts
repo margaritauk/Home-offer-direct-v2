@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { emitLocalChange } from "@/lib/sync/local-store";
 
 const STORAGE_KEY = "hod:state:v1";
 
@@ -59,6 +60,7 @@ export function useStateSelection() {
     }
     // Notify every instance in this tab (including the caller).
     listeners.forEach((l) => l(code));
+    emitLocalChange();
   }, []);
 
   return { stateCode, hydrated, selectState };

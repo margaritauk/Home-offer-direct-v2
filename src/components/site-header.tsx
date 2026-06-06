@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthMenu } from "@/components/auth-menu";
 
 const navLinks = [
   { href: "/journey", label: "The Journey" },
@@ -48,7 +49,10 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <span className="hidden md:inline-flex">
+            <AuthMenu />
+          </span>
           <Link href="/journey" className="btn-primary hidden sm:inline-flex">
             Start free
           </Link>
@@ -88,6 +92,9 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            <div className="px-2 py-3">
+              <AuthMenu onNavigate={() => setOpen(false)} />
+            </div>
             <Link
               href="/journey"
               onClick={() => setOpen(false)}

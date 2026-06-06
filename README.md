@@ -36,6 +36,15 @@ decisions.
   vs escrow), required seller disclosures, and transfer-tax customs for all 50
   states + DC. State-aware guidance is injected into the relevant journey steps.
   Guidance and official-form references only — never generated legal documents.
+- **Professional directory + handoffs** — find real estate attorneys, inspectors,
+  and title/escrow companies (real official finder services + clearly-labeled
+  samples), surfaced contextually in the journey.
+- **Deadline & document tracker** — turn your contract dates into a countdown of
+  every deadline that matters (incl. the Closing Disclosure 3-business-day rule)
+  plus a phase-grouped document checklist.
+- **Accounts + cloud sync (optional)** — sign in to sync progress, state, and
+  tracker across devices. Off by default; see
+  [`docs/setup/cloud-sync.md`](docs/setup/cloud-sync.md) to enable via Supabase.
 
 ## Tech stack
 

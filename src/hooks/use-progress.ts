@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { emitLocalChange } from "@/lib/sync/local-store";
 
 const STORAGE_KEY = "hod:progress:v1";
 
@@ -49,6 +50,7 @@ export function useProgress() {
 
   const persist = useCallback((next: CompletedTasks) => {
     setCompleted(next);
+    emitLocalChange();
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch {
@@ -67,6 +69,7 @@ export function useProgress() {
         } catch {
           /* best-effort */
         }
+        emitLocalChange();
         return next;
       });
     },
