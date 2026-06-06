@@ -5,6 +5,8 @@ import { flattenedSteps, getStep, stepNeighbors } from "@/lib/journey";
 import { getTerms } from "@/lib/glossary";
 import { StepChecklist } from "@/components/step-checklist";
 import { StateAwareCallout, type StateTopic } from "@/components/state-aware-callout";
+import { ProHandoff } from "@/components/pro-handoff";
+import type { ProRole } from "@/lib/pros";
 
 /**
  * Steps whose guidance depends on the buyer's state. Maps to the topic the
@@ -19,6 +21,17 @@ const STATE_TOPICS: Record<string, StateTopic> = {
 
 function stateTopicFor(stageSlug: string, stepSlug: string): StateTopic | undefined {
   return STATE_TOPICS[`${stageSlug}/${stepSlug}`] ?? STATE_TOPICS[stageSlug];
+}
+
+/** Stages where a particular professional should be offered as a handoff. */
+const PRO_HANDOFFS: Record<string, ProRole> = {
+  "negotiate-and-go-under-contract": "attorney",
+  inspection: "inspector",
+  "title-and-escrow": "title-escrow",
+};
+
+function proHandoffFor(stageSlug: string, stepSlug: string): ProRole | undefined {
+  return PRO_HANDOFFS[`${stageSlug}/${stepSlug}`] ?? PRO_HANDOFFS[stageSlug];
 }
 
 export function generateStaticParams() {
@@ -51,6 +64,7 @@ export default async function StepPage({
   const { prev, next } = stepNeighbors(stageSlug, stepSlug);
   const relatedTerms = step.terms ? getTerms(step.terms) : [];
   const stateTopic = stateTopicFor(stage.slug, step.slug);
+  const proRole = proHandoffFor(stage.slug, step.slug);
 
   return (
     <div className="container-page py-12 lg:py-16">
@@ -102,6 +116,8 @@ export default async function StepPage({
               <StateAwareCallout topic={stateTopic} />
             </div>
           ) : null}
+
+          {proRole ? <ProHandoff role={proRole} /> : null}
 
           {step.resources && step.resources.length > 0 ? (
             <div className="mt-6">

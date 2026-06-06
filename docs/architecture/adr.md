@@ -96,6 +96,32 @@ legality (attorney-vs-escrow closing, widely varying disclosure rules). It's
 fully buildable as typed data with zero external dependencies, and it's the
 clearest differentiator versus static educational sites.
 
+## ADR-009: Professional directory + handoffs (Sprint 3)
+
+**Decision:** Add a searchable, filterable directory of the pros a self-serve
+buyer hands off to — real estate attorneys, home inspectors, and title/escrow
+companies — filterable by role and state, and surfaced contextually at the
+journey moments where each pro matters (attorney before going under contract,
+inspector at the inspection stage, title/escrow at closing).
+
+**Data integrity guardrail (important):** we do **not** fabricate real businesses
+with invented contact details — that would mislead buyers and could cause real
+harm. The directory is built from two honest sources:
+1. **Official "find a vetted pro" finder services** that are real and
+   authoritative — state bar lawyer-referral services (attorneys), InterNACHI /
+   ASHI (inspectors), and ALTA (title/escrow). These are the real handoff path.
+2. **Clearly-labeled sample listings** (explicitly illustrative, not real
+   endorsements) that demonstrate how curated/partner listings render. The UI
+   labels these as samples so no one mistakes them for vetted referrals.
+
+This keeps the feature trustworthy today while the data model and UX are ready
+to accept real, verified partner listings later.
+
+**Why:** Research called out an attorney + inspector marketplace as the key
+risk-mitigation for going agent-free (a flat-fee attorney neutralizes most
+agentless legal risk). The directory + contextual handoffs deliver that without
+external dependencies or compliance exposure.
+
 ## Sprint backlog
 
 ### Sprint 1 — Core journey MVP ✅
@@ -111,10 +137,18 @@ clearest differentiator versus static educational sites.
 - [x] Unit tests (savings, progress) + E2E happy path
 - [x] CI workflow (typecheck, lint, build, test) + Vercel deploy config + README
 
-### Sprint 2 — Per-state legal engine
-- [ ] `StateProfile` domain type + selectors (`lib/states`)
-- [ ] Author 50-state + DC dataset (closing path, disclosures, transfer tax, sources)
-- [ ] `useStateSelection` localStorage hook + state picker component
-- [ ] State guide page(s): `/states` overview + `/states/[code]` (static)
-- [ ] State-aware callout injected into relevant journey steps (closing, disclosures)
-- [ ] Unit tests (state data integrity + selectors) + E2E (pick state → see guidance)
+### Sprint 2 — Per-state legal engine ✅
+- [x] `StateProfile` domain type + selectors (`lib/states`)
+- [x] Author 50-state + DC dataset (closing path, disclosures, transfer tax, sources)
+- [x] `useStateSelection` localStorage hook + state picker component
+- [x] State guide page(s): `/states` overview + `/states/[code]` (static)
+- [x] State-aware callout injected into relevant journey steps (closing, disclosures)
+- [x] Unit tests (state data integrity + selectors) + E2E (pick state → see guidance)
+
+### Sprint 3 — Professional directory + handoffs
+- [ ] `ProProfile` / `ProRole` / finder-resource domain types + selectors (`lib/pros`)
+- [ ] Data: real official finder services per role + clearly-labeled sample listings
+- [ ] `/pros` directory page: search + filter by role and state
+- [ ] Pro card + finder-resources section (state-aware: uses selected state)
+- [ ] Contextual handoff component injected at the relevant journey steps
+- [ ] Unit tests (data integrity + filtering) + E2E (filter directory, see handoff)
