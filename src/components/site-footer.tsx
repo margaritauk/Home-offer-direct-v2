@@ -7,6 +7,7 @@ export function SiteFooter() {
         <p>© {new Date().getFullYear()} HomeOffer Direct. Educational guidance, not legal or financial advice.</p>
         <nav className="flex gap-6">
           <Link href="/journey" className="hover:text-brand-700">Journey</Link>
+          <Link href="/states" className="hover:text-brand-700">Your State</Link>
           <Link href="/glossary" className="hover:text-brand-700">Glossary</Link>
           <Link href="/tools/savings-calculator" className="hover:text-brand-700">Calculator</Link>
         </nav>
