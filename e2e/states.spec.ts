@@ -24,6 +24,21 @@ test("a direct state page renders its guide and adopts the selection", async ({
   await expect(page.getByText(/seller disclosures/i).first()).toBeVisible();
 });
 
+test("a selected state persists across navigation to the journey", async ({
+  page,
+}) => {
+  await page.goto("/states");
+  await page.getByLabel(/your state/i).first().selectOption("IL");
+  await expect(page.getByRole("heading", { name: /^Illinois$/ })).toBeVisible();
+
+  // Navigate away to the journey — the banner should confirm Illinois, not
+  // prompt for a state again.
+  await page.goto("/journey");
+  await expect(page.getByText(/personalized for/i)).toBeVisible();
+  await expect(page.getByText(/illinois/i)).toBeVisible();
+  await expect(page.getByText(/tell us your state/i)).toHaveCount(0);
+});
+
 test("state-relevant journey steps surface a state-aware callout", async ({
   page,
 }) => {
