@@ -228,3 +228,44 @@ See the backlog story below for the paid pipeline.
 - [ ] `/listings` browse + filters (state/price/beds/baths/type) + `/listings/[id]`
 - [ ] Journey hand-in (found a home → start your offer)
 - [ ] Unit tests (filter logic) + E2E (filter listings, open detail)
+
+---
+
+## ADR-012: Multi-user collaboration — shared deals, roles, RLS (v2 platform)
+
+**Decision:** Introduce a **deal-centric, multi-user** data model so buyers and
+agents collaborate, while preserving today's single-user/local-first experience.
+
+**Model:**
+- Reframe today's "my journey/tracker/offer/budget" as **deal #1, owned by me**.
+- New tables: **`deals`** and **`deal_members`** (user ↔ deal ↔ `role` ↔ status),
+  roles: `owner_buyer | co_buyer | agent | attorney | viewer`.
+- Per-deal state starts as a **`deal_data` row** that reuses the existing
+  `SyncData` shape + `mergeSyncData` (drop-in), normalizing hot facets
+  (messages, docs, activity) into their own tables later.
+- **RLS** via a `SECURITY DEFINER STABLE` membership helper
+  (`is_deal_member(deal)`, `has_deal_role(deal, role)`); policies wrapped in
+  `select(...)`, scoped `TO authenticated`, membership columns indexed.
+- **Invitations:** Supabase has no native team invites — use `SECURITY DEFINER`
+  RPCs / Edge Functions with expiring tokens; pending → active on accept;
+  normalized emails.
+- **Realtime (phased):** (1) per-deal Postgres Changes → re-fetch (reuses RLS);
+  (2) private channels + Broadcast/Presence for chat/live presence.
+- **Field-level scoping:** a buyer's financial data is hidden from non-consented
+  roles (GLBA) — explicit per-deal consent gates sharing.
+
+**Coexistence (critical):** local/guest mode is unchanged and remains the
+default; **deals, sharing, the agent console, and realtime are all feature-gated
+on Supabase being configured** (mirrors the existing cloud-sync flag). No keys →
+the app behaves exactly as today, single-user and local-first.
+
+**Why:** Collaboration requires genuinely shared data (not device-local). Anchor
+on Supabase (already our auth/sync backend); RLS gives per-deal authorization
+with minimal app-layer code. Reusing `SyncData`/`mergeSyncData` keeps the
+migration incremental.
+
+**Guardrails:** unrepresented path keeps every guardrail; represented paths add
+consent + agency-relationship capture (no accidental dual agency) + FHA on shared
+recommendations; RESPA review gates any referral/closing-tied revenue.
+
+_Source: `docs/research/collaboration-platform-research.md`._
