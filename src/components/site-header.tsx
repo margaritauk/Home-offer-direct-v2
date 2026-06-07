@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { AuthMenu } from "@/components/auth-menu";
 
 const navLinks = [
-  { href: "/journey", label: "The Journey" },
+  { href: "/listings", label: "Search Homes" },
+  { href: "/journey", label: "Journey" },
   { href: "/states", label: "Your State" },
   { href: "/pros", label: "Find Pros" },
   { href: "/tracker", label: "Tracker" },
@@ -35,7 +36,7 @@ export function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -50,7 +51,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <span className="hidden md:inline-flex">
+          <span className="hidden lg:inline-flex">
             <AuthMenu />
           </span>
           <Link href="/journey" className="btn-primary hidden sm:inline-flex">
@@ -60,7 +61,7 @@ export function SiteHeader() {
           {/* Mobile menu toggle */}
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-ink md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-ink lg:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-nav"
@@ -77,7 +78,7 @@ export function SiteHeader() {
       {open ? (
         <nav
           id="mobile-nav"
-          className="border-t border-slate-200 bg-white md:hidden"
+          className="border-t border-slate-200 bg-white lg:hidden"
         >
           <div className="container-page flex flex-col py-2">
             {navLinks.map((link) => (

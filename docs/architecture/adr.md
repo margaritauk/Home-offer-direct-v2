@@ -148,6 +148,33 @@ engine).
 **Guardrail:** offsets are *typical* defaults, not legal terms — the buyer's
 actual contract governs. The UI says so and lets them edit every offset.
 
+## ADR-011: Listing search (mock data behind a provider seam) (Sprint 6)
+
+**Decision:** Ship a `/listings` search/browse experience now, powered by a
+**mock dataset** behind a single data-access seam (`lib/listings/provider.ts`).
+The UI filters by state, price, beds/baths, and property type, and links a found
+home into the offer step of the journey. Listing imagery is generated as
+self-contained **SVG placeholders** (no external photos / licensing risk), and
+every listing is clearly flagged `isSample` with a prominent banner.
+
+**The seam:** all reads go through `queryListings()` / `getListingById()`. The
+mock implementation filters a bundled array today; swapping in a paid MLS/portal
+feed later means reimplementing just that module (and making it async +
+server-side) — no UI changes to the cards, filters, or detail page.
+
+**Why:** Listing search needs a paid data feed we don't have yet, but the
+search/browse UX, filters, and journey hand-in are valuable and fully buildable
+now. Mocking unblocks the experience; the seam keeps the real integration cheap.
+See the backlog story below for the paid pipeline.
+
+### Backlog (future) — Plug in the paid MLS/listings pipeline
+- Replace `lib/listings/provider.ts` mock with a real provider (e.g. a licensed
+  MLS aggregator / IDX feed or a portal API).
+- Make reads async + server-side (API route or server component) with caching;
+  add pagination and real geo/photo fields.
+- Handle data licensing/attribution, rate limits, and per-state IDX rules.
+- Keep the `Listing` shape stable so the existing UI is reused unchanged.
+
 ## Sprint backlog
 
 ### Sprint 1 — Core journey MVP ✅
@@ -180,9 +207,24 @@ actual contract governs. The UI says so and lets them edit every offset.
 - [x] Unit tests (data integrity + filtering) + E2E (filter directory, see handoff)
 - [x] Mobile navigation menu (fast-follow fix)
 
-### Sprint 4 — Document & deadline tracker
-- [ ] Pure `lib/deadlines.ts`: milestone offsets, business-day math (CD rule), status
-- [ ] Document checklist data (phase-grouped) + types
-- [ ] `useTracker` localStorage hook (dates, offsets, doc statuses)
-- [ ] `/tracker` page: date inputs → computed timeline + document checklist
-- [ ] Unit tests (deadline math + hook) + E2E (enter dates → see deadlines)
+### Sprint 4 — Document & deadline tracker ✅
+- [x] Pure `lib/deadlines.ts`: milestone offsets, business-day math (CD rule), status
+- [x] Document checklist data (phase-grouped) + types
+- [x] `useTracker` localStorage hook (dates, offsets, doc statuses)
+- [x] `/tracker` page: date inputs → computed timeline + document checklist
+- [x] Unit tests (deadline math + hook) + E2E (enter dates → see deadlines)
+
+### Sprint 5 — Accounts + cloud sync ✅
+- [x] Supabase client + `isCloudSyncEnabled` flag (feature-gated)
+- [x] `useAuth` (email/password) + `/account` panel + header auth link
+- [x] Pure `mergeSyncData` (+ tests), local-store aggregator + change events
+- [x] `CloudSync` orchestrator (merge-on-login, debounced push) + schema/RLS + setup docs
+- [x] URL normalization fix (fast-follow)
+
+### Sprint 6 — Listing search (mock data behind a provider seam)
+- [ ] `Listing` / `ListingFilters` types + `lib/listings/provider.ts` seam
+- [ ] Mock dataset (~15 sample listings, all flagged isSample)
+- [ ] SVG placeholder listing imagery (no external photos)
+- [ ] `/listings` browse + filters (state/price/beds/baths/type) + `/listings/[id]`
+- [ ] Journey hand-in (found a home → start your offer)
+- [ ] Unit tests (filter logic) + E2E (filter listings, open detail)
