@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 /** A labelled field with a plain-English explainer (issue #12 AC). */
 export function FieldShell({
@@ -42,21 +42,76 @@ export function NumberField({
   suffix?: string;
   hydrated: boolean;
 }) {
+  // Local draft lets the user clear the box (delete the "0") while typing;
+  // on blur we resync to the canonical numeric value.
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft !== null ? draft : hydrated ? String(value) : "";
+
   return (
     <FieldShell label={label} explainer={explainer}>
       <div className="flex items-center gap-2">
         <input
           type="number"
+          inputMode="decimal"
           className="w-full rounded-lg border border-slate-300 px-3 py-2.5"
-          value={hydrated ? value : 0}
+          value={shown}
           min={min}
           max={max}
           step={step}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={(e) => {
+            const raw = e.target.value;
+            setDraft(raw);
+            if (raw === "") onChange(0);
+            else {
+              const n = Number(raw);
+              if (!Number.isNaN(n)) onChange(n);
+            }
+          }}
+          onBlur={() => setDraft(null)}
           aria-label={label}
           suppressHydrationWarning
         />
         {suffix ? <span className="text-sm text-ink-muted">{suffix}</span> : null}
+      </div>
+    </FieldShell>
+  );
+}
+
+/** Whole-dollar currency input: empty when 0 (so the "0" is deletable) and
+ * formatted with thousands separators as you type (e.g. 700,000). */
+export function CurrencyField({
+  label,
+  explainer,
+  value,
+  onChange,
+  placeholder = "0",
+  hydrated,
+}: {
+  label: string;
+  explainer: ReactNode;
+  value: number;
+  onChange: (n: number) => void;
+  placeholder?: string;
+  hydrated: boolean;
+}) {
+  const display = !hydrated ? "" : value > 0 ? value.toLocaleString("en-US") : "";
+  return (
+    <FieldShell label={label} explainer={explainer}>
+      <div className="flex items-center rounded-lg border border-slate-300 px-3 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+        <span className="text-ink-muted">$</span>
+        <input
+          type="text"
+          inputMode="numeric"
+          className="w-full border-0 px-2 py-2.5 focus:outline-none focus:ring-0"
+          value={display}
+          placeholder={placeholder}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^0-9]/g, "");
+            onChange(digits ? parseInt(digits, 10) : 0);
+          }}
+          aria-label={label}
+          suppressHydrationWarning
+        />
       </div>
     </FieldShell>
   );
