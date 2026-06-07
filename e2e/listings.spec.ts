@@ -4,8 +4,8 @@ test("the listings page browses sample homes with a disclaimer", async ({ page }
   await page.goto("/listings");
   await expect(page.getByRole("heading", { name: /search homes/i })).toBeVisible();
   await expect(page.getByText(/sample listings/i).first()).toBeVisible();
-  // At least one listing card (price text) is shown.
-  await expect(page.getByText(/\$[0-9]/).first()).toBeVisible();
+  // At least one listing card is shown (a link to a detail page).
+  await expect(page.locator("a[href^='/listings/']").first()).toBeVisible();
 });
 
 test("filtering by property type narrows results", async ({ page }) => {
