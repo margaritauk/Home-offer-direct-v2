@@ -16,7 +16,7 @@ interface UserDataRow {
   offer_status?: SyncData["offerStatus"];
 }
 
-function rowToSyncData(row: UserDataRow): SyncData {
+function rowToSyncData(row: UserDataRow | DealDataRow): SyncData {
   return {
     progress: row.progress ?? {},
     stateCode: row.state_code ?? null,
@@ -30,6 +30,18 @@ function rowToSyncData(row: UserDataRow): SyncData {
     showings: row.showings ?? {},
     offerStatus: row.offer_status ?? {},
   };
+}
+
+// The deal_data row (migration 0005) reuses the exact same column shape as
+// user_data, keyed by deal_id instead of user_id, so the mapping is shared.
+interface DealDataRow {
+  deal_id: string;
+  progress: Record<string, boolean> | null;
+  state_code: string | null;
+  tracker: SyncData["tracker"] | null;
+  offer?: SyncData["offer"];
+  showings?: SyncData["showings"];
+  offer_status?: SyncData["offerStatus"];
 }
 
 /**
@@ -85,4 +97,46 @@ export async function pushRemote(
     /* columns not migrated yet — base sync already succeeded */
   }
   return {};
+}
+
+const DEAL_TABLE = "deal_data";
+
+/**
+ * Fetch a deal's row, or null if it has none yet. Mirrors {@link fetchRemote}
+ * but targets `deal_data` keyed by `deal_id`. Used once the multi-user deal
+ * layer is active (signed in + Supabase configured + an active deal).
+ */
+export async function fetchDealData(
+  supabase: SupabaseClient,
+  dealId: string,
+): Promise<SyncData | null> {
+  const { data, error } = await supabase
+    .from(DEAL_TABLE)
+    .select("*")
+    .eq("deal_id", dealId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return rowToSyncData(data as DealDataRow);
+}
+
+/**
+ * Upsert a deal's row. Mirrors {@link pushRemote}: a single upsert of the full
+ * SyncData shape. `deal_data` (migration 0005) always has every column, so no
+ * two-step fallback is needed.
+ */
+export async function pushDealData(
+  supabase: SupabaseClient,
+  dealId: string,
+  data: SyncData,
+): Promise<{ error?: string }> {
+  const { error } = await supabase.from(DEAL_TABLE).upsert({
+    deal_id: dealId,
+    progress: data.progress,
+    state_code: data.stateCode,
+    tracker: data.tracker,
+    offer: data.offer,
+    showings: data.showings,
+    offer_status: data.offerStatus,
+  });
+  return error ? { error: error.message } : {};
 }

@@ -39,6 +39,21 @@ When new synced features ship, run any new files in `supabase/migrations/` once
 - **`0002_offer_showings.sql`** — adds `offer` and `showings` columns so the
   Offer Builder and showing tracker sync across devices. Until you run it, those
   two sync locally per-device while everything else keeps syncing to the cloud.
+- **`0003_offer_status.sql`** — adds the `offer_status` column for the per-home
+  offer pipeline.
+- **`0004_deals.sql`** — multi-user foundation (epic #59): the `deals` and
+  `deal_members` tables, the `is_deal_member` / `has_deal_role` membership
+  helpers, and Row Level Security so members can read their deals while only the
+  owner manages membership. Purely additive — `user_data` is untouched, so the
+  single-user / guest experience is unchanged until you sign in and a deal
+  becomes active.
+- **`0005_deal_data.sql`** — per-deal app state (`deal_data`), mirroring the
+  `user_data` shape but keyed by `deal_id`, so everyone on a deal shares the
+  same journey/tracker/offer/showings/offer-status. Requires `0004` first.
+
+> The deal layer is **feature-gated exactly like cloud sync**: with no Supabase
+> keys the app is byte-for-byte the single-user, local-first app and no deal UI
+> appears. Deals activate only for a signed-in user with Supabase configured.
 
 ## Notes
 

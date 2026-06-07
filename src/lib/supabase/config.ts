@@ -24,3 +24,13 @@ export function isCloudSyncEnabled(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
+/**
+ * The multi-user deal layer (deals, members, the switcher, per-deal sync) is
+ * gated on the SAME requirement as cloud sync: Supabase must be configured.
+ * Callers must ALSO require a signed-in user before showing any deal UI. With
+ * no keys this is false, so the app is byte-for-byte the single-user app.
+ */
+export function isDealsEnabled(): boolean {
+  return isCloudSyncEnabled();
+}
+
