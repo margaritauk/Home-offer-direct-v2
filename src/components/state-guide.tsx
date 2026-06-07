@@ -1,4 +1,8 @@
-import { closingPathLabels, disclosureRegimeLabels } from "@/lib/states";
+import {
+  closingPathLabels,
+  disclosureRegimeLabels,
+  dualAgencyLabels,
+} from "@/lib/states";
 import type { StateProfile } from "@/lib/states";
 
 function InfoCard({
@@ -29,6 +33,7 @@ function InfoCard({
 export function StateGuide({ profile }: { profile: StateProfile }) {
   const closing = closingPathLabels[profile.closingPath];
   const disclosure = disclosureRegimeLabels[profile.disclosureRegime];
+  const dualAgency = dualAgencyLabels[profile.dualAgency];
 
   return (
     <div className="space-y-6">
@@ -52,11 +57,29 @@ export function StateGuide({ profile }: { profile: StateProfile }) {
         </InfoCard>
       </div>
 
-      <div className="card">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
-          Transfer tax
-        </h3>
-        <p className="mt-2 text-sm text-ink-soft">{profile.transferTaxNote}</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="card">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+            Transfer tax
+          </h3>
+          <p className="mt-2 text-sm text-ink-soft">{profile.transferTaxNote}</p>
+        </div>
+
+        <InfoCard title="Agency representation" badge={dualAgency.label}>
+          {profile.dualAgency === "banned" ? (
+            <p className="font-medium text-ink">
+              🚫 Dual agency is banned in {profile.name} — one agent cannot
+              represent both you and the seller.
+            </p>
+          ) : null}
+          <p className={profile.dualAgency === "banned" ? "mt-2" : undefined}>
+            {profile.dualAgencyNote ?? dualAgency.short}
+          </p>
+          <p className="mt-2 text-ink">
+            The listing agent works for the <strong>seller</strong> — keep your
+            budget ceiling, timeline, and financial strength to yourself.
+          </p>
+        </InfoCard>
       </div>
 
       {profile.highlights.length > 0 ? (

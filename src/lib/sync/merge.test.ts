@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { mergeFlags, mergeSyncData } from "./merge";
+import { mergeFlags, mergeOffer, mergeShowings, mergeSyncData } from "./merge";
 import { defaultOffsets } from "@/lib/deadlines";
 import type { SyncData } from "./types";
+import type { ShowingRecord } from "@/lib/showings/types";
 
 const tracker = (over: Partial<SyncData["tracker"]> = {}): SyncData["tracker"] => ({
   underContractDate: "",
@@ -15,6 +16,19 @@ const data = (over: Partial<SyncData> = {}): SyncData => ({
   progress: {},
   stateCode: null,
   tracker: tracker(),
+  offer: null,
+  showings: {},
+  ...over,
+});
+
+const showing = (id: string, updatedAt: string, over: Partial<ShowingRecord> = {}): ShowingRecord => ({
+  listingId: id,
+  address: "1 Test St",
+  city: "Townsville",
+  state: "CA",
+  status: "interested",
+  createdAt: updatedAt,
+  updatedAt,
   ...over,
 });
 
@@ -69,5 +83,60 @@ describe("mergeSyncData", () => {
       deed: true,
       "pay-stubs": true,
     });
+  });
+});
+
+const offer = (updatedAt: string, price: number) => ({
+  price,
+  earnestMoney: 0,
+  isPercent: false,
+  financingType: "conventional" as const,
+  downPaymentPercent: 10,
+  closingDate: "",
+  possession: "",
+  fixturesIncluded: "",
+  fixturesExcluded: "",
+  closingCostPreference: "buyer-pays" as const,
+  contingencies: {} as never,
+  concession: { type: "none" as const, percent: 0 },
+  updatedAt,
+});
+
+describe("mergeOffer", () => {
+  it("keeps whichever side exists when the other is null", () => {
+    const o = offer("2026-06-01T00:00:00Z", 100);
+    expect(mergeOffer(o, null)).toBe(o);
+    expect(mergeOffer(null, o)).toBe(o);
+    expect(mergeOffer(null, null)).toBeNull();
+  });
+  it("the more recently updated offer wins", () => {
+    const older = offer("2026-06-01T00:00:00Z", 100);
+    const newer = offer("2026-06-02T00:00:00Z", 200);
+    expect(mergeOffer(older, newer)!.price).toBe(200);
+    expect(mergeOffer(newer, older)!.price).toBe(200);
+  });
+});
+
+describe("mergeShowings", () => {
+  it("unions by listing id", () => {
+    const local = { a: showing("a", "2026-06-01T00:00:00Z") };
+    const remote = { b: showing("b", "2026-06-01T00:00:00Z") };
+    expect(Object.keys(mergeShowings(local, remote)).sort()).toEqual(["a", "b"]);
+  });
+  it("per id, the more recently updated record wins", () => {
+    const local = { a: showing("a", "2026-06-01T00:00:00Z", { status: "interested" }) };
+    const remote = { a: showing("a", "2026-06-05T00:00:00Z", { status: "seen" }) };
+    expect(mergeShowings(local, remote).a.status).toBe("seen");
+    expect(mergeShowings(remote, local).a.status).toBe("seen");
+  });
+});
+
+describe("mergeSyncData — offer & showings", () => {
+  it("merges offer (newest) and unions showings", () => {
+    const local = data({ offer: offer("2026-06-01T00:00:00Z", 100), showings: { a: showing("a", "2026-06-01T00:00:00Z") } });
+    const remote = data({ offer: offer("2026-06-09T00:00:00Z", 999), showings: { b: showing("b", "2026-06-02T00:00:00Z") } });
+    const merged = mergeSyncData(local, remote);
+    expect(merged.offer?.price).toBe(999);
+    expect(Object.keys(merged.showings).sort()).toEqual(["a", "b"]);
   });
 });

@@ -1,11 +1,15 @@
 import { defaultOffsets } from "@/lib/deadlines";
 import type { TrackerState } from "@/hooks/use-tracker";
+import type { Offer } from "@/lib/offer/types";
+import type { ShowingMap } from "@/lib/showings/types";
 import type { SyncData } from "./types";
 
 // These MUST match the keys used by the individual hooks.
 export const PROGRESS_KEY = "hod:progress:v1";
 export const STATE_KEY = "hod:state:v1";
 export const TRACKER_KEY = "hod:tracker:v1";
+export const OFFER_KEY = "hod:offer:v1";
+export const SHOWINGS_KEY = "hod:showings:v1";
 
 /** Fired after any local store changes so the sync layer can push to the cloud. */
 export const LOCAL_CHANGE_EVENT = "hod:local-change";
@@ -35,7 +39,7 @@ const emptyTracker: TrackerState = {
 /** Snapshot all local stores into a single SyncData object. */
 export function readLocal(): SyncData {
   if (typeof window === "undefined") {
-    return { progress: {}, stateCode: null, tracker: emptyTracker };
+    return { progress: {}, stateCode: null, tracker: emptyTracker, offer: null, showings: {} };
   }
   return {
     progress: readJSON<Record<string, boolean>>(PROGRESS_KEY, {}),
@@ -45,6 +49,8 @@ export function readLocal(): SyncData {
       ...readJSON<TrackerState>(TRACKER_KEY, emptyTracker),
       offsets: { ...defaultOffsets, ...readJSON<TrackerState>(TRACKER_KEY, emptyTracker).offsets },
     },
+    offer: readJSON<Offer | null>(OFFER_KEY, null),
+    showings: readJSON<ShowingMap>(SHOWINGS_KEY, {}),
   };
 }
 
@@ -56,6 +62,9 @@ export function writeLocal(data: SyncData): void {
     if (data.stateCode) window.localStorage.setItem(STATE_KEY, data.stateCode);
     else window.localStorage.removeItem(STATE_KEY);
     window.localStorage.setItem(TRACKER_KEY, JSON.stringify(data.tracker));
+    if (data.offer) window.localStorage.setItem(OFFER_KEY, JSON.stringify(data.offer));
+    else window.localStorage.removeItem(OFFER_KEY);
+    window.localStorage.setItem(SHOWINGS_KEY, JSON.stringify(data.showings ?? {}));
   } catch {
     /* best-effort */
   }

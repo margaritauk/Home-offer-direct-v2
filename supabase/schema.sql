@@ -12,8 +12,15 @@ create table if not exists public.user_data (
   progress jsonb not null default '{}'::jsonb,   -- completed task map
   state_code text,                               -- selected state (e.g. "CA")
   tracker jsonb not null default '{}'::jsonb,     -- dates, offsets, doc statuses
+  offer jsonb,                                    -- offer worksheet (nullable)
+  showings jsonb not null default '{}'::jsonb,    -- tracked showings by listing id
   updated_at timestamptz not null default now()
 );
+
+-- If you created the table before the offer/showings columns existed, also run
+-- supabase/migrations/0002_offer_showings.sql (or the lines below) once:
+alter table public.user_data add column if not exists offer jsonb;
+alter table public.user_data add column if not exists showings jsonb not null default '{}'::jsonb;
 
 -- Keep updated_at fresh on every write.
 create or replace function public.touch_updated_at()

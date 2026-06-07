@@ -7,8 +7,13 @@ export type {
   StateResource,
   ClosingPath,
   DisclosureRegime,
+  DualAgencyStatus,
 } from "./types";
-export { closingPathLabels, disclosureRegimeLabels } from "./labels";
+export {
+  closingPathLabels,
+  disclosureRegimeLabels,
+  dualAgencyLabels,
+} from "./labels";
 
 /** Lightweight option shape for select inputs (avoids shipping full profiles). */
 export interface StateOption {

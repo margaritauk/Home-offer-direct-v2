@@ -119,6 +119,21 @@ export default async function StepPage({
 
           {proRole ? <ProHandoff role={proRole} /> : null}
 
+          {stage.slug === "make-an-offer" ? (
+            <Link
+              href="/tools/offer-builder"
+              className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-brand-300 bg-brand-50 px-5 py-4 transition hover:border-brand-400"
+            >
+              <span className="text-sm text-brand-900">
+                📝 <strong>Use the Offer Builder</strong> to assemble your terms
+                into a term-sheet you can review with an attorney.
+              </span>
+              <span className="hidden whitespace-nowrap font-medium text-brand-700 sm:inline">
+                Open →
+              </span>
+            </Link>
+          ) : null}
+
           {step.resources && step.resources.length > 0 ? (
             <div className="mt-6">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">

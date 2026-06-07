@@ -19,6 +19,19 @@ export type ClosingPath =
   /** Both models are common / permitted; practice varies by region or deal. */
   | "either";
 
+/**
+ * Whether one agent (or brokerage) may represent both buyer and seller in the
+ * same transaction. Drives the agency-coaching guidance for unrepresented
+ * buyers; see {@link StateProfile.dualAgency}.
+ */
+export type DualAgencyStatus =
+  /** Dual agency is allowed (with informed, written consent). */
+  | "permitted"
+  /** Dual agency is prohibited in this jurisdiction. */
+  | "banned"
+  /** Allowed only in a limited form (e.g. designated/transaction brokerage). */
+  | "restricted";
+
 /** How much the seller is legally required to disclose about the property. */
 export type DisclosureRegime =
   /** A specific statutory disclosure form is mandated (e.g. CA's TDS). */
@@ -53,6 +66,15 @@ export interface StateProfile {
 
   /** Who customarily pays state/local real-estate transfer tax, plus any note. */
   transferTaxNote: string;
+
+  /**
+   * Whether one agent/brokerage may represent both sides of the deal. Used by
+   * the agency-coaching UI to warn unrepresented buyers about who the listing
+   * agent works for. NOT legal advice — confirm with the linked source.
+   */
+  dualAgency: DualAgencyStatus;
+  /** Short plain-English note on the dual-agency rule (e.g. what form is used). */
+  dualAgencyNote?: string;
 
   /** 2-4 short, actionable bullets specific to buying agent-free in this state. */
   highlights: string[];
