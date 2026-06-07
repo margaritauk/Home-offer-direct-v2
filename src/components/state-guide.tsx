@@ -2,6 +2,7 @@ import {
   closingPathLabels,
   disclosureRegimeLabels,
   dualAgencyLabels,
+  eSignLabels,
 } from "@/lib/states";
 import type { StateProfile } from "@/lib/states";
 
@@ -34,6 +35,7 @@ export function StateGuide({ profile }: { profile: StateProfile }) {
   const closing = closingPathLabels[profile.closingPath];
   const disclosure = disclosureRegimeLabels[profile.disclosureRegime];
   const dualAgency = dualAgencyLabels[profile.dualAgency];
+  const eSign = eSignLabels[profile.eSignForRealEstate];
 
   return (
     <div className="space-y-6">
@@ -81,6 +83,23 @@ export function StateGuide({ profile }: { profile: StateProfile }) {
           </p>
         </InfoCard>
       </div>
+
+      <InfoCard title="E-signature & online notarization" badge={eSign.label}>
+        <p>{profile.eSignNote ?? eSign.short}</p>
+        <p className="mt-2 text-ink">
+          {profile.ronAllowed ? (
+            <>
+              ✓ {profile.name} has a permanent remote online notarization (RON)
+              law, so notarized closing documents can be executed online.
+            </>
+          ) : (
+            <>
+              ⚠️ {profile.name} does not yet have a permanent RON law — notarized
+              closing documents may need to be notarized in person.
+            </>
+          )}
+        </p>
+      </InfoCard>
 
       {profile.highlights.length > 0 ? (
         <div className="card">

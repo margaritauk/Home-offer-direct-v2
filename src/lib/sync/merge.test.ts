@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeFlags, mergeOffer, mergeShowings, mergeSyncData } from "./merge";
+import { mergeFlags, mergeOffer, mergeOfferStatus, mergeShowings, mergeSyncData } from "./merge";
 import { defaultOffsets } from "@/lib/deadlines";
 import type { SyncData } from "./types";
 import type { ShowingRecord } from "@/lib/showings/types";
@@ -18,6 +18,7 @@ const data = (over: Partial<SyncData> = {}): SyncData => ({
   tracker: tracker(),
   offer: null,
   showings: {},
+  offerStatus: {},
   ...over,
 });
 
@@ -128,6 +129,25 @@ describe("mergeShowings", () => {
     const remote = { a: showing("a", "2026-06-05T00:00:00Z", { status: "seen" }) };
     expect(mergeShowings(local, remote).a.status).toBe("seen");
     expect(mergeShowings(remote, local).a.status).toBe("seen");
+  });
+});
+
+describe("mergeOfferStatus", () => {
+  const rec = (id: string, updatedAt: string, status = "draft") => ({
+    listingId: id,
+    status: status as never,
+    createdAt: updatedAt,
+    updatedAt,
+  });
+  it("unions by listing id", () => {
+    const merged = mergeOfferStatus({ a: rec("a", "2026-06-01T00:00:00Z") }, { b: rec("b", "2026-06-01T00:00:00Z") });
+    expect(Object.keys(merged).sort()).toEqual(["a", "b"]);
+  });
+  it("per id, the newer record wins", () => {
+    const local = { a: rec("a", "2026-06-01T00:00:00Z", "sent") };
+    const remote = { a: rec("a", "2026-06-05T00:00:00Z", "accepted") };
+    expect(mergeOfferStatus(local, remote).a.status).toBe("accepted");
+    expect(mergeOfferStatus(remote, local).a.status).toBe("accepted");
   });
 });
 

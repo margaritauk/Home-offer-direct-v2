@@ -12,6 +12,8 @@ interface UserDataRow {
   // Added in migration 0002 — may be absent on older databases.
   offer?: SyncData["offer"];
   showings?: SyncData["showings"];
+  // Added in migration 0003 — may be absent on older databases.
+  offer_status?: SyncData["offerStatus"];
 }
 
 function rowToSyncData(row: UserDataRow): SyncData {
@@ -26,6 +28,7 @@ function rowToSyncData(row: UserDataRow): SyncData {
     },
     offer: row.offer ?? null,
     showings: row.showings ?? {},
+    offerStatus: row.offer_status ?? {},
   };
 }
 
@@ -67,11 +70,16 @@ export async function pushRemote(
   });
   if (error) return { error: error.message };
 
-  // Best-effort: only lands once the offer/showings columns exist.
+  // Best-effort: only lands once the offer/showings/offer_status columns exist
+  // (migrations 0002 + 0003). Base sync above already succeeded regardless.
   try {
     await supabase
       .from(TABLE)
-      .update({ offer: data.offer, showings: data.showings })
+      .update({
+        offer: data.offer,
+        showings: data.showings,
+        offer_status: data.offerStatus,
+      })
       .eq("user_id", userId);
   } catch {
     /* columns not migrated yet — base sync already succeeded */

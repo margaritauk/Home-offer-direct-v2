@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AuthMenu } from "@/components/auth-menu";
 
 const navLinks = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/listings", label: "Search Homes" },
   { href: "/journey", label: "Journey" },
   { href: "/states", label: "Your State" },

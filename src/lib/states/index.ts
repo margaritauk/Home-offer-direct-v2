@@ -8,11 +8,13 @@ export type {
   ClosingPath,
   DisclosureRegime,
   DualAgencyStatus,
+  ESignStatus,
 } from "./types";
 export {
   closingPathLabels,
   disclosureRegimeLabels,
   dualAgencyLabels,
+  eSignLabels,
 } from "./labels";
 
 /** Lightweight option shape for select inputs (avoids shipping full profiles). */
