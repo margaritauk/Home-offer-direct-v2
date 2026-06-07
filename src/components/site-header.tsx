@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/states", label: "Your State" },
   { href: "/pros", label: "Find Pros" },
   { href: "/showings", label: "Showings" },
+  { href: "/tools/offer-builder", label: "Offer Builder" },
   { href: "/tracker", label: "Tracker" },
   { href: "/tools/savings-calculator", label: "Calculator" },
   { href: "/glossary", label: "Glossary" },
