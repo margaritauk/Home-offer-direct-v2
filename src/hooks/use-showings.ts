@@ -10,6 +10,18 @@ import type {
 
 const STORAGE_KEY = "hod:showings:v1";
 
+/**
+ * In-tab subscribers. The browser `storage` event only fires in *other* tabs,
+ * so a module-level listener set keeps every hook instance in the same document
+ * in sync — e.g. the tracker list and each card both call useShowings.
+ * localStorage stays the single source of truth: mutations read fresh and every
+ * instance re-reads on change (fixes the scheduled-date and rating not sticking).
+ */
+const listeners = new Set<() => void>();
+function notifyAll() {
+  listeners.forEach((l) => l());
+}
+
 /** Fields a caller may supply when first tracking a listing. */
 export interface TrackInput {
   listingId: string;
@@ -18,6 +30,8 @@ export interface TrackInput {
   state: string;
   /** Defaults to "interested". */
   status?: ShowingStatus;
+  /** True for properties the buyer added by hand (no real listing page). */
+  manual?: boolean;
 }
 
 /** Mutable fields on an existing record (location snapshot is fixed). */
@@ -37,10 +51,20 @@ function read(): ShowingMap {
   }
 }
 
+function write(next: ShowingMap) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* best-effort */
+  }
+  notifyAll();
+  emitLocalChange();
+}
+
 /**
  * Persists the buyer's per-listing showing pipeline in localStorage (issue #20).
- * Follows the hydrate-after-mount pattern of {@link useTracker} and emits a
- * local-change event on every write so the cloud-sync layer can pick it up.
+ * Shared across instances in the tab so every card/list reflects writes
+ * immediately. Mutations are computed from fresh storage, never stale state.
  */
 export function useShowings() {
   const [showings, setShowings] = useState<ShowingMap>({});
@@ -49,70 +73,49 @@ export function useShowings() {
   useEffect(() => {
     setShowings(read());
     setHydrated(true);
-  }, []);
-
-  const commit = useCallback((next: ShowingMap) => {
-    setShowings(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      /* best-effort */
-    }
-    emitLocalChange();
+    const sync = () => setShowings(read());
+    listeners.add(sync);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setShowings(read());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      listeners.delete(sync);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   /** Start tracking a listing (idempotent — keeps an existing record). */
-  const track = useCallback(
-    (input: TrackInput) => {
-      setShowings((prev) => {
-        if (prev[input.listingId]) return prev;
-        const now = new Date().toISOString();
-        const record: ShowingRecord = {
-          listingId: input.listingId,
-          address: input.address,
-          city: input.city,
-          state: input.state.toUpperCase(),
-          status: input.status ?? "interested",
-          createdAt: now,
-          updatedAt: now,
-        };
-        const next = { ...prev, [input.listingId]: record };
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {
-          /* best-effort */
-        }
-        emitLocalChange();
-        return next;
-      });
-    },
-    [],
-  );
+  const track = useCallback((input: TrackInput) => {
+    const cur = read();
+    if (cur[input.listingId]) return;
+    const now = new Date().toISOString();
+    cur[input.listingId] = {
+      listingId: input.listingId,
+      address: input.address,
+      city: input.city,
+      state: input.state.toUpperCase(),
+      status: input.status ?? "interested",
+      manual: input.manual,
+      createdAt: now,
+      updatedAt: now,
+    };
+    write({ ...cur });
+  }, []);
 
   /** Patch an existing record. No-op if the listing isn't tracked. */
   const update = useCallback((listingId: string, patch: ShowingPatch) => {
-    setShowings((prev) => {
-      const existing = prev[listingId];
-      if (!existing) return prev;
-      const next = {
-        ...prev,
-        [listingId]: {
-          ...existing,
-          ...patch,
-          updatedAt: new Date().toISOString(),
-        },
-      };
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* best-effort */
-      }
-      emitLocalChange();
-      return next;
-    });
+    const cur = read();
+    const existing = cur[listingId];
+    if (!existing) return;
+    cur[listingId] = {
+      ...existing,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
+    write({ ...cur });
   }, []);
 
-  /** Convenience wrapper for the most common update. */
   const setStatus = useCallback(
     (listingId: string, status: ShowingStatus) => update(listingId, { status }),
     [update],
@@ -120,26 +123,18 @@ export function useShowings() {
 
   /** Stop tracking a listing entirely. */
   const remove = useCallback((listingId: string) => {
-    setShowings((prev) => {
-      if (!prev[listingId]) return prev;
-      const next = { ...prev };
-      delete next[listingId];
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* best-effort */
-      }
-      emitLocalChange();
-      return next;
-    });
+    const cur = read();
+    if (!cur[listingId]) return;
+    delete cur[listingId];
+    write({ ...cur });
   }, []);
 
-  const clear = useCallback(() => commit({}), [commit]);
+  const clear = useCallback(() => write({}), []);
 
   const records = useMemo(
     () =>
-      Object.values(showings).sort(
-        (a, b) => b.updatedAt.localeCompare(a.updatedAt),
+      Object.values(showings).sort((a, b) =>
+        b.updatedAt.localeCompare(a.updatedAt),
       ),
     [showings],
   );
