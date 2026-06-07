@@ -1,14 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { stateProfiles } from "./data";
 import { getAllStateProfiles, getStateProfile, getStateOptions } from "./index";
-import { closingPathLabels, disclosureRegimeLabels } from "./labels";
-import type { ClosingPath, DisclosureRegime } from "./types";
+import {
+  closingPathLabels,
+  disclosureRegimeLabels,
+  dualAgencyLabels,
+} from "./labels";
+import type { ClosingPath, DisclosureRegime, DualAgencyStatus } from "./types";
 
 const CLOSING_PATHS: ClosingPath[] = ["attorney", "escrow", "either"];
 const DISCLOSURE_REGIMES: DisclosureRegime[] = [
   "statutory-form",
   "written-disclosure",
   "limited",
+];
+const DUAL_AGENCY_STATUSES: DualAgencyStatus[] = [
+  "permitted",
+  "banned",
+  "restricted",
+];
+
+/** States that ban dual agency, per the research brief (issue #27). */
+const DUAL_AGENCY_BANNED = [
+  "AK",
+  "CO",
+  "FL",
+  "KS",
+  "MD",
+  "OK",
+  "TX",
+  "VT",
+  "WY",
 ];
 
 // The 50 states + DC.
@@ -63,6 +85,36 @@ describe("state dataset integrity", () => {
   it("every enum value has a UI label", () => {
     for (const path of CLOSING_PATHS) expect(closingPathLabels[path]).toBeTruthy();
     for (const r of DISCLOSURE_REGIMES) expect(disclosureRegimeLabels[r]).toBeTruthy();
+    for (const d of DUAL_AGENCY_STATUSES) expect(dualAgencyLabels[d]).toBeTruthy();
+  });
+
+  it("every profile has a valid dualAgency value (issue #27)", () => {
+    for (const p of stateProfiles) {
+      expect(DUAL_AGENCY_STATUSES).toContain(p.dualAgency);
+    }
+  });
+
+  it("marks the researched dual-agency-banned states as banned", () => {
+    for (const code of DUAL_AGENCY_BANNED) {
+      const profile = getStateProfile(code);
+      expect(profile, `${code} should exist`).toBeTruthy();
+      expect(profile!.dualAgency, `${code} should be banned`).toBe("banned");
+    }
+  });
+
+  it("only the researched set is marked banned", () => {
+    const banned = stateProfiles
+      .filter((p) => p.dualAgency === "banned")
+      .map((p) => p.code)
+      .sort();
+    expect(banned).toEqual([...DUAL_AGENCY_BANNED].sort());
+  });
+
+  it("dual-agency notes are present and concise", () => {
+    for (const p of stateProfiles) {
+      expect(p.dualAgencyNote, `${p.code} note`).toBeTruthy();
+      expect(p.dualAgencyNote!.length).toBeLessThan(220);
+    }
   });
 });
 

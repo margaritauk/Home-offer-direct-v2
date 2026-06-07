@@ -1,4 +1,6 @@
 import type { TrackerState } from "@/hooks/use-tracker";
+import type { Offer } from "@/lib/offer/types";
+import type { ShowingMap } from "@/lib/showings/types";
 
 /** The full set of data we sync per user — mirrors the localStorage stores. */
 export interface SyncData {
@@ -8,4 +10,8 @@ export interface SyncData {
   stateCode: string | null;
   /** Deal dates, contingency offsets, and document statuses. */
   tracker: TrackerState;
+  /** The offer worksheet, or null if none started. */
+  offer: Offer | null;
+  /** Tracked showings, keyed by listing id. */
+  showings: ShowingMap;
 }

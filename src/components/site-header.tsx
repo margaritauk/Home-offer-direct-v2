@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/journey", label: "Journey" },
   { href: "/states", label: "Your State" },
   { href: "/pros", label: "Find Pros" },
+  { href: "/showings", label: "Showings" },
   { href: "/tracker", label: "Tracker" },
   { href: "/tools/savings-calculator", label: "Calculator" },
   { href: "/glossary", label: "Glossary" },
@@ -36,7 +37,7 @@ export function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-5 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}

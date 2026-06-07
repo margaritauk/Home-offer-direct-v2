@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { allListings, getListingById, propertyTypeLabels } from "@/lib/listings";
 import { formatUSD } from "@/lib/savings";
 import { ListingImage } from "@/components/listing-image";
+import { AgencyExplainer } from "@/components/showings/agency-explainer";
+import { TrackShowingButton } from "@/components/showings/track-showing-button";
 
 export function generateStaticParams() {
   return allListings().map((l) => ({ id: l.id }));
@@ -108,7 +110,20 @@ export default async function ListingDetailPage({
               closing.
             </p>
           </div>
+
+          <div className="mt-4">
+            <TrackShowingButton
+              listingId={listing.id}
+              address={listing.address}
+              city={listing.city}
+              state={listing.state}
+            />
+          </div>
         </aside>
+      </div>
+
+      <div className="mt-10 max-w-3xl">
+        <AgencyExplainer />
       </div>
     </div>
   );

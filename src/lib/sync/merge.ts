@@ -1,5 +1,7 @@
 import { defaultOffsets, type DeadlineOffsets } from "@/lib/deadlines";
 import type { TrackerState } from "@/hooks/use-tracker";
+import type { Offer } from "@/lib/offer/types";
+import type { ShowingMap } from "@/lib/showings/types";
 import type { SyncData } from "./types";
 
 /**
@@ -29,6 +31,23 @@ function mergeTracker(local: TrackerState, remote: TrackerState): TrackerState {
   };
 }
 
+/** The offer with the more recent `updatedAt` wins; null-safe. */
+export function mergeOffer(local: Offer | null, remote: Offer | null): Offer | null {
+  if (!local) return remote;
+  if (!remote) return local;
+  return (remote.updatedAt ?? "") >= (local.updatedAt ?? "") ? remote : local;
+}
+
+/** Union showings by listing id; per id, the more recently updated record wins. */
+export function mergeShowings(local: ShowingMap, remote: ShowingMap): ShowingMap {
+  const out: ShowingMap = { ...(local ?? {}) };
+  for (const [id, rec] of Object.entries(remote ?? {})) {
+    const cur = out[id];
+    if (!cur || (rec.updatedAt ?? "") >= (cur.updatedAt ?? "")) out[id] = rec;
+  }
+  return out;
+}
+
 /**
  * Merge the device's local data with the account's remote data. Used on first
  * sign-in so a buyer never loses progress they made before creating an account.
@@ -40,5 +59,7 @@ export function mergeSyncData(local: SyncData, remote: SyncData | null): SyncDat
     progress: mergeFlags(local.progress, remote.progress),
     stateCode: remote.stateCode ?? local.stateCode,
     tracker: mergeTracker(local.tracker, remote.tracker),
+    offer: mergeOffer(local.offer, remote.offer),
+    showings: mergeShowings(local.showings, remote.showings),
   };
 }

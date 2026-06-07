@@ -26,6 +26,9 @@ export const stateProfiles: StateProfile[] = [
       "Alabama largely follows caveat emptor for resales; there is no mandatory statewide disclosure form, though sellers must not actively conceal known health/safety defects. Inspect thoroughly.",
     transferTaxNote:
       "Alabama levies a state deed transfer (recordation) tax of $0.50 per $500 of value, customarily paid by the seller, plus a mortgage tax paid by the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Alabama permits dual agency (\"limited consensual dual agency\") only with the prior written consent of both parties.",
     highlights: [
       "Budget for a closing attorney — it is effectively mandatory here.",
       "Caveat-emptor state: rely on your own inspection, not the seller's disclosures.",
@@ -48,6 +51,9 @@ export const stateProfiles: StateProfile[] = [
       "Alaska statute (AS 34.70) requires sellers of most residential property to complete a written Residential Real Property Transfer Disclosure Statement of known conditions.",
     transferTaxNote:
       "Alaska has no state real-estate transfer tax; expect only recording fees, though some municipalities may impose local charges.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Alaska prohibits dual agency; a licensee may not represent both buyer and seller in the same transaction.",
     highlights: [
       "Choose a reputable title/escrow company to run closing.",
       "Read the seller's mandatory transfer-disclosure statement carefully.",
@@ -70,6 +76,9 @@ export const stateProfiles: StateProfile[] = [
       "Arizona case law requires sellers to disclose known material defects; the AAR Seller's Property Disclosure Statement (SPDS) is the standard form used.",
     transferTaxNote:
       "Arizona prohibits real-estate transfer taxes by constitutional amendment; expect only a small recording fee.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Arizona permits dual agency with the informed written consent of both buyer and seller.",
     highlights: [
       "Open escrow early with a title/escrow company you select.",
       "Review the seller's SPDS line by line and ask follow-up questions.",
@@ -91,6 +100,9 @@ export const stateProfiles: StateProfile[] = [
       "Arkansas leans caveat-emptor with no statewide mandatory disclosure form for resales, though sellers cannot fraudulently conceal known defects. A Realtor-association disclosure form is often used by custom.",
     transferTaxNote:
       "Arkansas imposes a real-property transfer tax of $3.30 per $1,000 of value, customarily split or paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Arkansas permits dual agency with written disclosure and consent from both parties.",
     highlights: [
       "Use a title/escrow company; no attorney is required.",
       "Caveat-emptor leaning — make your inspection contingency robust.",
@@ -113,6 +125,9 @@ export const stateProfiles: StateProfile[] = [
       "California has one of the strictest regimes: sellers must deliver a statutory Transfer Disclosure Statement (Civ. Code §1102 et seq.) plus a Natural Hazard Disclosure and other mandated disclosures.",
     transferTaxNote:
       "California charges a county documentary transfer tax ($1.10 per $1,000), customarily paid by the seller, and many cities add their own transfer tax.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "California permits dual agency with full written disclosure and the consent of both parties.",
     highlights: [
       "Expect extensive statutory disclosures (TDS, Natural Hazard, etc.) — read them all.",
       "Escrow company runs closing; pick one early.",
@@ -136,6 +151,9 @@ export const stateProfiles: StateProfile[] = [
       "Colorado sellers must disclose known material latent defects; the Colorado Real Estate Commission's Seller's Property Disclosure form is standard.",
     transferTaxNote:
       "Colorado has a small state documentary fee ($0.01 per $100); a few home-rule towns levy local transfer taxes, otherwise none.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Colorado abolished dual agency in 2003; licensees act as single agents or transaction-brokers instead.",
     highlights: [
       "Title company handles closing; no attorney required.",
       "Use the state-approved contract and Seller's Property Disclosure form.",
@@ -158,6 +176,9 @@ export const stateProfiles: StateProfile[] = [
       "Connecticut requires sellers to provide a Residential Property Condition Disclosure Report; failing to deliver it entitles the buyer to a $500 credit at closing.",
     transferTaxNote:
       "Connecticut charges both a state and a municipal conveyance tax, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Connecticut permits dual agency (and designated agency) with the written informed consent of both parties.",
     highlights: [
       "Retain a closing attorney — it is required here.",
       "Get the seller's Property Condition Disclosure Report before closing.",
@@ -180,6 +201,9 @@ export const stateProfiles: StateProfile[] = [
       "Delaware law (6 Del. C. §2572) requires sellers to give buyers a written Seller's Disclosure of Real Property Condition Report before acceptance of an offer.",
     transferTaxNote:
       "Delaware has a high real-estate transfer tax (up to 4%), customarily split equally between buyer and seller absent agreement.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Delaware permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Use a Delaware attorney to close — it is required.",
       "Review the seller's mandatory condition disclosure before signing.",
@@ -202,6 +226,9 @@ export const stateProfiles: StateProfile[] = [
       "DC law (D.C. Code §42-1301 et seq.) requires sellers of residential property to deliver a Seller's Disclosure Statement of property condition before the buyer is bound.",
     transferTaxNote:
       "DC imposes both a transfer tax (customarily seller-paid) and a recordation tax (customarily buyer-paid), each typically 1.1%–1.45% of price.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "The District of Columbia permits dual agency with the written informed consent of both parties.",
     highlights: [
       "Settlement is attorney-supervised; engage a DC settlement attorney/title firm.",
       "Read the seller's required Disclosure Statement closely.",
@@ -223,6 +250,9 @@ export const stateProfiles: StateProfile[] = [
       "Under Johnson v. Davis, Florida sellers must disclose known material defects not readily observable; there is no single mandated statutory form, but a Realtor disclosure form is standard.",
     transferTaxNote:
       "Florida charges documentary stamp tax on the deed (commonly $0.70 per $100; $0.60 in Miami-Dade), customarily paid by the seller.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Florida bans both dual and designated agency; agents instead work as transaction brokers (a non-fiduciary facilitator) or single agents.",
     highlights: [
       "A title company can close; an attorney is optional (common in South FL).",
       "Sellers must disclose known hidden material defects (Johnson v. Davis).",
@@ -244,6 +274,9 @@ export const stateProfiles: StateProfile[] = [
       "Georgia leans caveat-emptor with no mandatory statewide disclosure form, though sellers cannot conceal known latent defects. A Realtor association Seller's Property Disclosure form is commonly used.",
     transferTaxNote:
       "Georgia charges a real-estate transfer tax of $1.00 per $1,000 of value, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Georgia permits dual agency with the written, informed consent of both parties.",
     highlights: [
       "Engage a closing attorney — required by Georgia law.",
       "Caveat-emptor leaning: lean on your inspection contingency.",
@@ -266,6 +299,9 @@ export const stateProfiles: StateProfile[] = [
       "Hawaii law (HRS §508D) requires sellers to provide a written Seller's Real Property Disclosure Statement of material facts within a set time after acceptance.",
     transferTaxNote:
       "Hawaii imposes a conveyance tax on a graduated scale (higher for high-value and non-owner-occupant purchases), customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Hawaii permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "An escrow company runs closing; no attorney required.",
       "Expect the seller's mandatory HRS §508D disclosure statement.",
@@ -288,6 +324,9 @@ export const stateProfiles: StateProfile[] = [
       "Idaho's Property Condition Disclosure Act (Idaho Code §55-2501 et seq.) requires sellers to deliver a written Seller's Property Condition Disclosure Form.",
     transferTaxNote:
       "Idaho prohibits real-estate transfer taxes; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Idaho permits dual (\"limited\") agency with a signed consent acknowledging the reduced level of representation.",
     highlights: [
       "Title/escrow company handles closing.",
       "Seller must provide the statutory Property Condition Disclosure Form.",
@@ -310,6 +349,9 @@ export const stateProfiles: StateProfile[] = [
       "Illinois law (765 ILCS 77) requires sellers to complete a Residential Real Property Disclosure Report of known defects.",
     transferTaxNote:
       "Illinois charges state and county transfer taxes (customarily seller-paid) and many municipalities add a local transfer tax that may fall on the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Illinois permits dual agency with the written consent of both parties before the representation begins.",
     highlights: [
       "In the Chicago area, plan to use a closing attorney; downstate a title company is typical.",
       "Seller must provide the Residential Real Property Disclosure Report.",
@@ -332,6 +374,9 @@ export const stateProfiles: StateProfile[] = [
       "Indiana law (IC 32-21-5) requires sellers to complete a Seller's Residential Real Estate Sales Disclosure form before an offer is accepted.",
     transferTaxNote:
       "Indiana has no state real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Indiana permits dual agency with the written consent of all parties.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory Sales Disclosure form.",
@@ -354,6 +399,9 @@ export const stateProfiles: StateProfile[] = [
       "Iowa law (Iowa Code §558A) requires sellers to deliver a written Residential Property Seller Disclosure Statement of known conditions.",
     transferTaxNote:
       "Iowa imposes a real-estate transfer tax (revenue stamps) of about $1.60 per $1,000 over $500, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Iowa permits dual agency with the written, informed consent of both buyer and seller.",
     highlights: [
       "Title work uses Iowa Title Guaranty rather than standard title insurance.",
       "Seller must provide the statutory disclosure statement.",
@@ -376,6 +424,9 @@ export const stateProfiles: StateProfile[] = [
       "Kansas sellers must disclose known material defects; a Seller's Disclosure and Condition of Property Statement is the standard form used by custom.",
     transferTaxNote:
       "Kansas has no real-estate transfer tax (the former mortgage registration tax was phased out); expect only recording fees.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Kansas prohibits dual agency; brokers operate as designated agents or transaction brokers instead.",
     highlights: [
       "Title company handles closing.",
       "Expect a seller's condition disclosure by custom.",
@@ -398,6 +449,9 @@ export const stateProfiles: StateProfile[] = [
       "Kentucky Real Estate Commission rules require sellers to complete a Seller's Disclosure of Property Conditions form.",
     transferTaxNote:
       "Kentucky charges a transfer tax of $0.50 per $500 of value, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Kentucky permits dual agency with the written, informed consent of both parties.",
     highlights: [
       "An attorney must prepare the deed/mortgage documents.",
       "Seller must complete the KREC property-conditions disclosure.",
@@ -420,6 +474,9 @@ export const stateProfiles: StateProfile[] = [
       "Louisiana law (La. R.S. 9:3196 et seq.) requires sellers of residential property to deliver a Property Disclosure Document.",
     transferTaxNote:
       "Louisiana has no statewide real-estate transfer tax (Orleans Parish historically had a documentary fee); expect mainly recording costs.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Louisiana permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Closing is handled before a notary, commonly an attorney-notary.",
       "Seller must provide the statutory Property Disclosure Document.",
@@ -442,6 +499,9 @@ export const stateProfiles: StateProfile[] = [
       "Maine law (33 M.R.S. §171 et seq.) requires sellers to provide a Property Disclosure Statement covering water, waste, heating and known hazards.",
     transferTaxNote:
       "Maine charges a real-estate transfer tax of $2.20 per $500, split equally between buyer and seller by statute.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Maine permits disclosed dual agency only with the written consent of both parties.",
     highlights: [
       "Plan on a closing attorney — the customary practice in Maine.",
       "Seller must provide the statutory Property Disclosure Statement.",
@@ -464,6 +524,9 @@ export const stateProfiles: StateProfile[] = [
       "Maryland sellers must give buyers a Residential Property Disclosure and Disclaimer Statement, electing either to disclose known defects or to sell \"as is\" via disclaimer.",
     transferTaxNote:
       "Maryland levies state and county transfer taxes plus recordation tax; these are commonly split between buyer and seller and vary by county.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Maryland prohibits a single agent from representing both sides; the brokerage must instead assign separate designated agents (intra-company agency).",
     highlights: [
       "Deed must be attorney-prepared/certified; use an attorney-run settlement.",
       "Seller chooses to disclose or disclaim — read which box was used.",
@@ -485,6 +548,9 @@ export const stateProfiles: StateProfile[] = [
       "Massachusetts leans caveat-emptor with no general statutory disclosure form, but a mandatory lead-paint disclosure applies to pre-1978 homes and brokers must disclose known material defects.",
     transferTaxNote:
       "Massachusetts charges deed excise (stamp) tax of about $4.56 per $1,000, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Massachusetts permits dual agency with written, informed consent given before signing an offer.",
     highlights: [
       "A closing attorney is required in Massachusetts.",
       "Caveat-emptor leaning: rely on your inspection; expect the lead-paint disclosure for older homes.",
@@ -507,6 +573,9 @@ export const stateProfiles: StateProfile[] = [
       "Michigan law (MCL 565.951 et seq.) requires sellers to deliver a Seller's Disclosure Statement of property condition.",
     transferTaxNote:
       "Michigan charges state and county real-estate transfer taxes (about $8.60 per $1,000 combined), customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Michigan permits dual agency with the written consent of both parties.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory Seller's Disclosure Statement.",
@@ -529,6 +598,9 @@ export const stateProfiles: StateProfile[] = [
       "Minnesota law (Minn. Stat. §513.52 et seq.) requires sellers to provide a written disclosure of material facts; a standard Seller's Property Disclosure Statement is used.",
     transferTaxNote:
       "Minnesota charges a deed (mortgage registry and deed) tax of about $3.30 per $1,000, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Minnesota permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Title company handles closing.",
       "Seller must disclose known material facts in writing.",
@@ -551,6 +623,9 @@ export const stateProfiles: StateProfile[] = [
       "Mississippi law (Miss. Code §89-1-501 et seq.) requires sellers of residential property to deliver a Seller's Disclosure Statement.",
     transferTaxNote:
       "Mississippi has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Mississippi permits dual agency with the written, informed consent of both parties.",
     highlights: [
       "Use an attorney to prepare documents and close.",
       "Seller must provide the statutory disclosure statement.",
@@ -573,6 +648,9 @@ export const stateProfiles: StateProfile[] = [
       "Missouri sellers must disclose known material defects; the Missouri Realtors Seller's Disclosure Statement is the standard form used by custom.",
     transferTaxNote:
       "Missouri has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Missouri permits dual agency (and designated/transaction brokerage) with written disclosure and consent.",
     highlights: [
       "Title company handles closing.",
       "Expect a seller's disclosure statement by custom.",
@@ -595,6 +673,9 @@ export const stateProfiles: StateProfile[] = [
       "Montana has no single mandatory statutory disclosure form, but sellers must disclose known adverse material facts; a Realtor Property Disclosure Statement is commonly used.",
     transferTaxNote:
       "Montana has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Montana permits dual agency with the written, informed consent of both parties.",
     highlights: [
       "Title/escrow company handles closing.",
       "Sellers must disclose known adverse material facts.",
@@ -617,6 +698,9 @@ export const stateProfiles: StateProfile[] = [
       "Nebraska law (Neb. Rev. Stat. §76-2,120) requires sellers to complete a Seller Property Condition Disclosure Statement.",
     transferTaxNote:
       "Nebraska charges a documentary stamp tax of $2.25 per $1,000, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Nebraska permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Title company handles closing.",
       "Seller must complete the statutory condition disclosure.",
@@ -639,6 +723,9 @@ export const stateProfiles: StateProfile[] = [
       "Nevada law (NRS 113) requires sellers to deliver a completed Seller's Real Property Disclosure Form at least 10 days before closing.",
     transferTaxNote:
       "Nevada charges a real-property transfer tax that varies by county, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Nevada permits dual agency only with the written consent of each party and assignment confirmation.",
     highlights: [
       "Escrow company runs closing.",
       "Seller must deliver the NRS 113 disclosure at least 10 days out.",
@@ -660,6 +747,9 @@ export const stateProfiles: StateProfile[] = [
       "New Hampshire has no general mandatory disclosure form for resales, but sellers must disclose known material defects and specific disclosures (e.g., private water/sewer, radon, lead) are required.",
     transferTaxNote:
       "New Hampshire charges a real-estate transfer tax of $0.75 per $100 on each side, split equally between buyer and seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "New Hampshire permits disclosed dual agency with the written consent of both parties.",
     highlights: [
       "Plan on a closing attorney in New Hampshire.",
       "Expect specific disclosures (water/sewer, radon, lead) rather than one general form.",
@@ -682,6 +772,9 @@ export const stateProfiles: StateProfile[] = [
       "New Jersey case law requires sellers to disclose known latent material defects; a Seller's Property Condition Disclosure Statement is commonly used.",
     transferTaxNote:
       "New Jersey charges a Realty Transfer Fee (customarily seller-paid) plus, on higher-priced homes, a 1% \"mansion tax\" generally paid by the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "New Jersey permits dual agency with the written, informed consent of both buyer and seller.",
     highlights: [
       "Use the standard 3-day attorney-review period on the contract.",
       "North Jersey usually closes via attorney; South Jersey via title company.",
@@ -704,6 +797,9 @@ export const stateProfiles: StateProfile[] = [
       "New Mexico has no single statutory disclosure form, but sellers must disclose known material defects; a Realtor association Seller's Property Disclosure Statement is standard.",
     transferTaxNote:
       "New Mexico has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "New Mexico permits dual agency with written disclosure and the consent of both parties.",
     highlights: [
       "Title company handles closing.",
       "Sellers must disclose known material defects.",
@@ -726,6 +822,9 @@ export const stateProfiles: StateProfile[] = [
       "New York requires a Property Condition Disclosure Statement; sellers who do not deliver one historically gave the buyer a $500 credit, and 2024 amendments strengthened the disclosure obligation.",
     transferTaxNote:
       "New York charges a state transfer tax (customarily seller-paid) plus, in NYC and on higher-priced sales, a \"mansion tax\" paid by the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "New York permits dual agency (and designated agency with consent) with detailed written disclosure of the conflict.",
     highlights: [
       "Retain a real-estate attorney — standard and effectively required in NY.",
       "Expect the Property Condition Disclosure Statement.",
@@ -748,6 +847,9 @@ export const stateProfiles: StateProfile[] = [
       "North Carolina law (N.C.G.S. §47E) requires sellers to provide a Residential Property and Owners' Association Disclosure Statement.",
     transferTaxNote:
       "North Carolina charges an excise (transfer) tax of $1.00 per $500 of value, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "North Carolina permits dual agency (and designated agency) with the written consent of both parties.",
     highlights: [
       "A closing attorney is required in North Carolina.",
       "Seller must provide the statutory Residential Property/HOA disclosure.",
@@ -769,6 +871,9 @@ export const stateProfiles: StateProfile[] = [
       "North Dakota leans caveat-emptor with no mandatory statutory disclosure form, though sellers cannot fraudulently conceal known defects. A Realtor disclosure form is often used by custom.",
     transferTaxNote:
       "North Dakota has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "North Dakota permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Attorney involvement in closing/documents is customary.",
       "Caveat-emptor leaning: rely on your inspection.",
@@ -791,6 +896,9 @@ export const stateProfiles: StateProfile[] = [
       "Ohio law (R.C. §5302.30) requires sellers to provide the state Residential Property Disclosure Form.",
     transferTaxNote:
       "Ohio charges a conveyance fee (state $1 per $1,000 plus optional county fee), customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Ohio permits dual agency with the written consent of both parties and brokerage disclosure.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the state Residential Property Disclosure Form.",
@@ -813,6 +921,9 @@ export const stateProfiles: StateProfile[] = [
       "Oklahoma's Residential Property Condition Disclosure Act requires sellers to deliver a Residential Property Condition Disclosure Statement.",
     transferTaxNote:
       "Oklahoma charges a documentary stamp tax of $0.75 per $500 of value, customarily paid by the seller.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Oklahoma abolished dual agency in 2000; brokers act as single-party brokers or transaction brokers and there is no designated agency.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -835,6 +946,9 @@ export const stateProfiles: StateProfile[] = [
       "Oregon law (ORS 105.464) requires sellers to deliver a Seller's Property Disclosure Statement, which the buyer may use to revoke within a set period.",
     transferTaxNote:
       "Oregon prohibits real-estate transfer taxes statewide (Washington County's pre-existing tax is the lone exception); otherwise none.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Oregon permits disclosed dual agency with written consent (note: Oregon separately bans buyer \"love letters\").",
     highlights: [
       "Escrow company runs closing.",
       "Seller must provide the ORS 105.464 disclosure; note your revocation window.",
@@ -857,6 +971,9 @@ export const stateProfiles: StateProfile[] = [
       "Pennsylvania's Real Estate Seller Disclosure Law (68 Pa.C.S. §7301 et seq.) requires sellers to complete a Seller's Property Disclosure Statement.",
     transferTaxNote:
       "Pennsylvania charges state plus local realty transfer taxes (commonly 2% combined), customarily split equally between buyer and seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Pennsylvania permits dual agency (and designated agency) with the written consent of both parties.",
     highlights: [
       "Title company handles closing.",
       "Seller must complete the statutory disclosure statement.",
@@ -879,6 +996,9 @@ export const stateProfiles: StateProfile[] = [
       "Rhode Island law (R.I.G.L. §5-20.8) requires sellers to deliver a Real Estate Sales Disclosure Form covering property condition.",
     transferTaxNote:
       "Rhode Island charges a real-estate conveyance tax of about $2.30 per $500, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Rhode Island permits dual agency with the written, informed consent of both buyer and seller.",
     highlights: [
       "A closing attorney is required in Rhode Island.",
       "Seller must provide the statutory Real Estate Sales Disclosure Form.",
@@ -901,6 +1021,9 @@ export const stateProfiles: StateProfile[] = [
       "South Carolina law (S.C. Code §27-50-10 et seq.) requires sellers to provide a Residential Property Condition Disclosure Statement.",
     transferTaxNote:
       "South Carolina charges a deed recording fee (transfer tax) of about $3.70 per $1,000, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "South Carolina permits dual agency with the written consent of both parties.",
     highlights: [
       "An attorney must supervise the closing in South Carolina.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -923,6 +1046,9 @@ export const stateProfiles: StateProfile[] = [
       "South Dakota law (SDCL §43-4-37 et seq.) requires sellers to deliver a Seller's Property Condition Disclosure Statement.",
     transferTaxNote:
       "South Dakota charges a real-estate transfer fee of $0.50 per $500 of value, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "South Dakota permits dual agency with the written consent of both buyer and seller.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -945,6 +1071,9 @@ export const stateProfiles: StateProfile[] = [
       "Tennessee law (T.C.A. §66-5-201 et seq.) requires sellers to provide a Residential Property Condition Disclosure.",
     transferTaxNote:
       "Tennessee charges a realty transfer tax of $0.37 per $100 of value, customarily paid by the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Tennessee permits disclosed dual agency only with the written consent of both parties; many brokers instead use designated agents.",
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure.",
@@ -967,6 +1096,9 @@ export const stateProfiles: StateProfile[] = [
       "Texas law (Tex. Prop. Code §5.008) requires sellers of residential property to deliver a Seller's Disclosure Notice of known conditions.",
     transferTaxNote:
       "Texas has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Texas prohibits dual agency; brokers act as intermediaries (optionally with separate appointed associates) rather than dual agents.",
     highlights: [
       "Title company handles closing with state-promulgated TREC contract forms.",
       "Seller must deliver the statutory Seller's Disclosure Notice.",
@@ -989,6 +1121,9 @@ export const stateProfiles: StateProfile[] = [
       "Utah has no single statutory disclosure form, but sellers must disclose known material defects; a Seller's Property Condition Disclosure is standard by custom.",
     transferTaxNote:
       "Utah has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Utah permits dual agency (\"limited agency\") with the written consent of both parties.",
     highlights: [
       "Title company handles closing.",
       "Sellers must disclose known material defects.",
@@ -1010,6 +1145,9 @@ export const stateProfiles: StateProfile[] = [
       "Vermont has no mandatory statewide disclosure form for resales, but sellers must disclose known material defects; a Realtor association property disclosure form is commonly used.",
     transferTaxNote:
       "Vermont charges a property transfer tax (graduated, with a lower rate on the first portion for a principal residence), customarily paid by the buyer.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Vermont prohibits dual agency; a licensee may not represent both buyer and seller in the same transaction.",
     highlights: [
       "Plan on a closing attorney in Vermont.",
       "Sellers must disclose known material defects (no single state form).",
@@ -1032,6 +1170,9 @@ export const stateProfiles: StateProfile[] = [
       "Virginia is a caveat-emptor state but the Residential Property Disclosure Act requires sellers to deliver a Residential Property Disclosure Statement directing buyers to investigate the property's condition themselves.",
     transferTaxNote:
       "Virginia charges a state recordation/grantor tax; the grantor's (seller's) tax is seller-paid while the recordation tax is customarily paid by the buyer.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Virginia permits dual agency (and designated agency) with the written, informed consent of both parties.",
     highlights: [
       "A licensed settlement agent or an attorney can close — your choice.",
       "Caveat-emptor: the state disclosure form mainly tells you to inspect.",
@@ -1054,6 +1195,9 @@ export const stateProfiles: StateProfile[] = [
       "Washington law (RCW 64.06) requires sellers to deliver the Seller Disclosure Statement (Form 17), giving the buyer a rescission right within a set period.",
     transferTaxNote:
       "Washington charges a graduated real-estate excise tax (REET), customarily paid by the seller, plus local add-ons in some areas.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Washington permits dual agency with the written consent of both parties under its statutory brokerage relationships law.",
     highlights: [
       "Escrow company runs closing.",
       "Seller must deliver Form 17; note your rescission window.",
@@ -1075,6 +1219,9 @@ export const stateProfiles: StateProfile[] = [
       "West Virginia leans caveat-emptor with no mandatory statewide disclosure form, though sellers cannot fraudulently conceal known defects. Inspect thoroughly.",
     transferTaxNote:
       "West Virginia charges an excise (transfer) tax (state plus optional county portion), customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "West Virginia permits dual agency with the written, informed consent of both buyer and seller.",
     highlights: [
       "Use a closing attorney in West Virginia.",
       "Caveat-emptor leaning: rely on your inspection, not seller disclosures.",
@@ -1097,6 +1244,9 @@ export const stateProfiles: StateProfile[] = [
       "Wisconsin law (Wis. Stat. §709) requires sellers of residential property to provide a Real Estate Condition Report.",
     transferTaxNote:
       "Wisconsin charges a real-estate transfer fee of $3.00 per $1,000 of value, customarily paid by the seller.",
+    dualAgency: "permitted",
+    dualAgencyNote:
+      "Wisconsin permits a broker to work with both parties as a \"multiple representation\" relationship with written disclosure and consent.",
     highlights: [
       "Title company handles closing with state-approved forms.",
       "Seller must provide the Real Estate Condition Report.",
@@ -1118,6 +1268,9 @@ export const stateProfiles: StateProfile[] = [
       "Wyoming leans caveat-emptor with no mandatory statewide disclosure form, though sellers cannot fraudulently conceal known defects. A Realtor disclosure form is often used by custom.",
     transferTaxNote:
       "Wyoming has no real-estate transfer tax; expect only recording fees.",
+    dualAgency: "banned",
+    dualAgencyNote:
+      "Wyoming prohibits dual agency; licensees work as agents for one party or as neutral intermediaries instead.",
     highlights: [
       "Title company handles closing.",
       "Caveat-emptor leaning: lean on your inspection contingency.",

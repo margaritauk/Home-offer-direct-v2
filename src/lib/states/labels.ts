@@ -1,4 +1,4 @@
-import type { ClosingPath, DisclosureRegime } from "./types";
+import type { ClosingPath, DisclosureRegime, DualAgencyStatus } from "./types";
 
 /** Human-readable label + short description for each closing path. */
 export const closingPathLabels: Record<
@@ -35,5 +35,27 @@ export const disclosureRegimeLabels: Record<
     label: "Limited disclosure",
     short:
       "Disclosure duties are limited (caveat emptor leaning) — inspect carefully.",
+  },
+};
+
+/** Human-readable label + short description for each dual-agency status. */
+export const dualAgencyLabels: Record<
+  DualAgencyStatus,
+  { label: string; short: string }
+> = {
+  permitted: {
+    label: "Dual agency permitted",
+    short:
+      "One agent or brokerage may represent both sides here (with written consent). Remember the listing agent still works for the seller.",
+  },
+  banned: {
+    label: "Dual agency banned",
+    short:
+      "One agent cannot represent both buyer and seller in this state — the listing agent represents the seller only.",
+  },
+  restricted: {
+    label: "Dual agency restricted",
+    short:
+      "Dual agency is limited here (e.g. only designated or transaction brokerage). The listing agent's loyalty stays with the seller.",
   },
 };

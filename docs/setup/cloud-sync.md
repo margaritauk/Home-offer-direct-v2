@@ -31,6 +31,15 @@ on [Supabase](https://supabase.com) (Postgres + auth).
 That's it — no secret/service-role key is required (the app uses the public anon
 key plus per-user Row Level Security).
 
+## Migrations
+
+When new synced features ship, run any new files in `supabase/migrations/` once
+(SQL Editor → paste → Run). They're idempotent and safe on an existing project:
+
+- **`0002_offer_showings.sql`** — adds `offer` and `showings` columns so the
+  Offer Builder and showing tracker sync across devices. Until you run it, those
+  two sync locally per-device while everything else keeps syncing to the cloud.
+
 ## Notes
 
 - **Email delivery:** Supabase's built-in email works for low volume (fine for
