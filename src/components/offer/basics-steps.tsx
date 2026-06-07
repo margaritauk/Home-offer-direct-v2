@@ -3,7 +3,7 @@
 import { formatUSD } from "@/lib/savings";
 import type { FinancingType, ClosingCostPreference, Offer } from "@/lib/offer/types";
 import { earnestMoneyDollars } from "@/lib/offer/term-sheet";
-import { DateField, NumberField, SelectField, TextField } from "./fields";
+import { CurrencyField, DateField, NumberField, SelectField, TextField } from "./fields";
 
 type Patch = (patch: Partial<Offer>) => void;
 
@@ -19,26 +19,35 @@ export function PriceStep({
 }) {
   return (
     <div className="space-y-6">
-      <NumberField
+      <CurrencyField
         label="Purchase price"
         explainer="The price you're offering for the home. Everything else is calculated from this."
         value={offer.price}
         onChange={(price) => onChange({ price })}
-        min={0}
-        step={5_000}
-        suffix="$"
+        placeholder="e.g. 700,000"
         hydrated={hydrated}
       />
-      <NumberField
-        label={offer.isPercent ? "Earnest money (% of price)" : "Earnest money ($)"}
-        explainer="A good-faith deposit (typically 1–3% of price) held in escrow that signals you're serious. It's applied at closing or refunded if you properly invoke a contingency."
-        value={offer.earnestMoney}
-        onChange={(earnestMoney) => onChange({ earnestMoney })}
-        min={0}
-        step={offer.isPercent ? 0.5 : 500}
-        suffix={offer.isPercent ? "%" : "$"}
-        hydrated={hydrated}
-      />
+      {offer.isPercent ? (
+        <NumberField
+          label="Earnest money (% of price)"
+          explainer="A good-faith deposit (typically 1–3% of price) held in escrow that signals you're serious. It's applied at closing or refunded if you properly invoke a contingency."
+          value={offer.earnestMoney}
+          onChange={(earnestMoney) => onChange({ earnestMoney })}
+          min={0}
+          step={0.5}
+          suffix="%"
+          hydrated={hydrated}
+        />
+      ) : (
+        <CurrencyField
+          label="Earnest money ($)"
+          explainer="A good-faith deposit (typically 1–3% of price) held in escrow that signals you're serious. It's applied at closing or refunded if you properly invoke a contingency."
+          value={offer.earnestMoney}
+          onChange={(earnestMoney) => onChange({ earnestMoney })}
+          placeholder="e.g. 10,000"
+          hydrated={hydrated}
+        />
+      )}
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
