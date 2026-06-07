@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthMenu } from "@/components/auth-menu";
 import { DealSwitcher } from "@/components/deal-switcher";
+import { DealNavLink } from "@/components/deal-nav-link";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
@@ -59,6 +60,9 @@ export function SiteHeader() {
             <DealSwitcher />
           </span>
           <span className="hidden lg:inline-flex">
+            <DealNavLink />
+          </span>
+          <span className="hidden lg:inline-flex">
             <AuthMenu />
           </span>
           <Link href="/journey" className="btn-primary hidden sm:inline-flex">
@@ -102,6 +106,9 @@ export function SiteHeader() {
             ))}
             <div className="px-2 py-3">
               <DealSwitcher />
+            </div>
+            <div className="px-2 py-3">
+              <DealNavLink onNavigate={() => setOpen(false)} />
             </div>
             <div className="px-2 py-3">
               <AuthMenu onNavigate={() => setOpen(false)} />

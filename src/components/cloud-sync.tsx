@@ -12,6 +12,7 @@ import {
   pushRemote,
 } from "@/lib/sync/remote";
 import { LOCAL_CHANGE_EVENT, readLocal, writeLocal } from "@/lib/sync/local-store";
+import { claimInvites } from "@/lib/deals/invites";
 
 /**
  * Invisible orchestrator that keeps the local stores in sync with Supabase.
@@ -34,6 +35,23 @@ export function CloudSync() {
   const { enabled, user } = useAuth();
   const { activeDealId } = useActiveDeal(user?.id ?? null);
   const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Issue #74 — auto-join: once signed in, claim any pending invites addressed
+  // to this user's email so they become active members of the deals they were
+  // invited to. Idempotent server-side; runs once per (tab, user). No-ops when
+  // cloud sync is unconfigured / signed out, preserving the guest path.
+  useEffect(() => {
+    if (!enabled || !user) return;
+    const claimedFlag = `hod:invites-claimed:${user.id}`;
+    if (sessionStorage.getItem(claimedFlag)) return;
+    let cancelled = false;
+    void claimInvites().then(() => {
+      if (!cancelled) sessionStorage.setItem(claimedFlag, "1");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, user]);
 
   useEffect(() => {
     if (!enabled || !user) return;

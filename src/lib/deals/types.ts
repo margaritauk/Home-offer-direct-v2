@@ -41,3 +41,43 @@ export const EDITOR_ROLES: readonly DealRole[] = [
   "agent",
   "attorney",
 ];
+
+/** Roles an owner may assign to an invitee (everything except owner_buyer). */
+export const INVITABLE_ROLES: readonly DealRole[] = [
+  "co_buyer",
+  "agent",
+  "attorney",
+  "viewer",
+];
+
+/** Lifecycle of an invite. Pending until claimed (or revoked by the owner). */
+export type DealInviteStatus = "pending" | "claimed" | "revoked";
+
+/** An email invitation to join a deal with a given role. */
+export interface DealInvite {
+  id: string;
+  dealId: string;
+  email: string;
+  role: DealRole;
+  status: DealInviteStatus;
+  expiresAt: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+/** How the agent on a deal relates to the buyer (agency capture, #76). */
+export type AgencyRelationship =
+  | "represents_buyer"
+  | "listing_side"
+  | "unrepresented"
+  | "unknown";
+
+/** Per-deal agency relationship + dated financial-data sharing consent (#76). */
+export interface DealAgency {
+  dealId: string;
+  agencyRelationship: AgencyRelationship;
+  financialConsent: boolean;
+  consentCapturedAt: string | null;
+  agencyCapturedAt: string | null;
+  updatedAt: string;
+}
