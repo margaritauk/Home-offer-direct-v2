@@ -90,3 +90,57 @@ state layer with guidance, not legal documents).
   overview, stage/step pages, progress tracking.
 - **Sprint 2 — Tools, polish & quality:** savings calculator, glossary, trust
   callouts, tests (unit + E2E), CI, deploy config, docs.
+
+---
+
+## v2 — Repositioning: a home-buying organization platform for everyone
+
+_Status: strategy approved. Keep the name "HomeOffer Direct"; broaden the audience._
+
+### The shift
+From a single-user, unrepresented-buyer tool to a **collaboration platform** that
+keeps the whole purchase organized — used by **unrepresented buyers, represented
+buyers, and their agents**, on equal footing. The self-serve buyer stays the
+homepage hero; agents enter via a dedicated "For agents" path so we don't become
+vague to everyone.
+
+### Why now (the wedge)
+Every incumbent (Dotloop, SkySlope, Follow Up Boss, Nekst, Realtor.com) makes the
+**agent the system-of-record and the buyer a guest**, and **none serves the
+unrepresented buyer**. Our differentiator: **one deal model that works with or
+without an agent, with the buyer as a first-class owner.**
+
+### Personas (equal footing)
+1. **Unrepresented buyer** — self-serve hero; keeps every guardrail.
+2. **Represented buyer** — same journey, shares the deal with their agent.
+3. **Agent** — collaborates on each deal and manages many from a console.
+
+### Collaboration model (both)
+- **Shared deal workspace** — a buyer and their agent (± co-buyer, attorney,
+  viewer) collaborate on one deal: shared journey, tracker, offer, budget, docs,
+  activity, messaging.
+- **Agent multi-client console** — one agent, many deals: pipeline, per-client
+  status, next actions.
+
+### Guardrails by audience
+- **Unrepresented path keeps ALL guardrails** (UPL, FHA, SAFE-Act, trust).
+- Some relax for **represented** users (a licensed agent is involved).
+- **New** guardrails: explicit **per-deal consent + field-level scoping** for a
+  buyer's financial data (GLBA), **agency-relationship capture** (avoid
+  accidental dual agency), Fair Housing on shared recommendations, and **RESPA
+  review** for any referral/closing-tied revenue.
+
+### Monetization (decision deferred)
+Research recommends **freemium buyers + paid agent seats** (RESPA-safe, protects
+the hero), team/brokerage as expansion. Anything tied to closings/referrals is
+the risky path (RESPA). Not committed — see epic + research.
+
+### Release plan addition
+New waves layer on top of the existing journey/tools:
+- **Wave 0** Repositioning · **Wave 1** Multi-user foundation (deals/roles/RLS) ·
+  **Wave 2** Invitations & membership · **Wave 3** Shared deal workspace ·
+  **Wave 4** Agent console · **Wave 5** Monetization.
+- Plus per-stage **interactive tools** (Waves A/B/C) that serve all audiences.
+
+_Sources: `docs/research/collaboration-platform-research.md`,
+`docs/research/interactive-stages-research.md`._
