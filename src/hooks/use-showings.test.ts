@@ -18,6 +18,21 @@ describe("useShowings", () => {
     expect(result.current.records).toEqual([]);
   });
 
+  it("syncs across hook instances in the same tab (fixes date/rating not sticking)", () => {
+    // Mirrors the tracker list + a card both calling useShowings.
+    const a = renderHook(() => useShowings());
+    const b = renderHook(() => useShowings());
+
+    act(() => a.result.current.track(listing));
+    // The second instance sees the new record without a storage event.
+    expect(b.result.current.showings["L1"]).toBeTruthy();
+
+    act(() => b.result.current.update("L1", { rating: 4, scheduledAt: "2026-06-10T10:00" }));
+    // The first instance reflects the card's write immediately.
+    expect(a.result.current.showings["L1"].rating).toBe(4);
+    expect(a.result.current.showings["L1"].scheduledAt).toBe("2026-06-10T10:00");
+  });
+
   it("tracks a listing with defaults and uppercases the state", () => {
     const { result } = renderHook(() => useShowings());
     act(() => result.current.track(listing));

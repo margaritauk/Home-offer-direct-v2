@@ -22,7 +22,7 @@ export function TrackShowingButton({
   city: string;
   state: string;
 }) {
-  const { showings, hydrated, track } = useShowings();
+  const { showings, hydrated, track, setStatus } = useShowings();
   const [showComposer, setShowComposer] = useState(false);
 
   const tracked = hydrated ? showings[listingId] : undefined;
@@ -32,7 +32,13 @@ export function TrackShowingButton({
   };
 
   const handleRequest = () => {
-    track({ listingId, address, city, state, status: "requested" });
+    // Contacting the agent logs the home and advances it to "requested"
+    // (without downgrading a home that's already further along).
+    if (tracked) {
+      if (tracked.status === "interested") setStatus(listingId, "requested");
+    } else {
+      track({ listingId, address, city, state, status: "requested" });
+    }
     setShowComposer((v) => !v);
   };
 
@@ -64,11 +70,15 @@ export function TrackShowingButton({
         className="btn-secondary w-full"
         aria-expanded={showComposer}
       >
-        {showComposer ? "Hide message" : "Request a showing"}
+        {showComposer ? "Hide message" : "Contact listing agent / request a showing"}
       </button>
 
       {showComposer ? (
-        <div className="mt-2">
+        <div className="mt-2 space-y-1">
+          <p className="text-xs text-ink-muted">
+            Pick a template — ask for more info or request a showing. Copy it into
+            your email; this home is now saved in your tracker.
+          </p>
           <MessageComposer
             initialTemplateId="request-showing"
             initialValues={{ address: `${address}, ${city}, ${state}` }}

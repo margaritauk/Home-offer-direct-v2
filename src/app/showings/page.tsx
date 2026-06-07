@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ShowingsTracker } from "@/components/showings/showings-tracker";
 import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { MessageComposer } from "@/components/showings/message-composer";
+import { ManualAddShowing } from "@/components/showings/manual-add-showing";
 
 export const metadata: Metadata = {
   title: "Showings tracker",
@@ -27,6 +28,7 @@ export default function ShowingsPage() {
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-8">
+          <ManualAddShowing />
           <ShowingsTracker />
           <MessageComposer />
         </div>

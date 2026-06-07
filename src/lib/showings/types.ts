@@ -49,6 +49,8 @@ export interface ShowingRecord {
   state: string;
 
   status: ShowingStatus;
+  /** True for properties the buyer added by hand (no real listing page to link). */
+  manual?: boolean;
   /** ISO datetime (`datetime-local` value) of the scheduled showing, if any. */
   scheduledAt?: string;
   /** Free-form buyer notes / pros-cons. Facts only — see file header. */

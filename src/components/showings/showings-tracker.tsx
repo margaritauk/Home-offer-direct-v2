@@ -71,12 +71,16 @@ function ShowingCard({ record }: { record: ShowingRecord }) {
     <div className="card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link
-            href={`/listings/${record.listingId}`}
-            className="font-medium text-brand-700 hover:underline"
-          >
-            {record.address}
-          </Link>
+          {record.manual ? (
+            <span className="font-medium text-ink">{record.address}</span>
+          ) : (
+            <Link
+              href={`/listings/${record.listingId}`}
+              className="font-medium text-brand-700 hover:underline"
+            >
+              {record.address}
+            </Link>
+          )}
           <p className="text-sm text-ink-muted">
             {record.city}, {record.state}
           </p>
