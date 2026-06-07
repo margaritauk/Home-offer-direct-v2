@@ -6,6 +6,7 @@ export function SiteFooter() {
       <div className="container-page flex flex-col gap-4 py-8 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} HomeOffer Direct. Educational guidance, not legal or financial advice.</p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/dashboard" className="hover:text-brand-700">Dashboard</Link>
           <Link href="/listings" className="hover:text-brand-700">Search Homes</Link>
           <Link href="/journey" className="hover:text-brand-700">Journey</Link>
           <Link href="/states" className="hover:text-brand-700">Your State</Link>

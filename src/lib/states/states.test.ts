@@ -5,8 +5,14 @@ import {
   closingPathLabels,
   disclosureRegimeLabels,
   dualAgencyLabels,
+  eSignLabels,
 } from "./labels";
-import type { ClosingPath, DisclosureRegime, DualAgencyStatus } from "./types";
+import type {
+  ClosingPath,
+  DisclosureRegime,
+  DualAgencyStatus,
+  ESignStatus,
+} from "./types";
 
 const CLOSING_PATHS: ClosingPath[] = ["attorney", "escrow", "either"];
 const DISCLOSURE_REGIMES: DisclosureRegime[] = [
@@ -19,6 +25,14 @@ const DUAL_AGENCY_STATUSES: DualAgencyStatus[] = [
   "banned",
   "restricted",
 ];
+const ESIGN_STATUSES: ESignStatus[] = ["valid", "restricted"];
+
+/**
+ * Jurisdictions WITHOUT a permanent RON law, per the research brief (issue #46).
+ * California is the lone holdout (limited pilot only; permanent RON slated for
+ * Jan 1, 2030). All other 49 states + DC have permanent RON laws.
+ */
+const RON_NOT_ALLOWED = ["CA"];
 
 /** States that ban dual agency, per the research brief (issue #27). */
 const DUAL_AGENCY_BANNED = [
@@ -86,6 +100,7 @@ describe("state dataset integrity", () => {
     for (const path of CLOSING_PATHS) expect(closingPathLabels[path]).toBeTruthy();
     for (const r of DISCLOSURE_REGIMES) expect(disclosureRegimeLabels[r]).toBeTruthy();
     for (const d of DUAL_AGENCY_STATUSES) expect(dualAgencyLabels[d]).toBeTruthy();
+    for (const e of ESIGN_STATUSES) expect(eSignLabels[e]).toBeTruthy();
   });
 
   it("every profile has a valid dualAgency value (issue #27)", () => {
@@ -115,6 +130,39 @@ describe("state dataset integrity", () => {
       expect(p.dualAgencyNote, `${p.code} note`).toBeTruthy();
       expect(p.dualAgencyNote!.length).toBeLessThan(220);
     }
+  });
+
+  it("every profile has valid e-sign + RON fields (issue #46)", () => {
+    for (const p of stateProfiles) {
+      expect(ESIGN_STATUSES, `${p.code} eSign`).toContain(p.eSignForRealEstate);
+      expect(typeof p.ronAllowed, `${p.code} ron`).toBe("boolean");
+    }
+  });
+
+  it("marks the researched non-RON states (and only those) correctly", () => {
+    for (const code of RON_NOT_ALLOWED) {
+      const profile = getStateProfile(code);
+      expect(profile, `${code} should exist`).toBeTruthy();
+      expect(profile!.ronAllowed, `${code} should lack permanent RON`).toBe(
+        false,
+      );
+    }
+    const noRon = stateProfiles
+      .filter((p) => !p.ronAllowed)
+      .map((p) => p.code)
+      .sort();
+    expect(noRon).toEqual([...RON_NOT_ALLOWED].sort());
+  });
+
+  it("spot-checks e-sign / RON for a couple of states", () => {
+    // E-signatures are valid for the purchase contract in every jurisdiction.
+    expect(getStateProfile("TX")!.eSignForRealEstate).toBe("valid");
+    expect(getStateProfile("NY")!.eSignForRealEstate).toBe("valid");
+    // NY uses ESRA — its e-sign note should mention it.
+    expect(getStateProfile("NY")!.eSignNote).toMatch(/ESRA/);
+    // RON: NY has a permanent law; CA (pilot only) does not.
+    expect(getStateProfile("NY")!.ronAllowed).toBe(true);
+    expect(getStateProfile("CA")!.ronAllowed).toBe(false);
   });
 });
 

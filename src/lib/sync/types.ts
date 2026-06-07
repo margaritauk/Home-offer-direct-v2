@@ -1,6 +1,7 @@
 import type { TrackerState } from "@/hooks/use-tracker";
 import type { Offer } from "@/lib/offer/types";
 import type { ShowingMap } from "@/lib/showings/types";
+import type { OfferStatusMap } from "@/lib/offer-status/types";
 
 /** The full set of data we sync per user — mirrors the localStorage stores. */
 export interface SyncData {
@@ -14,4 +15,6 @@ export interface SyncData {
   offer: Offer | null;
   /** Tracked showings, keyed by listing id. */
   showings: ShowingMap;
+  /** Offer-status records, keyed by listing id. */
+  offerStatus: OfferStatusMap;
 }

@@ -29,6 +29,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Alabama permits dual agency (\"limited consensual dual agency\") only with the prior written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Budget for a closing attorney — it is effectively mandatory here.",
       "Caveat-emptor state: rely on your own inspection, not the seller's disclosures.",
@@ -54,6 +56,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Alaska prohibits dual agency; a licensee may not represent both buyer and seller in the same transaction.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Choose a reputable title/escrow company to run closing.",
       "Read the seller's mandatory transfer-disclosure statement carefully.",
@@ -79,6 +83,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Arizona permits dual agency with the informed written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Open escrow early with a title/escrow company you select.",
       "Review the seller's SPDS line by line and ask follow-up questions.",
@@ -103,6 +109,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Arkansas permits dual agency with written disclosure and consent from both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Use a title/escrow company; no attorney is required.",
       "Caveat-emptor leaning — make your inspection contingency robust.",
@@ -128,6 +136,10 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "California permits dual agency with full written disclosure and the consent of both parties.",
+    eSignForRealEstate: "valid",
+    eSignNote:
+      "California recognizes e-signatures for the purchase contract under UETA, but does not yet authorize its own notaries to perform remote online notarization (a limited pilot only; permanent RON is slated for Jan 1, 2030), so notarized closing documents may need in-person notarization.",
+    ronAllowed: false,
     highlights: [
       "Expect extensive statutory disclosures (TDS, Natural Hazard, etc.) — read them all.",
       "Escrow company runs closing; pick one early.",
@@ -154,6 +166,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Colorado abolished dual agency in 2003; licensees act as single agents or transaction-brokers instead.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing; no attorney required.",
       "Use the state-approved contract and Seller's Property Disclosure form.",
@@ -179,6 +193,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Connecticut permits dual agency (and designated agency) with the written informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Retain a closing attorney — it is required here.",
       "Get the seller's Property Condition Disclosure Report before closing.",
@@ -204,6 +220,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Delaware permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Use a Delaware attorney to close — it is required.",
       "Review the seller's mandatory condition disclosure before signing.",
@@ -229,6 +247,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "The District of Columbia permits dual agency with the written informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Settlement is attorney-supervised; engage a DC settlement attorney/title firm.",
       "Read the seller's required Disclosure Statement closely.",
@@ -253,6 +273,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Florida bans both dual and designated agency; agents instead work as transaction brokers (a non-fiduciary facilitator) or single agents.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "A title company can close; an attorney is optional (common in South FL).",
       "Sellers must disclose known hidden material defects (Johnson v. Davis).",
@@ -277,6 +299,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Georgia permits dual agency with the written, informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Engage a closing attorney — required by Georgia law.",
       "Caveat-emptor leaning: lean on your inspection contingency.",
@@ -302,6 +326,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Hawaii permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "An escrow company runs closing; no attorney required.",
       "Expect the seller's mandatory HRS §508D disclosure statement.",
@@ -327,6 +353,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Idaho permits dual (\"limited\") agency with a signed consent acknowledging the reduced level of representation.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title/escrow company handles closing.",
       "Seller must provide the statutory Property Condition Disclosure Form.",
@@ -352,6 +380,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Illinois permits dual agency with the written consent of both parties before the representation begins.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "In the Chicago area, plan to use a closing attorney; downstate a title company is typical.",
       "Seller must provide the Residential Real Property Disclosure Report.",
@@ -377,6 +407,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Indiana permits dual agency with the written consent of all parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory Sales Disclosure form.",
@@ -402,6 +434,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Iowa permits dual agency with the written, informed consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title work uses Iowa Title Guaranty rather than standard title insurance.",
       "Seller must provide the statutory disclosure statement.",
@@ -427,6 +461,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Kansas prohibits dual agency; brokers operate as designated agents or transaction brokers instead.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Expect a seller's condition disclosure by custom.",
@@ -452,6 +488,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Kentucky permits dual agency with the written, informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "An attorney must prepare the deed/mortgage documents.",
       "Seller must complete the KREC property-conditions disclosure.",
@@ -477,6 +515,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Louisiana permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Closing is handled before a notary, commonly an attorney-notary.",
       "Seller must provide the statutory Property Disclosure Document.",
@@ -502,6 +542,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Maine permits disclosed dual agency only with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Plan on a closing attorney — the customary practice in Maine.",
       "Seller must provide the statutory Property Disclosure Statement.",
@@ -527,6 +569,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Maryland prohibits a single agent from representing both sides; the brokerage must instead assign separate designated agents (intra-company agency).",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Deed must be attorney-prepared/certified; use an attorney-run settlement.",
       "Seller chooses to disclose or disclaim — read which box was used.",
@@ -551,6 +595,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Massachusetts permits dual agency with written, informed consent given before signing an offer.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "A closing attorney is required in Massachusetts.",
       "Caveat-emptor leaning: rely on your inspection; expect the lead-paint disclosure for older homes.",
@@ -576,6 +622,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Michigan permits dual agency with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory Seller's Disclosure Statement.",
@@ -601,6 +649,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Minnesota permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must disclose known material facts in writing.",
@@ -626,6 +676,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Mississippi permits dual agency with the written, informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Use an attorney to prepare documents and close.",
       "Seller must provide the statutory disclosure statement.",
@@ -651,6 +703,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Missouri permits dual agency (and designated/transaction brokerage) with written disclosure and consent.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Expect a seller's disclosure statement by custom.",
@@ -676,6 +730,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Montana permits dual agency with the written, informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title/escrow company handles closing.",
       "Sellers must disclose known adverse material facts.",
@@ -701,6 +757,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Nebraska permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must complete the statutory condition disclosure.",
@@ -726,6 +784,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Nevada permits dual agency only with the written consent of each party and assignment confirmation.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Escrow company runs closing.",
       "Seller must deliver the NRS 113 disclosure at least 10 days out.",
@@ -750,6 +810,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "New Hampshire permits disclosed dual agency with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Plan on a closing attorney in New Hampshire.",
       "Expect specific disclosures (water/sewer, radon, lead) rather than one general form.",
@@ -775,6 +837,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "New Jersey permits dual agency with the written, informed consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Use the standard 3-day attorney-review period on the contract.",
       "North Jersey usually closes via attorney; South Jersey via title company.",
@@ -800,6 +864,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "New Mexico permits dual agency with written disclosure and the consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Sellers must disclose known material defects.",
@@ -825,6 +891,10 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "New York permits dual agency (and designated agency with consent) with detailed written disclosure of the conflict.",
+    eSignForRealEstate: "valid",
+    eSignNote:
+      "New York gives e-signatures legal effect under its own Electronic Signatures and Records Act (ESRA) rather than UETA; the purchase contract is e-signable, but the deed must still be acknowledged before a notary.",
+    ronAllowed: true,
     highlights: [
       "Retain a real-estate attorney — standard and effectively required in NY.",
       "Expect the Property Condition Disclosure Statement.",
@@ -850,6 +920,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "North Carolina permits dual agency (and designated agency) with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "A closing attorney is required in North Carolina.",
       "Seller must provide the statutory Residential Property/HOA disclosure.",
@@ -874,6 +946,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "North Dakota permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Attorney involvement in closing/documents is customary.",
       "Caveat-emptor leaning: rely on your inspection.",
@@ -899,6 +973,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Ohio permits dual agency with the written consent of both parties and brokerage disclosure.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the state Residential Property Disclosure Form.",
@@ -924,6 +1000,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Oklahoma abolished dual agency in 2000; brokers act as single-party brokers or transaction brokers and there is no designated agency.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -949,6 +1027,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Oregon permits disclosed dual agency with written consent (note: Oregon separately bans buyer \"love letters\").",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Escrow company runs closing.",
       "Seller must provide the ORS 105.464 disclosure; note your revocation window.",
@@ -974,6 +1054,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Pennsylvania permits dual agency (and designated agency) with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must complete the statutory disclosure statement.",
@@ -999,6 +1081,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Rhode Island permits dual agency with the written, informed consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "A closing attorney is required in Rhode Island.",
       "Seller must provide the statutory Real Estate Sales Disclosure Form.",
@@ -1024,6 +1108,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "South Carolina permits dual agency with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "An attorney must supervise the closing in South Carolina.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -1049,6 +1135,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "South Dakota permits dual agency with the written consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure statement.",
@@ -1074,6 +1162,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Tennessee permits disclosed dual agency only with the written consent of both parties; many brokers instead use designated agents.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Seller must provide the statutory condition disclosure.",
@@ -1099,6 +1189,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Texas prohibits dual agency; brokers act as intermediaries (optionally with separate appointed associates) rather than dual agents.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing with state-promulgated TREC contract forms.",
       "Seller must deliver the statutory Seller's Disclosure Notice.",
@@ -1124,6 +1216,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Utah permits dual agency (\"limited agency\") with the written consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Sellers must disclose known material defects.",
@@ -1148,6 +1242,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Vermont prohibits dual agency; a licensee may not represent both buyer and seller in the same transaction.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Plan on a closing attorney in Vermont.",
       "Sellers must disclose known material defects (no single state form).",
@@ -1173,6 +1269,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Virginia permits dual agency (and designated agency) with the written, informed consent of both parties.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "A licensed settlement agent or an attorney can close — your choice.",
       "Caveat-emptor: the state disclosure form mainly tells you to inspect.",
@@ -1198,6 +1296,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Washington permits dual agency with the written consent of both parties under its statutory brokerage relationships law.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Escrow company runs closing.",
       "Seller must deliver Form 17; note your rescission window.",
@@ -1222,6 +1322,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "West Virginia permits dual agency with the written, informed consent of both buyer and seller.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Use a closing attorney in West Virginia.",
       "Caveat-emptor leaning: rely on your inspection, not seller disclosures.",
@@ -1247,6 +1349,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "permitted",
     dualAgencyNote:
       "Wisconsin permits a broker to work with both parties as a \"multiple representation\" relationship with written disclosure and consent.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing with state-approved forms.",
       "Seller must provide the Real Estate Condition Report.",
@@ -1271,6 +1375,8 @@ export const stateProfiles: StateProfile[] = [
     dualAgency: "banned",
     dualAgencyNote:
       "Wyoming prohibits dual agency; licensees work as agents for one party or as neutral intermediaries instead.",
+    eSignForRealEstate: "valid",
+    ronAllowed: true,
     highlights: [
       "Title company handles closing.",
       "Caveat-emptor leaning: lean on your inspection contingency.",

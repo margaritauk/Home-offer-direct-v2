@@ -1,4 +1,9 @@
-import type { ClosingPath, DisclosureRegime, DualAgencyStatus } from "./types";
+import type {
+  ClosingPath,
+  DisclosureRegime,
+  DualAgencyStatus,
+  ESignStatus,
+} from "./types";
 
 /** Human-readable label + short description for each closing path. */
 export const closingPathLabels: Record<
@@ -57,5 +62,22 @@ export const dualAgencyLabels: Record<
     label: "Dual agency restricted",
     short:
       "Dual agency is limited here (e.g. only designated or transaction brokerage). The listing agent's loyalty stays with the seller.",
+  },
+};
+
+/** Human-readable label + short description for each e-signature status. */
+export const eSignLabels: Record<
+  ESignStatus,
+  { label: string; short: string }
+> = {
+  valid: {
+    label: "E-signature valid",
+    short:
+      "E-signatures are legally valid for your purchase contract here under the federal ESIGN Act and state law (UETA, or New York's ESRA), as long as both sides intend and consent to sign electronically.",
+  },
+  restricted: {
+    label: "E-signature with caveats",
+    short:
+      "E-signatures are valid for the purchase contract here, but extra formalities apply to some documents — confirm before relying on e-sign for everything.",
   },
 };

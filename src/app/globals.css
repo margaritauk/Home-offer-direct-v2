@@ -36,3 +36,21 @@
     @apply rounded-xl border border-slate-200 bg-white p-6 shadow-sm;
   }
 }
+
+/*
+ * Print styles for the watermarked term-sheet preview (issue #37). When the
+ * buyer prints the free-tier preview, keep the SAMPLE watermark visible and the
+ * document framed as a worksheet — the clean, watermark-free output is the paid
+ * export (#40/#41).
+ */
+@media print {
+  .term-sheet-document {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .term-sheet-watermark {
+    /* Force the watermark to print in browsers that drop background graphics. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -32,6 +32,20 @@ export type DualAgencyStatus =
   /** Allowed only in a limited form (e.g. designated/transaction brokerage). */
   | "restricted";
 
+/**
+ * Whether an electronic signature is legally valid for a residential
+ * real-estate purchase contract in the jurisdiction. Drives the e-sign flow
+ * (epic #34). Under the federal ESIGN Act and state UETA/ESRA statutes,
+ * e-signatures are broadly valid nationwide subject to the usual intent,
+ * consent, attribution and record-retention requirements; see
+ * {@link StateProfile.eSignForRealEstate}.
+ */
+export type ESignStatus =
+  /** E-signatures are legally valid for the purchase contract (ESIGN/UETA). */
+  | "valid"
+  /** Valid but with a real caveat (e.g. notarization/recording formalities). */
+  | "restricted";
+
 /** How much the seller is legally required to disclose about the property. */
 export type DisclosureRegime =
   /** A specific statutory disclosure form is mandated (e.g. CA's TDS). */
@@ -75,6 +89,23 @@ export interface StateProfile {
   dualAgency: DualAgencyStatus;
   /** Short plain-English note on the dual-agency rule (e.g. what form is used). */
   dualAgencyNote?: string;
+
+  /**
+   * Whether an e-signature is legally valid for the residential purchase
+   * contract here. "valid" everywhere under ESIGN + state UETA (NY: ESRA);
+   * "restricted" only where a real caveat applies. Used by the e-sign flow
+   * (epic #34). NOT legal advice — confirm with the linked source.
+   */
+  eSignForRealEstate: ESignStatus;
+  /** Optional caveat about e-sign (e.g. deeds still need wet-ink/notary). */
+  eSignNote?: string;
+  /**
+   * Whether the jurisdiction has a permanent Remote Online Notarization (RON)
+   * law in force, allowing notarized closing documents to be executed online.
+   * A closing-stage concern: even where the purchase contract is e-signed, the
+   * deed/mortgage may need notarization.
+   */
+  ronAllowed: boolean;
 
   /** 2-4 short, actionable bullets specific to buying agent-free in this state. */
   highlights: string[];

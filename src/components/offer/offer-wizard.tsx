@@ -13,6 +13,7 @@ import { ContingenciesStep } from "./contingencies-step";
 import { ConcessionStep } from "./concession-step";
 import { DeadlinesStep } from "./deadlines-step";
 import { TermSheetSummary } from "./term-sheet-summary";
+import { TermSheetPreview } from "./term-sheet-preview";
 
 const STEPS = [
   "Price & deposit",
@@ -36,6 +37,9 @@ const STEPS = [
 export function OfferWizard() {
   const { offer, hydrated, update, setContingency, reset } = useOffer();
   const [step, setStep] = useState(0);
+  // On the final Worksheet step, the buyer can switch between the on-screen
+  // summary and the watermarked document preview (issue #37).
+  const [worksheetView, setWorksheetView] = useState<"summary" | "preview">("summary");
 
   const last = STEPS.length - 1;
   const progress = Math.round((step / last) * 100);
@@ -82,7 +86,48 @@ export function OfferWizard() {
           ) : null}
           {step === 5 ? <ConcessionStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
           {step === 6 ? <DeadlinesStep offer={offer} /> : null}
-          {step === 7 ? <TermSheetSummary offer={offer} /> : null}
+          {step === 7 ? (
+            <div className="space-y-4">
+              <div
+                role="tablist"
+                aria-label="Worksheet view"
+                className="inline-flex rounded-lg border border-slate-300 p-1"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={worksheetView === "summary"}
+                  className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                    worksheetView === "summary"
+                      ? "bg-brand-600 text-white"
+                      : "text-ink-soft hover:text-ink"
+                  }`}
+                  onClick={() => setWorksheetView("summary")}
+                >
+                  Summary
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={worksheetView === "preview"}
+                  className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                    worksheetView === "preview"
+                      ? "bg-brand-600 text-white"
+                      : "text-ink-soft hover:text-ink"
+                  }`}
+                  onClick={() => setWorksheetView("preview")}
+                >
+                  Preview document
+                </button>
+              </div>
+
+              {worksheetView === "summary" ? (
+                <TermSheetSummary offer={offer} />
+              ) : (
+                <TermSheetPreview offer={offer} />
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
 

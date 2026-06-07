@@ -2,6 +2,7 @@ import { defaultOffsets, type DeadlineOffsets } from "@/lib/deadlines";
 import type { TrackerState } from "@/hooks/use-tracker";
 import type { Offer } from "@/lib/offer/types";
 import type { ShowingMap } from "@/lib/showings/types";
+import type { OfferStatusMap } from "@/lib/offer-status/types";
 import type { SyncData } from "./types";
 
 /**
@@ -38,14 +39,30 @@ export function mergeOffer(local: Offer | null, remote: Offer | null): Offer | n
   return (remote.updatedAt ?? "") >= (local.updatedAt ?? "") ? remote : local;
 }
 
-/** Union showings by listing id; per id, the more recently updated record wins. */
-export function mergeShowings(local: ShowingMap, remote: ShowingMap): ShowingMap {
-  const out: ShowingMap = { ...(local ?? {}) };
+/** Union two id-keyed maps of records; per id, the newer `updatedAt` wins. */
+function mergeByUpdatedAt<T extends { updatedAt?: string }>(
+  local: Record<string, T>,
+  remote: Record<string, T>,
+): Record<string, T> {
+  const out: Record<string, T> = { ...(local ?? {}) };
   for (const [id, rec] of Object.entries(remote ?? {})) {
     const cur = out[id];
     if (!cur || (rec.updatedAt ?? "") >= (cur.updatedAt ?? "")) out[id] = rec;
   }
   return out;
+}
+
+/** Union showings by listing id; per id, the more recently updated record wins. */
+export function mergeShowings(local: ShowingMap, remote: ShowingMap): ShowingMap {
+  return mergeByUpdatedAt(local, remote);
+}
+
+/** Union offer-status records by listing id; per id, the newer record wins. */
+export function mergeOfferStatus(
+  local: OfferStatusMap,
+  remote: OfferStatusMap,
+): OfferStatusMap {
+  return mergeByUpdatedAt(local, remote);
 }
 
 /**
@@ -61,5 +78,6 @@ export function mergeSyncData(local: SyncData, remote: SyncData | null): SyncDat
     tracker: mergeTracker(local.tracker, remote.tracker),
     offer: mergeOffer(local.offer, remote.offer),
     showings: mergeShowings(local.showings, remote.showings),
+    offerStatus: mergeOfferStatus(local.offerStatus, remote.offerStatus),
   };
 }
