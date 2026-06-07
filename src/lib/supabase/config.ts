@@ -9,7 +9,12 @@
  */
 
 export function normalizeUrl(raw: string | undefined): string {
-  return (raw ?? "").trim().replace(/\/+$/, "");
+  let url = (raw ?? "").trim().replace(/\/+$/, "");
+  // Tolerate someone pasting a Supabase sub-API endpoint (e.g. the "Data API"
+  // REST URL `…/rest/v1`) instead of the bare project URL — supabase-js appends
+  // these segments itself, so they must not be in the base URL.
+  url = url.replace(/\/(rest|auth|storage|realtime)\/v\d+$/i, "");
+  return url.replace(/\/+$/, "");
 }
 
 export const SUPABASE_URL = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
