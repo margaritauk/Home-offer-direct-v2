@@ -37,7 +37,7 @@ export default function HomePage() {
         <div className="container-page py-20 lg:py-28">
           <div className="max-w-3xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3 py-1 text-sm font-medium text-brand-700">
-              🏡 Buy your home without a realtor
+              🏡 For home buyers and their agents
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
               The whole home-buying process,{" "}
@@ -45,10 +45,11 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 text-lg text-ink-soft sm:text-xl">
               HomeOffer Direct walks you through every step of buying a house in
-              the US — search, offer, inspection, closing and beyond — so you can
-              confidently go without a buyer&apos;s agent and keep roughly{" "}
+              the US — search, offer, inspection, closing and beyond. Go
+              unrepresented and keep the buyer-side commission (roughly{" "}
               <strong className="text-ink">{exampleSavings}</strong> on a $400k
-              home in your pocket.
+              home), or team up with your agent in one shared deal workspace —
+              start to finish, in sync.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/journey" className="btn-primary text-base">
