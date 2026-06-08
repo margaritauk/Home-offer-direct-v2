@@ -11,6 +11,7 @@ const sample: SyncData = {
   offer: null,
   showings: {},
   offerStatus: {},
+  stageTools: {},
 };
 
 describe("fetchDealData", () => {
@@ -67,6 +68,7 @@ describe("pushDealData", () => {
       offer: sample.offer,
       showings: sample.showings,
       offer_status: sample.offerStatus,
+      stage_tools: sample.stageTools,
     });
   });
 

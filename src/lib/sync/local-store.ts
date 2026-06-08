@@ -13,6 +13,30 @@ export const OFFER_KEY = "hod:offer:v1";
 export const SHOWINGS_KEY = "hod:showings:v1";
 export const OFFER_STATUS_KEY = "hod:offer-status:v1";
 
+/** Per-stage tools (useStageTool) live under `hod:tool:<toolId>:v1`. */
+export const TOOL_KEY_PREFIX = "hod:tool:";
+export const TOOL_KEY_SUFFIX = ":v1";
+function toolKey(toolId: string) {
+  return `${TOOL_KEY_PREFIX}${toolId}${TOOL_KEY_SUFFIX}`;
+}
+
+/** Read every per-stage tool blob into a `{ toolId: value }` map. */
+function readStageTools(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (let i = 0; i < window.localStorage.length; i++) {
+    const k = window.localStorage.key(i);
+    if (!k || !k.startsWith(TOOL_KEY_PREFIX) || !k.endsWith(TOOL_KEY_SUFFIX)) continue;
+    const toolId = k.slice(TOOL_KEY_PREFIX.length, k.length - TOOL_KEY_SUFFIX.length);
+    try {
+      const raw = window.localStorage.getItem(k);
+      if (raw) out[toolId] = JSON.parse(raw);
+    } catch {
+      /* skip unparseable tool blob */
+    }
+  }
+  return out;
+}
+
 /** Fired after any local store changes so the sync layer can push to the cloud. */
 export const LOCAL_CHANGE_EVENT = "hod:local-change";
 
@@ -48,6 +72,7 @@ export function readLocal(): SyncData {
       offer: null,
       showings: {},
       offerStatus: {},
+      stageTools: {},
     };
   }
   return {
@@ -61,6 +86,7 @@ export function readLocal(): SyncData {
     offer: readJSON<Offer | null>(OFFER_KEY, null),
     showings: readJSON<ShowingMap>(SHOWINGS_KEY, {}),
     offerStatus: readJSON<OfferStatusMap>(OFFER_STATUS_KEY, {}),
+    stageTools: readStageTools(),
   };
 }
 
@@ -76,6 +102,9 @@ export function writeLocal(data: SyncData): void {
     else window.localStorage.removeItem(OFFER_KEY);
     window.localStorage.setItem(SHOWINGS_KEY, JSON.stringify(data.showings ?? {}));
     window.localStorage.setItem(OFFER_STATUS_KEY, JSON.stringify(data.offerStatus ?? {}));
+    for (const [toolId, value] of Object.entries(data.stageTools ?? {})) {
+      window.localStorage.setItem(toolKey(toolId), JSON.stringify(value));
+    }
   } catch {
     /* best-effort */
   }

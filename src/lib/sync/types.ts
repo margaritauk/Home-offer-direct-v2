@@ -17,4 +17,6 @@ export interface SyncData {
   showings: ShowingMap;
   /** Offer-status records, keyed by listing id. */
   offerStatus: OfferStatusMap;
+  /** Per-stage interactive tools (#64+), keyed by toolId — opaque blobs. */
+  stageTools: Record<string, unknown>;
 }

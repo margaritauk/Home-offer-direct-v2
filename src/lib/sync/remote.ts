@@ -14,6 +14,8 @@ interface UserDataRow {
   showings?: SyncData["showings"];
   // Added in migration 0003 — may be absent on older databases.
   offer_status?: SyncData["offerStatus"];
+  // Added in migration 0008 — may be absent on older databases.
+  stage_tools?: SyncData["stageTools"];
 }
 
 function rowToSyncData(row: UserDataRow | DealDataRow): SyncData {
@@ -29,6 +31,7 @@ function rowToSyncData(row: UserDataRow | DealDataRow): SyncData {
     offer: row.offer ?? null,
     showings: row.showings ?? {},
     offerStatus: row.offer_status ?? {},
+    stageTools: row.stage_tools ?? {},
   };
 }
 
@@ -42,6 +45,7 @@ interface DealDataRow {
   offer?: SyncData["offer"];
   showings?: SyncData["showings"];
   offer_status?: SyncData["offerStatus"];
+  stage_tools?: SyncData["stageTools"];
 }
 
 /**
@@ -91,6 +95,7 @@ export async function pushRemote(
         offer: data.offer,
         showings: data.showings,
         offer_status: data.offerStatus,
+        stage_tools: data.stageTools,
       })
       .eq("user_id", userId);
   } catch {
@@ -137,6 +142,7 @@ export async function pushDealData(
     offer: data.offer,
     showings: data.showings,
     offer_status: data.offerStatus,
+    stage_tools: data.stageTools,
   });
   return error ? { error: error.message } : {};
 }
