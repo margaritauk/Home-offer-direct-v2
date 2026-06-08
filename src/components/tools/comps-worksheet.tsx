@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
+import { HomePicker } from "@/components/homes/home-picker";
 import { formatUSD } from "@/lib/savings";
 import { compsEstimate, type Comp } from "@/lib/tools/comps";
 import { ToolDisclaimer } from "./tool-disclaimer";
@@ -59,7 +60,19 @@ export function CompsWorksheet() {
   return (
     <div className="space-y-8">
       <div className="card space-y-4">
-        <h2 className="text-lg font-semibold">Subject home</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Subject home</h2>
+          <HomePicker
+            label="Pick a home"
+            onPick={(home) =>
+              setSubject({
+                subjectLabel: home.label,
+                // Prefill sqft from the picked listing when it carries one.
+                ...(home.sqft ? { subjectSqft: home.sqft } : {}),
+              })
+            }
+          />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-medium text-ink-soft">Address / label</span>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
+import { HomePicker } from "@/components/homes/home-picker";
 import { screenText } from "@/lib/ai/screening";
 import {
   DEFAULT_CRITERIA,
@@ -44,6 +45,10 @@ export function TourScorecard() {
   const addHome = () =>
     save((prev) => ({ homes: [...prev.homes, newHome()] }));
 
+  /** Add a home prefilled with a picked label (from search / showings). */
+  const addHomeWithLabel = (label: string) =>
+    save((prev) => ({ homes: [...prev.homes, { ...newHome(), label }] }));
+
   const removeHome = (id: string) =>
     save((prev) => ({ homes: prev.homes.filter((h) => h.id !== id) }));
 
@@ -69,7 +74,11 @@ export function TourScorecard() {
         <p className="text-sm text-ink-soft">
           Score each home on the same rubric, then compare the weighted totals.
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <HomePicker
+            label="Add from search / showings"
+            onPick={(home) => addHomeWithLabel(home.label)}
+          />
           <button type="button" className="btn-primary" onClick={addHome}>
             Add a home
           </button>

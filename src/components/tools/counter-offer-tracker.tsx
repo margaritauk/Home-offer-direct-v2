@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { screenText } from "@/lib/ai/screening";
 import { formatUSD } from "@/lib/savings";
+import { PropertyField } from "@/components/homes/property-field";
 import { TrustCallout } from "@/components/trust-callout";
 import {
   ROUND_STATUSES,
@@ -15,12 +16,14 @@ import {
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 interface CounterState {
+  /** Optional label for the home this negotiation is about (#112). */
+  property?: string;
   /** Private walk-away max price — never shared. */
   maxPrice: number;
   rounds: Round[];
 }
 
-const INITIAL: CounterState = { maxPrice: 0, rounds: [] };
+const INITIAL: CounterState = { property: "", maxPrice: 0, rounds: [] };
 
 const STATUS_LABEL: Record<RoundStatus, string> = {
   sent: "Sent",
@@ -71,6 +74,11 @@ export function CounterOfferTracker() {
 
   return (
     <div className="space-y-8">
+      <PropertyField
+        value={value.property ?? ""}
+        onChange={(property) => save((prev) => ({ ...prev, property }))}
+      />
+
       <section className="card space-y-3">
         <h2 className="text-lg font-semibold">Your walk-away max (private)</h2>
         <TrustCallout tone="warning" title="Keep this number to yourself">

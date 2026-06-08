@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { screenText } from "@/lib/ai/screening";
 import { formatUSD } from "@/lib/savings";
+import { PropertyField } from "@/components/homes/property-field";
 import { TrustCallout } from "@/components/trust-callout";
 import {
   SEVERITIES,
@@ -15,11 +16,13 @@ import {
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 interface InspectionState {
+  /** Optional label for the home being inspected (#112). */
+  property?: string;
   scheduledDate: string;
   findings: Finding[];
 }
 
-const INITIAL: InspectionState = { scheduledDate: "", findings: [] };
+const INITIAL: InspectionState = { property: "", scheduledDate: "", findings: [] };
 
 const SEVERITY_LABEL: Record<Severity, string> = {
   minor: "Minor",
@@ -77,6 +80,11 @@ export function InspectionFindings() {
 
   return (
     <div className="space-y-8">
+      <PropertyField
+        value={value.property ?? ""}
+        onChange={(property) => save((prev) => ({ ...prev, property }))}
+      />
+
       <section className="card space-y-4">
         <h2 className="text-lg font-semibold">Inspection schedule</h2>
         <label className="block sm:max-w-xs">
