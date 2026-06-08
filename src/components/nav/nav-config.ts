@@ -6,7 +6,12 @@ import type { NavGroupItem } from "./nav-group";
  * surfaces never drift.
  */
 
-/** Tools group — always available (no gating). */
+/**
+ * Tools group — the small set of cross-cutting tools used across stages.
+ * Per-stage worksheets (comps, scorecard, lender/compare, get-ready) live
+ * in-context via the journey's STAGE_TOOLS map, not the top bar, to keep this
+ * menu scannable (epic #83).
+ */
 export const TOOLS_ITEMS: NavGroupItem[] = [
   { href: "/tools/savings-calculator", label: "Savings Calculator" },
   { href: "/tools/offer-builder", label: "Offer Builder" },
