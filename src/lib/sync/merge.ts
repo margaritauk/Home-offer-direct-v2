@@ -66,6 +66,19 @@ export function mergeOfferStatus(
 }
 
 /**
+ * Union per-stage tool blobs by toolId. The blobs are opaque (no per-tool
+ * timestamp), so on a key conflict the account (remote) wins while local fills
+ * any gaps — consistent with how scalars like stateCode resolve on first
+ * sign-in. A brand-new account has none, so the device's tools carry over.
+ */
+export function mergeStageTools(
+  local: Record<string, unknown>,
+  remote: Record<string, unknown>,
+): Record<string, unknown> {
+  return { ...(local ?? {}), ...(remote ?? {}) };
+}
+
+/**
  * Merge the device's local data with the account's remote data. Used on first
  * sign-in so a buyer never loses progress they made before creating an account.
  * Returns `local` unchanged when there is no remote row yet.
@@ -79,5 +92,6 @@ export function mergeSyncData(local: SyncData, remote: SyncData | null): SyncDat
     offer: mergeOffer(local.offer, remote.offer),
     showings: mergeShowings(local.showings, remote.showings),
     offerStatus: mergeOfferStatus(local.offerStatus, remote.offerStatus),
+    stageTools: mergeStageTools(local.stageTools, remote.stageTools),
   };
 }

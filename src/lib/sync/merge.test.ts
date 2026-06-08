@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeFlags, mergeOffer, mergeOfferStatus, mergeShowings, mergeSyncData } from "./merge";
+import { mergeFlags, mergeOffer, mergeOfferStatus, mergeShowings, mergeStageTools, mergeSyncData } from "./merge";
 import { defaultOffsets } from "@/lib/deadlines";
 import type { SyncData } from "./types";
 import type { ShowingRecord } from "@/lib/showings/types";
@@ -19,6 +19,7 @@ const data = (over: Partial<SyncData> = {}): SyncData => ({
   offer: null,
   showings: {},
   offerStatus: {},
+  stageTools: {},
   ...over,
 });
 
@@ -148,6 +149,32 @@ describe("mergeOfferStatus", () => {
     const remote = { a: rec("a", "2026-06-05T00:00:00Z", "accepted") };
     expect(mergeOfferStatus(local, remote).a.status).toBe("accepted");
     expect(mergeOfferStatus(remote, local).a.status).toBe("accepted");
+  });
+});
+
+describe("mergeStageTools", () => {
+  it("unions tool blobs by toolId; account wins on conflict, local fills gaps", () => {
+    const local = { comps: { a: 1 }, "tour-scorecard": { local: true } };
+    const remote = { comps: { a: 2 }, "lender-compare": { remote: true } };
+    expect(mergeStageTools(local, remote)).toEqual({
+      comps: { a: 2 }, // remote (account) wins on conflict
+      "tour-scorecard": { local: true }, // local-only carries over
+      "lender-compare": { remote: true },
+    });
+  });
+  it("carries local tools into a brand-new (empty) account", () => {
+    expect(mergeStageTools({ comps: { a: 1 } }, {})).toEqual({ comps: { a: 1 } });
+  });
+});
+
+describe("mergeSyncData — stage tools", () => {
+  it("merges the stageTools slice", () => {
+    const local = data({ stageTools: { comps: { x: 1 } } });
+    const remote = data({ stageTools: { "tour-scorecard": { y: 2 } } });
+    expect(mergeSyncData(local, remote).stageTools).toEqual({
+      comps: { x: 1 },
+      "tour-scorecard": { y: 2 },
+    });
   });
 });
 
