@@ -25,6 +25,7 @@ function makeOffer(overrides: Partial<Offer> = {}): Offer {
       financing: { included: true, days: 21 },
       "sale-of-home": { included: false, days: 45 },
       title: { included: true, days: 14 },
+      "attorney-review": { included: true, days: 5 },
     },
     concession: { type: "price-reduction", percent: 2.5 },
     updatedAt: "",

@@ -14,7 +14,8 @@ export type ContingencyId =
   | "appraisal"
   | "financing"
   | "sale-of-home"
-  | "title";
+  | "title"
+  | "attorney-review";
 
 export interface ContingencyInfo {
   id: ContingencyId;
@@ -79,6 +80,17 @@ export const CONTINGENCIES: ContingencyInfo[] = [
     riskOfWaiving:
       "Waiving it means accepting whatever title issues exist without a contractual path to object before closing.",
     defaultDays: 14,
+  },
+  {
+    id: "attorney-review",
+    label: "Attorney-review contingency",
+    protects:
+      "Lets a real estate attorney review (and, within the window, approve, modify, or cancel) the signed contract before it becomes final — your safety net for the terms when you don't have an agent.",
+    typicalWindow:
+      "Often 3–5 business days. Several states have a formal attorney-review period — notably the 3-business-day periods customary in New Jersey and New York.",
+    riskOfWaiving:
+      "Waiving it means the contract is binding with no built-in window for a lawyer to catch problematic terms before you're locked in.",
+    defaultDays: 5,
   },
 ];
 
