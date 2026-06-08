@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Dashboard } from "@/components/dashboard/dashboard";
+import { WhatsNext } from "@/components/nav/whats-next";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -21,6 +22,10 @@ export default function DashboardPage() {
           documents still outstanding, and the next action on each. Everything
           saves on this device.
         </p>
+      </div>
+
+      <div className="mt-8">
+        <WhatsNext />
       </div>
 
       <div className="mt-10">
