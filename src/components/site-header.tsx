@@ -223,7 +223,7 @@ function MobileSection({
           ⌄
         </span>
       </button>
-      {expanded ? <div className="pb-2">{children}</div> : null}
+      {expanded ? <div className="flex flex-col pb-2">{children}</div> : null}
     </div>
   );
 }
@@ -243,7 +243,7 @@ function MobileLink({
     <Link
       href={href}
       onClick={onClick}
-      className={`rounded-lg px-2 py-3 text-base font-medium transition hover:bg-slate-50 ${
+      className={`block rounded-lg px-2 py-3 text-base font-medium transition hover:bg-slate-50 ${
         active ? "text-brand-700" : "text-ink"
       }`}
     >
