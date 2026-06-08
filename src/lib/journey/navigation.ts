@@ -115,12 +115,22 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Offer Builder",
       description: "Revise terms as you trade counteroffers.",
     },
+    {
+      href: "/tools/counter-offer",
+      label: "Counter-offer Tracker",
+      description: "Track each round of price and term changes to see the live terms.",
+    },
   ],
   "earnest-money-and-open-escrow": [
     {
       href: "/tracker",
       label: "Deadline & Document Tracker",
       description: "Track contingency deadlines once you're under contract.",
+    },
+    {
+      href: "/tools/escrow",
+      label: "Wire-fraud Checklist & Escrow Tracker",
+      description: "Verify wiring instructions by phone before you send funds.",
     },
   ],
   inspection: [
@@ -129,12 +139,27 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Deadline & Document Tracker",
       description: "Stay inside your inspection contingency window.",
     },
+    {
+      href: "/tools/inspection",
+      label: "Inspection Findings Logger",
+      description: "Log findings by severity and cost to negotiate from facts.",
+    },
+    {
+      href: "/tools/repair-request",
+      label: "Repair-request Builder",
+      description: "Turn findings into a neutral repair-or-credit request.",
+    },
   ],
   "appraisal-and-underwriting": [
     {
       href: "/tracker",
       label: "Deadline & Document Tracker",
       description: "Track appraisal and underwriting deadlines and documents.",
+    },
+    {
+      href: "/tools/clear-to-close",
+      label: "Clear-to-close & Low-appraisal Calculator",
+      description: "Track your path to clear-to-close and run the low-appraisal numbers.",
     },
   ],
   "title-and-escrow": [
