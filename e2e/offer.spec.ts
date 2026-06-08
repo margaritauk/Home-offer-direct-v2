@@ -12,5 +12,10 @@ test("the offer builder renders with the UPL worksheet disclaimer", async ({ pag
 test("the offer builder is reachable from the make-an-offer stage", async ({ page }) => {
   await page.goto("/journey/make-an-offer");
   await page.locator("ol li a").first().click();
-  await expect(page.getByRole("link", { name: /use the offer builder/i })).toBeVisible();
+  // The make-an-offer step surfaces the Offer Builder via the data-driven
+  // "Tools for this step" block (#86).
+  const tools = page.getByRole("region", { name: /tools for this step/i });
+  await expect(
+    tools.getByRole("link", { name: /offer builder/i }),
+  ).toBeVisible();
 });

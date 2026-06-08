@@ -1,22 +1,67 @@
 import Link from "next/link";
 
+/**
+ * Footer is the home for the secondary / resource layer (#84): Glossary, Your
+ * State, and Find Pros leave the primary bar and live here (plus in-context on
+ * the relevant journey steps). Every route stays reachable from the footer.
+ */
+
+const FOOTER_GROUPS: { title: string; links: { href: string; label: string }[] }[] =
+  [
+    {
+      title: "Buy a home",
+      links: [
+        { href: "/journey", label: "Journey" },
+        { href: "/listings", label: "Search Homes" },
+        { href: "/dashboard", label: "Dashboard" },
+      ],
+    },
+    {
+      title: "Tools",
+      links: [
+        { href: "/tools/savings-calculator", label: "Savings Calculator" },
+        { href: "/tools/offer-builder", label: "Offer Builder" },
+        { href: "/offer-status", label: "Offer Status" },
+        { href: "/tracker", label: "Tracker" },
+        { href: "/showings", label: "Showings" },
+      ],
+    },
+    {
+      title: "Resources",
+      links: [
+        { href: "/states", label: "Your State" },
+        { href: "/pros", label: "Find Pros" },
+        { href: "/glossary", label: "Glossary" },
+      ],
+    },
+  ];
+
 export function SiteFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-slate-50">
-      <div className="container-page flex flex-col gap-4 py-8 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-        <p>© {new Date().getFullYear()} HomeOffer Direct. Educational guidance, not legal or financial advice.</p>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2">
-          <Link href="/dashboard" className="hover:text-brand-700">Dashboard</Link>
-          <Link href="/listings" className="hover:text-brand-700">Search Homes</Link>
-          <Link href="/journey" className="hover:text-brand-700">Journey</Link>
-          <Link href="/states" className="hover:text-brand-700">Your State</Link>
-          <Link href="/pros" className="hover:text-brand-700">Find Pros</Link>
-          <Link href="/showings" className="hover:text-brand-700">Showings</Link>
-          <Link href="/tracker" className="hover:text-brand-700">Tracker</Link>
-          <Link href="/tools/offer-builder" className="hover:text-brand-700">Offer Builder</Link>
-          <Link href="/glossary" className="hover:text-brand-700">Glossary</Link>
-          <Link href="/tools/savings-calculator" className="hover:text-brand-700">Calculator</Link>
-        </nav>
+    <footer className="border-t border-slate-200 bg-slate-50 pb-16 lg:pb-0">
+      <div className="container-page py-10">
+        <div className="grid gap-8 sm:grid-cols-3">
+          {FOOTER_GROUPS.map((group) => (
+            <nav key={group.title} aria-label={group.title}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                {group.title}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm text-ink-soft">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="hover:text-brand-700">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+        <p className="mt-8 border-t border-slate-200 pt-6 text-sm text-ink-muted">
+          © {new Date().getFullYear()} HomeOffer Direct. Educational guidance, not
+          legal or financial advice.
+        </p>
       </div>
     </footer>
   );

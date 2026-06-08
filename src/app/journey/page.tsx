@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getStages, totalSteps, totalTasks } from "@/lib/journey";
 import { JourneyOverview } from "@/components/journey-overview";
 import { JourneyStateBanner } from "@/components/journey-state-banner";
+import { WhatsNext } from "@/components/nav/whats-next";
 
 export const metadata: Metadata = {
   title: "The home-buying journey",
@@ -27,6 +28,10 @@ export default function JourneyPage() {
         </p>
       </div>
       <JourneyStateBanner />
+
+      <div className="mt-8">
+        <WhatsNext />
+      </div>
 
       <div className="mt-10">
         <JourneyOverview stages={stages} />
