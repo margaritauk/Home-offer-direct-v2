@@ -45,11 +45,10 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 text-lg text-ink-soft sm:text-xl">
               HomeOffer Direct walks you through every step of buying a house in
-              the US — search, offer, inspection, closing and beyond. Go
-              unrepresented and keep the buyer-side commission (roughly{" "}
-              <strong className="text-ink">{exampleSavings}</strong> on a $400k
-              home), or team up with your agent in one shared deal workspace —
-              start to finish, in sync.
+              the US — search, offer, inspection, closing and beyond. Buyers and
+              agents share <strong className="text-ink">one deal workspace</strong>{" "}
+              and stay in sync — clear next steps, every deadline tracked,
+              nothing missed from first showing to keys in hand.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/journey" className="btn-primary text-base">
