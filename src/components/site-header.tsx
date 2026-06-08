@@ -109,7 +109,10 @@ export function SiteHeader() {
           className="border-t border-slate-200 bg-white lg:hidden"
         >
           <div className="container-page flex flex-col py-2">
-            <MobileSection title="Get started">
+            <MobileSection
+              title="Get started"
+              defaultOpen={PRIMARY_LINKS.some((l) => l.href === pathname)}
+            >
               {PRIMARY_LINKS.map((link) => (
                 <MobileLink
                   key={link.href}
@@ -121,7 +124,10 @@ export function SiteHeader() {
               ))}
             </MobileSection>
 
-            <MobileSection title="Tools">
+            <MobileSection
+              title="Tools"
+              defaultOpen={TOOLS_ITEMS.some((l) => l.href === pathname)}
+            >
               {TOOLS_ITEMS.map((link) => (
                 <MobileLink
                   key={link.href}
@@ -134,7 +140,10 @@ export function SiteHeader() {
             </MobileSection>
 
             {showMyDeal ? (
-              <MobileSection title="My Deal">
+              <MobileSection
+                title="My Deal"
+                defaultOpen={MY_DEAL_ITEMS.some((l) => l.href === pathname)}
+              >
                 <div className="px-2 py-2">
                   <DealSwitcher />
                 </div>
@@ -150,7 +159,10 @@ export function SiteHeader() {
               </MobileSection>
             ) : null}
 
-            <MobileSection title="Resources">
+            <MobileSection
+              title="Resources"
+              defaultOpen={SECONDARY_ITEMS.some((l) => l.href === pathname)}
+            >
               {SECONDARY_ITEMS.map((link) => (
                 <MobileLink
                   key={link.href}
@@ -181,19 +193,37 @@ export function SiteHeader() {
   );
 }
 
+/**
+ * Collapsible accordion section in the mobile menu. Collapsed by default to keep
+ * the menu short; the group containing the current route starts expanded.
+ */
 function MobileSection({
   title,
+  defaultOpen = false,
   children,
 }: {
   title: string;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
+  const [expanded, setExpanded] = useState(defaultOpen);
   return (
-    <div className="border-t border-slate-100 py-2 first:border-t-0">
-      <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-        {title}
-      </p>
-      {children}
+    <div className="border-t border-slate-100 first:border-t-0">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between px-2 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted"
+      >
+        <span>{title}</span>
+        <span
+          aria-hidden
+          className={`text-base transition-transform ${expanded ? "rotate-180" : ""}`}
+        >
+          ⌄
+        </span>
+      </button>
+      {expanded ? <div className="pb-2">{children}</div> : null}
     </div>
   );
 }
