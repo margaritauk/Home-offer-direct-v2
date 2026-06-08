@@ -35,12 +35,22 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Savings Calculator",
       description: "Estimate your commission savings and cash to close.",
     },
+    {
+      href: "/tools/get-ready",
+      label: "Credit & Savings Tracker",
+      description: "Work the credit-readiness checklist and track your savings goal.",
+    },
   ],
   "get-pre-approved": [
     {
       href: "/tools/savings-calculator",
       label: "Savings Calculator",
       description: "Model your all-in numbers before you shop lenders.",
+    },
+    {
+      href: "/tools/lender-compare",
+      label: "Lender Comparison",
+      description: "Compare your own Loan Estimates by total cost, not just rate.",
     },
   ],
   search: [
@@ -49,12 +59,32 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Search Homes",
       description: "Browse listings and start a shortlist.",
     },
+    {
+      href: "/tools/compare",
+      label: "Compare Homes",
+      description: "Line up 2–4 homes side by side on the facts that matter.",
+    },
+    {
+      href: "/tools/comps",
+      label: "Comps Worksheet",
+      description: "Estimate a fair-value range from comparable sales.",
+    },
   ],
   "tour-and-evaluate": [
     {
       href: "/showings",
       label: "Showings Tracker",
       description: "Schedule tours and keep notes on each home.",
+    },
+    {
+      href: "/tools/tour-scorecard",
+      label: "Tour Scorecard",
+      description: "Score each home on a consistent rubric and rank them.",
+    },
+    {
+      href: "/tools/compare",
+      label: "Compare Homes",
+      description: "Compare your toured homes side by side, including tour scores.",
     },
   ],
   "make-an-offer": [
@@ -67,6 +97,11 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       href: "/tools/savings-calculator",
       label: "Savings Calculator",
       description: "Size the commission savings to write into your offer.",
+    },
+    {
+      href: "/tools/comps",
+      label: "Comps Worksheet",
+      description: "Ground your offer price in a comps-based fair-value range.",
     },
   ],
   "negotiate-and-go-under-contract": [
