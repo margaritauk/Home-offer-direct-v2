@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { DealManagementPanel } from "@/components/deals/deal-management-panel";
+import { isDealsEnabled } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
   title: "Manage deal",
@@ -8,6 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default function DealManagementPage() {
+  // The multi-party collaboration layer is off by default (deals decoupled from
+  // cloud sync). When disabled, the route 404s instead of rendering the
+  // agent-collaboration workspace, even by direct URL.
+  if (!isDealsEnabled()) notFound();
+
   return (
     <div className="container-page py-12 lg:py-16">
       <div className="max-w-2xl">

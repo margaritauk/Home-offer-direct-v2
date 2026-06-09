@@ -29,8 +29,11 @@ describe("isValidEmail", () => {
 });
 
 describe("isInvitableRole", () => {
-  it.each(["co_buyer", "agent", "attorney", "viewer"])("accepts %s", (r) => {
+  it.each(["co_buyer", "attorney", "viewer"])("accepts %s", (r) => {
     expect(isInvitableRole(r)).toBe(true);
+  });
+  it("rejects agent (no longer buyer-invitable; product is unrepresented-buyer)", () => {
+    expect(isInvitableRole("agent")).toBe(false);
   });
   it("rejects owner_buyer (owners aren't invited)", () => {
     expect(isInvitableRole("owner_buyer")).toBe(false);

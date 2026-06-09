@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isCloudSyncEnabled } from "@/lib/supabase/config";
+import { isDealsEnabled } from "@/lib/supabase/config";
 import { ensureOwnDeal, listMyDeals } from "@/lib/deals/queries";
 import type { Deal } from "@/lib/deals/types";
 
@@ -38,13 +38,14 @@ function writeActiveId(id: string | null): void {
  * user. The active id is persisted at `hod:active-deal:v1` and shared across
  * hook instances in the tab.
  *
- * When cloud sync is disabled OR the user is signed out, this hook is inert:
- * `deals` is empty and `activeDealId` stays null, so callers fall back to the
- * existing single-user / local-first behavior. Pass `userId` (from useAuth) so
- * the hook knows when to load deals.
+ * When the deal layer is disabled (cloud sync off OR the `NEXT_PUBLIC_DEALS_ENABLED`
+ * opt-in flag unset) OR the user is signed out, this hook is inert: `deals` is
+ * empty, `activeDealId` stays null, and no deal is auto-created — so callers
+ * fall back to the existing single-user / local-first behavior. Pass `userId`
+ * (from useAuth) so the hook knows when to load deals.
  */
 export function useActiveDeal(userId: string | null | undefined) {
-  const enabled = isCloudSyncEnabled() && Boolean(userId);
+  const enabled = isDealsEnabled() && Boolean(userId);
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(enabled);

@@ -42,10 +42,14 @@ export const EDITOR_ROLES: readonly DealRole[] = [
   "attorney",
 ];
 
-/** Roles an owner may assign to an invitee (everything except owner_buyer). */
+/**
+ * Roles an owner may surface as invite choices. The product focuses on
+ * unrepresented buyers, so `agent` is intentionally excluded here even though
+ * it remains a valid `DealRole`/`EDITOR_ROLES` member for dormant infra and any
+ * pre-existing agent memberships. (Excludes `owner_buyer` too.)
+ */
 export const INVITABLE_ROLES: readonly DealRole[] = [
   "co_buyer",
-  "agent",
   "attorney",
   "viewer",
 ];

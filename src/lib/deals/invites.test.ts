@@ -63,12 +63,12 @@ describe("inviteToDeal client-side validation (with a client present)", () => {
   it("passes a normalized email to the RPC and returns the new id", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: "new-id", error: null });
     const client = { rpc } as unknown as SupabaseClient;
-    const res = await inviteToDeal("d1", "  Agent@Example.COM ", "agent", client);
+    const res = await inviteToDeal("d1", "  Buyer@Example.COM ", "co_buyer", client);
     expect(res).toEqual({ id: "new-id" });
     expect(rpc).toHaveBeenCalledWith("invite_to_deal", {
       p_deal: "d1",
-      p_email: "agent@example.com",
-      p_role: "agent",
+      p_email: "buyer@example.com",
+      p_role: "co_buyer",
     });
   });
 });
