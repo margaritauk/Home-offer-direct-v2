@@ -80,7 +80,7 @@ export const stages: JourneyStage[] = [
         whyItMatters:
           "A stronger credit profile and seasoned savings can mean a lower rate and a smoother loan approval later.",
         withoutAnAgent:
-          "This step is the same with or without an agent — it's entirely in your hands, so start early and avoid surprises when underwriting reviews your accounts.",
+          "This step is entirely in your hands — start early so nothing surprises underwriting when it reviews your accounts later.",
         tasks: [
           {
             id: "pay-down-balances",
@@ -1043,7 +1043,7 @@ export const stages: JourneyStage[] = [
         whyItMatters:
           "Good record-keeping and on-time payments protect your credit, your equity, and your peace of mind as a new owner.",
         withoutAnAgent:
-          "Most of post-purchase is the same with or without an agent; just make sure you've captured the document hand-offs an agent might otherwise have tracked for you.",
+          "On your own, you're the one tracking the document hand-offs — capture every closing doc so nothing falls through the cracks.",
         tasks: [
           {
             id: "store-docs",
