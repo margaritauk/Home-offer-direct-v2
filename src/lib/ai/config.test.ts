@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { isAiCompsConfigured, isAiCompsEnabled } from "./config";
+import {
+  isAiCompsConfigured,
+  isAiCompsEnabled,
+  isCompsDemoEnabled,
+} from "./config";
 
 const KEYS = [
   "ANTHROPIC_API_KEY",
   "COMPS_DATA_SOURCE",
   "NEXT_PUBLIC_AI_COMPS_ENABLED",
+  "NEXT_PUBLIC_COMPS_DEMO",
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -67,5 +72,30 @@ describe("isAiCompsEnabled (client surface gate)", () => {
   it('is true only when set to exactly "true"', () => {
     process.env.NEXT_PUBLIC_AI_COMPS_ENABLED = "true";
     expect(isAiCompsEnabled()).toBe(true);
+  });
+});
+
+describe("isCompsDemoEnabled (demo sample-comps gate)", () => {
+  it("is false by default (unset)", () => {
+    expect(isCompsDemoEnabled()).toBe(false);
+  });
+
+  it('is false for any value other than exactly "true"', () => {
+    process.env.NEXT_PUBLIC_COMPS_DEMO = "1";
+    expect(isCompsDemoEnabled()).toBe(false);
+    process.env.NEXT_PUBLIC_COMPS_DEMO = "TRUE";
+    expect(isCompsDemoEnabled()).toBe(false);
+  });
+
+  it('is true only when set to exactly "true"', () => {
+    process.env.NEXT_PUBLIC_COMPS_DEMO = "true";
+    expect(isCompsDemoEnabled()).toBe(true);
+  });
+
+  it("is independent of the real AI path flags", () => {
+    process.env.NEXT_PUBLIC_COMPS_DEMO = "true";
+    expect(isCompsDemoEnabled()).toBe(true);
+    expect(isAiCompsEnabled()).toBe(false);
+    expect(isAiCompsConfigured()).toBe(false);
   });
 });
