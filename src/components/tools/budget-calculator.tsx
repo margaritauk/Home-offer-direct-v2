@@ -14,6 +14,7 @@ import {
   type PitiBreakdown,
   type PitiInput,
 } from "@/lib/budget";
+import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 type Mode = "payment" | "affordability";
@@ -288,6 +289,8 @@ function PaymentMode({
           The spreadsheet uses live formulas — edit the inputs in Excel and the
           payment recalculates.
         </p>
+
+        <BudgetInsights insights={explainBudget(breakdown)} />
       </div>
     </div>
   );
@@ -447,8 +450,46 @@ function AffordabilityMode({
             />
           </div>
         </dl>
+
+        <BudgetInsights
+          insights={explainBudget(result.piti, {
+            grossMonthlyIncome: input.grossMonthlyIncome,
+          })}
+        />
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Deterministic budget explainer (#125)
+// ---------------------------------------------------------------------------
+
+const INSIGHT_TONES: Record<BudgetInsight["tone"], string> = {
+  info: "border-slate-200 bg-slate-50 text-ink-soft",
+  good: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  watch: "border-amber-200 bg-amber-50 text-amber-900",
+};
+
+function BudgetInsights({ insights }: { insights: BudgetInsight[] }) {
+  if (insights.length === 0) return null;
+  return (
+    <section aria-label="What your numbers mean" className="space-y-2">
+      <h3 className="text-sm font-semibold text-ink">What your numbers mean</h3>
+      {insights.map((i) => (
+        <div
+          key={i.id}
+          className={`rounded-lg border p-3 text-sm ${INSIGHT_TONES[i.tone]}`}
+        >
+          <p className="font-medium">{i.title}</p>
+          <p className="mt-0.5">{i.body}</p>
+        </div>
+      ))}
+      <p className="text-xs text-ink-muted">
+        These notes explain your own numbers — they don&apos;t recommend a loan
+        or lender.
+      </p>
+    </section>
   );
 }
 
