@@ -32,6 +32,7 @@ const FOOTER_GROUPS: { title: string; links: { href: string; label: string }[] }
         { href: "/states", label: "Your State" },
         { href: "/pros", label: "Find Pros" },
         { href: "/glossary", label: "Glossary" },
+        { href: "/legal", label: "Legal & disclaimers" },
       ],
     },
   ];
