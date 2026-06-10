@@ -203,6 +203,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
   ],
   "closing-settlement": [
     {
+      href: "/tools/closing-day",
+      label: "Closing day",
+      description:
+        "Closing-day checklist, cash-to-close estimate, and a wire-fraud re-verify reminder.",
+    },
+    {
       href: "/tracker",
       label: "Deadline & Document Tracker",
       description: "Track final documents and your closing date.",
