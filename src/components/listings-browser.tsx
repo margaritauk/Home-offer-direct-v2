@@ -10,6 +10,7 @@ import {
 import { getStateOptions } from "@/lib/states";
 import { useStateSelection } from "@/hooks/use-state-selection";
 import { ListingCard } from "@/components/listing-card";
+import { DisclaimerBanner } from "@/components/disclaimer-banner";
 
 const stateOptions = getStateOptions();
 const propertyTypes = Object.keys(propertyTypeLabels) as PropertyType[];
@@ -131,10 +132,10 @@ export function ListingsBrowser() {
         </label>
       </div>
 
-      <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+      <DisclaimerBanner icon={null} className="mt-4">
         <strong>Sample listings.</strong> These are illustrative placeholders, not
         real homes for sale. Live MLS listings are coming — see the roadmap.
-      </div>
+      </DisclaimerBanner>
 
       <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
         {results.length} listing{results.length === 1 ? "" : "s"}
