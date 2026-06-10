@@ -14,6 +14,7 @@ import { ConcessionStep } from "./concession-step";
 import { DeadlinesStep } from "./deadlines-step";
 import { TermSheetSummary } from "./term-sheet-summary";
 import { TermSheetPreview } from "./term-sheet-preview";
+import { OfferStrength } from "./offer-strength";
 
 const STEPS = [
   "Price & deposit",
@@ -126,6 +127,8 @@ export function OfferWizard() {
               ) : (
                 <TermSheetPreview offer={offer} />
               )}
+
+              <OfferStrength offer={offer} />
             </div>
           ) : null}
         </div>
