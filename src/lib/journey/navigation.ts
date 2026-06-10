@@ -175,6 +175,19 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       description: "Keep title and escrow tasks on schedule.",
     },
   ],
+  "final-walkthrough": [
+    {
+      href: "/tools/final-walkthrough",
+      label: "Final walkthrough",
+      description:
+        "Work the walkthrough checklist and verify your negotiated repairs were completed.",
+    },
+    {
+      href: "/tools/repair-request",
+      label: "Repair-request Builder",
+      description: "Review the repairs you negotiated to confirm at the walkthrough.",
+    },
+  ],
   "closing-disclosure-review": [
     {
       href: "/tools/closing-disclosure",
