@@ -213,6 +213,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Deadline & Document Tracker",
       description: "Track final documents and your closing date.",
     },
+    {
+      href: "/tools/move-in",
+      label: "Move-in & post-purchase",
+      description:
+        "First-weeks checklist after closing: utilities, homestead, mortgage setup, and a document vault.",
+    },
   ],
 };
 
