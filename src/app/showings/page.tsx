@@ -3,6 +3,7 @@ import { ShowingsViews } from "@/components/showings/showings-views";
 import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { MessageComposer } from "@/components/showings/message-composer";
 import { ManualAddShowing } from "@/components/showings/manual-add-showing";
+import { PreApprovalPrep } from "@/components/showings/pre-approval-prep";
 
 export const metadata: Metadata = {
   title: "Showings tracker",
@@ -33,6 +34,7 @@ export default function ShowingsPage() {
           <MessageComposer />
         </div>
         <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
+          <PreApprovalPrep />
           <AgencyExplainer />
         </aside>
       </div>
