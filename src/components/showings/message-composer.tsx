@@ -101,7 +101,7 @@ export function MessageComposer({
               value={values[f.key] ?? ""}
               onChange={(e) => set(f.key, e.target.value)}
               placeholder={f.placeholder}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="field"
             />
           </label>
         ))}

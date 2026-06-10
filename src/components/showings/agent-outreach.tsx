@@ -38,8 +38,7 @@ function uid(): string {
   return `o-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const inputClass =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200";
+const inputClass = "field";
 
 function AgentContactForm({
   record,

@@ -186,6 +186,7 @@ function MonthView({ records }: { records: ShowingRecord[] }) {
                 }`}
               >
                 {cell.day}
+                {isToday ? <span className="sr-only"> (Today)</span> : null}
               </div>
               <div className="space-y-1">
                 {items.slice(0, 3).map((r) => (

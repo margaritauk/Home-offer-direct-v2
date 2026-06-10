@@ -276,7 +276,7 @@ function HomeCard({
             </span>
             <input
               type="text"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="field mt-1"
               placeholder="The home you're considering"
               value={home.label}
               onChange={(e) => onPatch({ label: e.target.value })}
@@ -289,7 +289,7 @@ function HomeCard({
             <input
               type="number"
               min={0}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="field mt-1"
               value={home.sqft || ""}
               onChange={(e) => onPatch({ sqft: Number(e.target.value) })}
             />
@@ -411,7 +411,7 @@ function HomeCard({
                     </span>
                     <input
                       type="text"
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="field mt-1"
                       placeholder="A recently sold comparable"
                       value={comp.label}
                       onChange={(e) =>
@@ -553,7 +553,7 @@ function NumberField({
       <input
         type="number"
         min={allowNegative ? undefined : 0}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        className="field mt-1"
         value={value || ""}
         onChange={(e) => onChange(Number(e.target.value))}
       />

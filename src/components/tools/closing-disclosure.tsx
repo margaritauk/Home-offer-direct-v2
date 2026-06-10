@@ -232,7 +232,7 @@ export function ClosingDisclosureTool() {
             </span>
             <input
               type="date"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="field mt-1"
               value={state.closingDate}
               onChange={(e) =>
                 save((prev) => ({
@@ -248,7 +248,7 @@ export function ClosingDisclosureTool() {
             </span>
             <input
               type="date"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="field mt-1"
               value={state.cdReceivedDate}
               onChange={(e) =>
                 save((prev) => ({
@@ -299,7 +299,7 @@ function AmountField({
         type="number"
         min={0}
         inputMode="decimal"
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        className="field mt-1"
         value={value || ""}
         onChange={(e) => onChange(Number(e.target.value))}
       />
