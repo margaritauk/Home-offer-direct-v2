@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ShowingsTracker } from "@/components/showings/showings-tracker";
+import { ShowingsViews } from "@/components/showings/showings-views";
 import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { MessageComposer } from "@/components/showings/message-composer";
 import { ManualAddShowing } from "@/components/showings/manual-add-showing";
@@ -29,7 +29,7 @@ export default function ShowingsPage() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-8">
           <ManualAddShowing />
-          <ShowingsTracker />
+          <ShowingsViews />
           <MessageComposer />
         </div>
         <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
