@@ -23,7 +23,7 @@ export function InviteForm({
   invite: (email: string, role: DealRole) => Promise<{ error?: string }>;
 }) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<DealRole>("agent");
+  const [role, setRole] = useState<DealRole>("co_buyer");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);

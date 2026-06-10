@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { formatUSD } from "@/lib/savings";
+import { PropertyField } from "@/components/homes/property-field";
 import { TrustCallout } from "@/components/trust-callout";
 import {
   WIRE_FRAUD_CHECKLIST,
@@ -14,11 +15,14 @@ import {
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 interface EscrowState {
+  /** Optional label for the home this deposit is for (#112). */
+  property?: string;
   checklist: ChecklistItem[];
   tracker: EscrowTrackerState;
 }
 
 const INITIAL: EscrowState = {
+  property: "",
   checklist: WIRE_FRAUD_CHECKLIST.map((i) => ({ ...i, done: false })),
   tracker: { amount: 0, holder: "", dateSent: "", confirmationReceived: false },
 };
@@ -79,6 +83,11 @@ export function EscrowTracker() {
         </strong>{" "}
         Always verify by phone first, using the steps below.
       </TrustCallout>
+
+      <PropertyField
+        value={value.property ?? ""}
+        onChange={(property) => save((prev) => ({ ...prev, property }))}
+      />
 
       <section className="card space-y-4">
         <div className="flex items-center justify-between gap-4">

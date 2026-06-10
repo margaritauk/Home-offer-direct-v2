@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { formatUSD } from "@/lib/savings";
+import { PropertyField } from "@/components/homes/property-field";
 import {
   CLEAR_TO_CLOSE_STEPS,
   appraisalGap,
@@ -13,6 +14,8 @@ import {
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 interface ClearToCloseState {
+  /** Optional label for the home this checklist is about (#112). */
+  property?: string;
   steps: ClearToCloseStep[];
   contractPrice: number;
   appraisedValue: number;
@@ -20,6 +23,7 @@ interface ClearToCloseState {
 }
 
 const INITIAL: ClearToCloseState = {
+  property: "",
   steps: CLEAR_TO_CLOSE_STEPS.map((s) => ({ ...s, state: "not-started", date: "" })),
   contractPrice: 0,
   appraisedValue: 0,
@@ -86,6 +90,11 @@ export function ClearToClose() {
 
   return (
     <div className="space-y-8">
+      <PropertyField
+        value={value.property ?? ""}
+        onChange={(property) => save((prev) => ({ ...prev, property }))}
+      />
+
       <section className="card space-y-4">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold">Clear-to-close tracker</h2>

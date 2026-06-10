@@ -25,12 +25,18 @@ export function isCloudSyncEnabled(): boolean {
 }
 
 /**
- * The multi-user deal layer (deals, members, the switcher, per-deal sync) is
- * gated on the SAME requirement as cloud sync: Supabase must be configured.
- * Callers must ALSO require a signed-in user before showing any deal UI. With
- * no keys this is false, so the app is byte-for-byte the single-user app.
+ * The multi-party deal/agent collaboration layer (deals, members, invites, the
+ * switcher, per-deal sync) is DECOUPLED from cloud sync. Configuring Supabase
+ * for legitimate single-user cross-device sync must NOT surface the
+ * collaboration UI or auto-create/claim deals. So deals require BOTH:
+ *   1. cloud sync configured (`isCloudSyncEnabled()`), and
+ *   2. an explicit, default-OFF opt-in flag `NEXT_PUBLIC_DEALS_ENABLED === "true"`.
+ *
+ * With the flag unset (the default) the entire deal layer stays dormant even
+ * when sync keys are present. Callers must ALSO require a signed-in user before
+ * showing any deal UI.
  */
 export function isDealsEnabled(): boolean {
-  return isCloudSyncEnabled();
+  return isCloudSyncEnabled() && process.env.NEXT_PUBLIC_DEALS_ENABLED === "true";
 }
 

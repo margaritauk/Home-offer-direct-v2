@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
-import { useShowings } from "@/hooks/use-showings";
-import { allListings } from "@/lib/listings";
+import { useMyHomes } from "@/hooks/use-my-homes";
+import { getListingById } from "@/lib/listings";
 import { formatUSD } from "@/lib/savings";
 import {
   buildComparison,
@@ -21,7 +21,7 @@ interface CompareState {
 const INITIAL: CompareState = { selectedIds: [] };
 const MAX_HOMES = 4;
 
-/** A pickable home from listings or tracked showings, with facts merged. */
+/** A pickable home from listings, showings, or the tour scorecard. */
 interface SourceHome {
   id: string;
   label: string;
@@ -31,7 +31,7 @@ interface SourceHome {
   beds?: number;
   baths?: number;
   daysOnMarket?: number;
-  source: "Listing" | "Showing";
+  source: string;
 }
 
 function formatValue(metric: string, v: number | null): string {
@@ -49,7 +49,8 @@ export function CompareHomes() {
     "compare-homes",
     INITIAL,
   );
-  const { records, hydrated: showingsHydrated } = useShowings();
+  // All candidate homes (listings + showings + scorecard), deduped (#112).
+  const { homes: myHomes, hydrated: homesHydrated } = useMyHomes();
   // Tour scores live in the #94 tool's storage; read them to enrich the table.
   const { value: scorecard } = useStageTool<{ homes: ScoredHome[] }>(
     "tour-scorecard",
@@ -66,33 +67,31 @@ export function CompareHomes() {
     return map;
   }, [scorecard.homes]);
 
-  // Build the pickable set: every listing + every tracked showing (deduped).
-  const sources = useMemo<SourceHome[]>(() => {
-    const byId = new Map<string, SourceHome>();
-    for (const l of allListings()) {
-      byId.set(l.id, {
-        id: l.id,
-        label: l.address,
-        location: `${l.city}, ${l.state}`,
-        price: l.price,
-        sqft: l.sqft,
-        beds: l.beds,
-        baths: l.baths,
-        daysOnMarket: l.daysOnMarket,
-        source: "Listing",
-      });
-    }
-    for (const r of records) {
-      if (byId.has(r.listingId)) continue; // listing facts already richer
-      byId.set(r.listingId, {
-        id: r.listingId,
-        label: r.address,
-        location: `${r.city}, ${r.state}`,
-        source: "Showing",
-      });
-    }
-    return [...byId.values()];
-  }, [records]);
+  // Build the pickable set from the deduped aggregate (#112): listings,
+  // showings, AND tour-scorecard homes. Listing-backed homes are enriched with
+  // full listing facts (price/beds/baths/days) for the comparison table.
+  const sources = useMemo<SourceHome[]>(
+    () =>
+      myHomes.map((home) => {
+        const listing = home.listingId ? getListingById(home.listingId) : undefined;
+        const location =
+          home.city || home.state
+            ? [home.city, home.state].filter(Boolean).join(", ")
+            : undefined;
+        return {
+          id: home.key,
+          label: home.label,
+          location,
+          price: listing?.price,
+          sqft: listing?.sqft ?? home.sqft,
+          beds: listing?.beds,
+          baths: listing?.baths,
+          daysOnMarket: listing?.daysOnMarket,
+          source: home.source,
+        };
+      }),
+    [myHomes],
+  );
 
   const selected = useMemo<ComparableHome[]>(() => {
     const byId = new Map(sources.map((s) => [s.id, s]));
@@ -126,7 +125,7 @@ export function CompareHomes() {
       return { selectedIds: [...prev.selectedIds, id] };
     });
 
-  if (!hydrated || !showingsHydrated) {
+  if (!hydrated || !homesHydrated) {
     return <p className="text-sm text-ink-muted">Loading…</p>;
   }
 
