@@ -1,5 +1,6 @@
 import { TERM_SHEET_DISCLAIMER } from "@/lib/offer/term-sheet";
 import { NOT_A_LAW_FIRM } from "@/components/legal-notice";
+import { DisclaimerBanner } from "@/components/disclaimer-banner";
 
 /**
  * The persistent UPL disclaimer (issues #17 and #40). Rendered prominently and
@@ -10,15 +11,9 @@ import { NOT_A_LAW_FIRM } from "@/components/legal-notice";
  */
 export function OfferDisclaimer({ className = "" }: { className?: string }) {
   return (
-    <p
-      role="note"
-      className={`rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 ${className}`}
-    >
-      <span aria-hidden className="mr-1">
-        🛡️
-      </span>
+    <DisclaimerBanner className={className}>
       <strong className="font-semibold">{NOT_A_LAW_FIRM}</strong>{" "}
       {TERM_SHEET_DISCLAIMER}
-    </p>
+    </DisclaimerBanner>
   );
 }

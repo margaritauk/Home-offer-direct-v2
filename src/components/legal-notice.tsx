@@ -12,6 +12,8 @@
  * testable.
  */
 
+import { DisclaimerBanner } from "@/components/disclaimer-banner";
+
 /** The core "not a law firm / not legal advice" sentence. Single-sourced. */
 export const NOT_A_LAW_FIRM =
   "HomeOffer Direct is not a law firm or a brokerage and does not provide legal advice.";
@@ -44,15 +46,9 @@ export function LegalNotice({
   }
 
   return (
-    <p
-      role="note"
-      className={`rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 ${className}`.trim()}
-    >
-      <span aria-hidden className="mr-1">
-        🛡️
-      </span>
+    <DisclaimerBanner className={className}>
       <strong className="font-semibold">{NOT_A_LAW_FIRM}</strong>{" "}
       {SUBJECT_TO_ATTORNEY_REVIEW}
-    </p>
+    </DisclaimerBanner>
   );
 }
