@@ -173,7 +173,7 @@ function HomeCard({
           <span className="text-sm font-medium text-ink-soft">Home / address</span>
           <input
             type="text"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="field mt-1"
             placeholder="123 Maple St"
             value={home.label}
             onChange={(e) => onLabel(e.target.value)}
@@ -205,22 +205,26 @@ function HomeCard({
             >
               {RATINGS.map((r) => {
                 const active = (home.ratings[c.id] ?? 0) === r;
+                const inputId = `rating-${home.id}-${c.id}-${r}`;
                 return (
-                  <button
-                    key={r}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    aria-label={`${r} out of 5`}
-                    className={`h-8 w-8 rounded-lg border text-sm font-semibold transition ${
-                      active
-                        ? "border-brand-600 bg-brand-600 text-white"
-                        : "border-slate-300 bg-white text-ink hover:border-brand-300"
-                    }`}
-                    onClick={() => onRating(c.id, r)}
-                  >
-                    {r}
-                  </button>
+                  <span key={r}>
+                    <input
+                      type="radio"
+                      id={inputId}
+                      name={`rating-${home.id}-${c.id}`}
+                      value={r}
+                      checked={active}
+                      aria-label={`${c.label} — ${r}`}
+                      onChange={() => onRating(c.id, r)}
+                      className="peer sr-only"
+                    />
+                    <label
+                      htmlFor={inputId}
+                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white text-sm font-semibold text-ink transition hover:border-brand-300 peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-1"
+                    >
+                      {r}
+                    </label>
+                  </span>
                 );
               })}
             </div>
@@ -231,7 +235,7 @@ function HomeCard({
       <label className="block">
         <span className="text-sm font-medium text-ink-soft">Notes (facts only)</span>
         <textarea
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="field mt-1"
           rows={2}
           placeholder="Roof recently replaced; busy street; small kitchen…"
           value={note}

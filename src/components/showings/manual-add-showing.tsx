@@ -55,7 +55,7 @@ export function ManualAddShowing() {
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Street address"
         aria-label="Street address"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        className="field"
       />
       <div className="grid grid-cols-[1fr_5rem] gap-2">
         <input
@@ -64,7 +64,7 @@ export function ManualAddShowing() {
           onChange={(e) => setCity(e.target.value)}
           placeholder="City"
           aria-label="City"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="field"
         />
         <input
           type="text"
@@ -73,7 +73,7 @@ export function ManualAddShowing() {
           placeholder="State"
           aria-label="State"
           maxLength={2}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase"
+          className="field uppercase"
         />
       </div>
       <div className="flex gap-2">
