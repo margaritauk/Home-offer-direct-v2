@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { formatUSD } from "@/lib/savings";
 import {
@@ -135,6 +135,31 @@ function PaymentMode({
   onPatch: (patch: Partial<PitiInput>) => void;
 }) {
   const breakdown = useMemo(() => monthlyPITI(input), [input]);
+  const [exporting, setExporting] = useState<null | "xlsx" | "csv">(null);
+
+  // ExcelJS is large — dynamically import the export module inside the handler
+  // so it stays out of the /tools/budget initial bundle.
+  const handleExportExcel = async () => {
+    setExporting("xlsx");
+    try {
+      const mod = await import("@/lib/tools/budget-export");
+      const wb = mod.buildBudgetWorkbook(input);
+      await mod.downloadWorkbook(wb, "homeoffer-budget.xlsx");
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    setExporting("csv");
+    try {
+      const mod = await import("@/lib/tools/budget-export");
+      const csv = mod.budgetToCsv(input, breakdown);
+      mod.downloadCsv(csv, "homeoffer-budget.csv");
+    } finally {
+      setExporting(null);
+    }
+  };
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
@@ -240,6 +265,29 @@ function PaymentMode({
             />
           </div>
         </dl>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleExportExcel}
+            disabled={exporting !== null}
+          >
+            {exporting === "xlsx" ? "Exporting…" : "Export Excel (.xlsx)"}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleExportCsv}
+            disabled={exporting !== null}
+          >
+            {exporting === "csv" ? "Exporting…" : "Export CSV"}
+          </button>
+        </div>
+        <p className="text-xs text-ink-muted">
+          The spreadsheet uses live formulas — edit the inputs in Excel and the
+          payment recalculates.
+        </p>
       </div>
     </div>
   );
