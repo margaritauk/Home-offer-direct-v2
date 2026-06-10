@@ -68,7 +68,7 @@ function ShowingCard({ record }: { record: ShowingRecord }) {
   const { setStatus, update, remove } = useShowings();
 
   return (
-    <div className="card">
+    <div id={`showing-${record.listingId}`} className="card scroll-mt-24">
       <div className="flex items-start justify-between gap-3">
         <div>
           {record.manual ? (
