@@ -137,6 +137,71 @@ export default function HomePage() {
         </ol>
       </section>
 
+      {/* Trust & credibility */}
+      <section className="bg-slate-50">
+        <div className="container-page py-16 lg:py-24">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-bold">
+              Built to be trusted with your biggest purchase
+            </h2>
+            <p className="mt-3 text-ink-soft">
+              Going without an agent shouldn&apos;t mean going without a safety
+              net. Here&apos;s how we earn your confidence.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <TrustItem
+              icon="🔒"
+              title="Private by default"
+              body="Everything saves on your device. No account required, no spam, and we never sell your data."
+            />
+            <TrustItem
+              icon="🛡️"
+              title="Guardrails where it counts"
+              body="Wire-fraud verification, Fair-Housing-safe messaging, and loud warnings at the deadlines where unrepresented buyers get burned."
+            />
+            <TrustItem
+              icon="⚖️"
+              title="Honest about our limits"
+              body="We're not a law firm or a brokerage. Our worksheets are educational and built for your attorney to review — and we flag exactly when to bring in a pro."
+            />
+            <TrustItem
+              icon="🗺️"
+              title="All 50 states"
+              body="State-specific guidance and official-form links throughout the journey."
+            />
+          </div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="card">
+              <h3 className="text-lg font-semibold">How we make money</h3>
+              <p className="mt-2 text-sm text-ink-soft">
+                HomeOffer Direct is free to use. We may later offer optional paid
+                upgrades — like a polished, watermark-free document export — and
+                we&apos;ll always be upfront about what&apos;s free and what
+                isn&apos;t. We&apos;re not paid by agents, lenders, or sellers, so
+                the guidance is yours alone.{" "}
+                <Link
+                  href="/legal"
+                  className="font-medium text-brand-700 hover:underline"
+                >
+                  Read our disclaimers
+                </Link>
+                .
+              </p>
+            </div>
+            <div className="card">
+              <h3 className="text-lg font-semibold">Real buyer stories</h3>
+              <p className="mt-2 text-sm text-ink-soft">
+                We&apos;d rather show you nothing than fake reviews. As real
+                unrepresented buyers close with HomeOffer Direct, their stories
+                will appear here.{" "}
+                <span className="text-ink-muted">(Coming soon.)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-brand-600">
         <div className="container-page flex flex-col items-center gap-6 py-16 text-center text-white lg:py-20">
@@ -157,6 +222,26 @@ export default function HomePage() {
         </div>
       </section>
     </>
+  );
+}
+
+function TrustItem({
+  icon,
+  title,
+  body,
+}: {
+  icon: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="card">
+      <span className="text-2xl" aria-hidden>
+        {icon}
+      </span>
+      <h3 className="mt-3 text-base font-semibold">{title}</h3>
+      <p className="mt-1.5 text-sm text-ink-soft">{body}</p>
+    </div>
   );
 }
 
