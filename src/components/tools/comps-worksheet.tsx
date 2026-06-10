@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { HomePicker } from "@/components/homes/home-picker";
-import { isAiCompsEnabled } from "@/lib/ai/config";
+import { isAiCompsEnabled, isCompsDemoEnabled } from "@/lib/ai/config";
 import { formatUSD } from "@/lib/savings";
 import {
   compsEstimate,
@@ -12,10 +12,22 @@ import {
   type CompsState,
   type InterestedHome,
 } from "@/lib/tools/comps";
+import { SampleCompsDataSource } from "@/lib/tools/comps-source";
+import { rankComps } from "@/lib/tools/comps-rank";
 import { ToolDisclaimer } from "./tool-disclaimer";
 
-/** Whether the UI is allowed to offer the auto-find button (default false). */
+/** Whether the UI is allowed to offer the real AI auto-find button (default false). */
 const AI_COMPS_ENABLED = isAiCompsEnabled();
+
+/**
+ * Whether the DEMO (illustrative sample comps) auto option is offered. Only
+ * consulted when the real AI path is OFF, so the real path always takes
+ * precedence (issue #127).
+ */
+const COMPS_DEMO_ENABLED = isCompsDemoEnabled();
+
+/** True when the auto mode is offered at all (real AI OR sample demo). */
+const AUTO_MODE_OFFERED = AI_COMPS_ENABLED || COMPS_DEMO_ENABLED;
 
 const INITIAL: CompsState = { homes: [] };
 
@@ -135,6 +147,42 @@ function HomeCard({
     message: string | null;
     error: string | null;
   }>({ loading: false, message: null, error: null });
+
+  // True once sample (illustrative) comps have been added to this home, so the
+  // "not real sales" banner persists alongside the results (issue #127).
+  const [sampleShown, setSampleShown] = useState(false);
+
+  /**
+   * DEMO path: generate ILLUSTRATIVE sample comps entirely client-side — no API
+   * call, no Claude key. Every record is flagged `sample` and rendered behind a
+   * prominent "Sample data — illustrative, not real sales" banner.
+   */
+  const findSampleComps = async () => {
+    setAutoState({ loading: true, message: null, error: null });
+    try {
+      const subject = { label: home.label, sqft: home.sqft };
+      const candidates = await SampleCompsDataSource.fetchRecentSales(subject);
+      const found = rankComps(subject, candidates);
+      if (found.length > 0) {
+        onPatch({ comps: [...home.comps, ...found] });
+        setSampleShown(true);
+      }
+      setAutoState({
+        loading: false,
+        message:
+          found.length === 0
+            ? "No sample comps could be generated for this home."
+            : null,
+        error: null,
+      });
+    } catch {
+      setAutoState({
+        loading: false,
+        message: null,
+        error: "Couldn't generate sample comps. Please try again.",
+      });
+    }
+  };
 
   const findCompsWithAI = async () => {
     setAutoState({ loading: true, message: null, error: null });
@@ -261,11 +309,15 @@ function HomeCard({
             </ModeButton>
             <ModeButton
               active={home.mode === "auto"}
-              disabled={!AI_COMPS_ENABLED}
+              disabled={!AUTO_MODE_OFFERED}
               onClick={() => onPatch({ mode: "auto" })}
             >
-              Auto-find comps with AI
-              {AI_COMPS_ENABLED ? null : (
+              {AI_COMPS_ENABLED
+                ? "Auto-find comps with AI"
+                : COMPS_DEMO_ENABLED
+                  ? "Auto-find comps (sample data)"
+                  : "Auto-find comps with AI"}
+              {AUTO_MODE_OFFERED ? null : (
                 <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-ink-soft">
                   Coming soon
                 </span>
@@ -297,6 +349,34 @@ function HomeCard({
                   <p className="text-sm text-amber-700">{autoState.error}</p>
                 ) : null}
               </div>
+            ) : COMPS_DEMO_ENABLED ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={autoState.loading}
+                    onClick={findSampleComps}
+                  >
+                    {autoState.loading
+                      ? "Generating sample comps…"
+                      : "Generate sample comps"}
+                  </button>
+                  <span className="text-sm text-ink-soft">
+                    Demo mode adds <strong>illustrative sample comps</strong> so
+                    you can try the flow. This is an{" "}
+                    <strong>estimate, not an appraisal</strong>; you can edit
+                    them.
+                  </span>
+                </div>
+                <SampleDataBanner />
+                {autoState.message ? (
+                  <p className="text-sm text-ink-soft">{autoState.message}</p>
+                ) : null}
+                {autoState.error ? (
+                  <p className="text-sm text-amber-700">{autoState.error}</p>
+                ) : null}
+              </div>
             ) : (
               <p className="text-sm text-ink-soft">
                 Coming soon — enter comps manually for now.
@@ -313,6 +393,8 @@ function HomeCard({
             Add a comp
           </button>
         </div>
+
+        {sampleShown && home.comps.length > 0 ? <SampleDataBanner /> : null}
 
         {home.comps.length === 0 ? (
           <div className="card text-center text-sm text-ink-soft">
@@ -408,6 +490,21 @@ function HomeCard({
         </section>
       ) : null}
     </section>
+  );
+}
+
+/**
+ * Prominent, persistent honesty banner for the demo path (issue #127): the
+ * comps it produces are illustrative sample data, never real recorded sales.
+ */
+function SampleDataBanner() {
+  return (
+    <p
+      role="note"
+      className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+    >
+      Sample data — illustrative, not real sales.
+    </p>
   );
 }
 

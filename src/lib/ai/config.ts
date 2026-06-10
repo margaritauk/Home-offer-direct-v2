@@ -34,3 +34,18 @@ export function isAiCompsConfigured(): boolean {
 export function isAiCompsEnabled(): boolean {
   return process.env.NEXT_PUBLIC_AI_COMPS_ENABLED === "true";
 }
+
+/**
+ * CLIENT demo gate (issue #127). When `NEXT_PUBLIC_COMPS_DEMO === "true"`, the
+ * worksheet offers an "Auto-find comps (sample data)" option that runs entirely
+ * client-side against {@link SampleCompsDataSource} + {@link rankComps} — NO API
+ * call, NO Claude key, NO paid data feed.
+ *
+ * This is SEPARATE from the real AI path ({@link isAiCompsConfigured} /
+ * {@link isAiCompsEnabled}): it produces ILLUSTRATIVE sample comps that are
+ * always visibly labeled "Sample data — illustrative, not real sales". Default
+ * false. The real AI path, when enabled, takes precedence over this demo mode.
+ */
+export function isCompsDemoEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_COMPS_DEMO === "true";
+}
