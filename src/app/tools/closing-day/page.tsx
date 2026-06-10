@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClosingDayTool } from "@/components/tools/closing-day";
+import { ToolPageHeader } from "@/components/tools/tool-page-header";
 
 export const metadata: Metadata = {
   title: "Closing day",
@@ -9,18 +10,17 @@ export const metadata: Metadata = {
 
 export default function ClosingDayPage() {
   return (
-    <div className="container-page py-12 lg:py-16">
-      <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold sm:text-4xl">Closing day</h1>
-        <p className="mt-4 text-lg text-ink-soft">
+    <ToolPageHeader
+      title="Closing day"
+      intro={
+        <>
           Arrive prepared: work the closing-day checklist, estimate the cash
           you&apos;ll bring to the table, and — most importantly — re-verify any
           wiring instructions by phone before you send funds.
-        </p>
-      </div>
-      <div className="mt-8">
-        <ClosingDayTool />
-      </div>
-    </div>
+        </>
+      }
+    >
+      <ClosingDayTool />
+    </ToolPageHeader>
   );
 }

@@ -18,6 +18,7 @@ export const TOOLS_ITEMS: NavGroupItem[] = [
   { href: "/offer-status", label: "Offer Status" },
   { href: "/tracker", label: "Tracker" },
   { href: "/showings", label: "Showings" },
+  { href: "/tools", label: "All tools" },
 ];
 
 /**
