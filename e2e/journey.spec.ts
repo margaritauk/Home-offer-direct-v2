@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("landing page shows the value prop and CTA", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /guided start to finish/i }),
+    page.getByRole("heading", { name: /keep the commission/i }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: /start the journey/i }).first()).toBeVisible();
 });
