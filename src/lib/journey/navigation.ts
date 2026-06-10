@@ -177,6 +177,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
   ],
   "closing-disclosure-review": [
     {
+      href: "/tools/closing-disclosure",
+      label: "Closing Disclosure check",
+      description:
+        "Compare your CD against your Loan Estimate and confirm the 3-business-day rule.",
+    },
+    {
       href: "/tracker",
       label: "Deadline & Document Tracker",
       description: "Confirm the 3-business-day Closing Disclosure window.",
