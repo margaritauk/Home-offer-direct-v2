@@ -109,6 +109,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Comps Worksheet",
       description: "Ground your offer price in a comps-based fair-value range.",
     },
+    {
+      href: "/tools/offer-help",
+      label: "Offer tactics & forms",
+      description:
+        "Learn advanced tactics, find your state's public form, and hand off to a flat-fee attorney.",
+    },
   ],
   "negotiate-and-go-under-contract": [
     {
@@ -125,6 +131,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       href: "/tools/counter-offer",
       label: "Counter-offer Tracker",
       description: "Track each round of price and term changes to see the live terms.",
+    },
+    {
+      href: "/tools/offer-help",
+      label: "Offer tactics & forms",
+      description:
+        "Weigh tactics like appraisal-gap coverage and route contract drafting to a flat-fee attorney.",
     },
   ],
   "earnest-money-and-open-escrow": [
