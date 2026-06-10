@@ -1,0 +1,534 @@
+"use client";
+
+import { useMemo } from "react";
+import { useStageTool } from "@/hooks/use-stage-tool";
+import { formatUSD } from "@/lib/savings";
+import {
+  DEFAULT_BACK_CAP_PCT,
+  DEFAULT_FRONT_CAP_PCT,
+  DEFAULT_PMI_RATE_PCT,
+  HIGH_BACK_CAP_PCT,
+  maxAffordablePrice,
+  monthlyPITI,
+  type AffordabilityInput,
+  type PitiBreakdown,
+  type PitiInput,
+} from "@/lib/budget";
+import { ToolDisclaimer } from "./tool-disclaimer";
+
+type Mode = "payment" | "affordability";
+
+/** All inputs for both modes plus the active mode, persisted as one blob. */
+export interface BudgetState {
+  mode: Mode;
+  /** Monthly-payment (PITI) mode inputs. */
+  piti: PitiInput;
+  /** Affordability mode inputs. */
+  affordability: AffordabilityInput & {
+    frontCapPct: number;
+    backCapPct: number;
+  };
+}
+
+export const INITIAL: BudgetState = {
+  mode: "payment",
+  piti: {
+    price: 400_000,
+    downPct: 10,
+    ratePct: 6.5,
+    termYears: 30,
+    propTaxYr: 4_400,
+    insuranceYr: 1_500,
+    hoaMo: 0,
+    pmiRatePct: DEFAULT_PMI_RATE_PCT,
+  },
+  affordability: {
+    grossMonthlyIncome: 9_000,
+    monthlyDebts: 500,
+    downPayment: 40_000,
+    ratePct: 6.5,
+    termYears: 30,
+    propTaxRatePct: 1.1,
+    insuranceYr: 1_500,
+    hoaMo: 0,
+    pmiRatePct: DEFAULT_PMI_RATE_PCT,
+    frontCapPct: DEFAULT_FRONT_CAP_PCT,
+    backCapPct: DEFAULT_BACK_CAP_PCT,
+  },
+};
+
+function formatMonthly(n: number): string {
+  return `${formatUSD(n)}/mo`;
+}
+
+export function BudgetCalculator() {
+  const { value, hydrated, save, reset } = useStageTool<BudgetState>(
+    "budget",
+    INITIAL,
+  );
+
+  const setMode = (mode: Mode) => save((prev) => ({ ...prev, mode }));
+  const patchPiti = (patch: Partial<PitiInput>) =>
+    save((prev) => ({ ...prev, piti: { ...prev.piti, ...patch } }));
+  const patchAfford = (patch: Partial<BudgetState["affordability"]>) =>
+    save((prev) => ({
+      ...prev,
+      affordability: { ...prev.affordability, ...patch },
+    }));
+
+  if (!hydrated) return <p className="text-sm text-ink-muted">Loading…</p>;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div
+          className="inline-flex rounded-full border border-slate-300 p-1"
+          role="tablist"
+          aria-label="Calculator mode"
+        >
+          <ModeTab
+            active={value.mode === "payment"}
+            onClick={() => setMode("payment")}
+          >
+            Monthly payment
+          </ModeTab>
+          <ModeTab
+            active={value.mode === "affordability"}
+            onClick={() => setMode("affordability")}
+          >
+            Affordability
+          </ModeTab>
+        </div>
+        <button type="button" className="btn-secondary" onClick={reset}>
+          Reset
+        </button>
+      </div>
+
+      {value.mode === "payment" ? (
+        <PaymentMode input={value.piti} onPatch={patchPiti} />
+      ) : (
+        <AffordabilityMode
+          input={value.affordability}
+          onPatch={patchAfford}
+        />
+      )}
+
+      <ToolDisclaimer>
+        These are <strong>estimates only — not financial advice</strong>. A
+        lender or underwriter determines what you actually qualify for, and your
+        real rate, taxes, insurance, and PMI will vary by location, credit, and
+        loan program.
+      </ToolDisclaimer>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Monthly-payment (PITI) mode
+// ---------------------------------------------------------------------------
+
+function PaymentMode({
+  input,
+  onPatch,
+}: {
+  input: PitiInput;
+  onPatch: (patch: Partial<PitiInput>) => void;
+}) {
+  const breakdown = useMemo(() => monthlyPITI(input), [input]);
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-2">
+      <div className="card space-y-6">
+        <SliderField
+          label="Home price"
+          suffix="$"
+          value={input.price}
+          onChange={(price) => onPatch({ price })}
+          min={50_000}
+          max={2_000_000}
+          step={5_000}
+        />
+        <SliderField
+          label="Down payment"
+          suffix="%"
+          value={input.downPct}
+          onChange={(downPct) => onPatch({ downPct })}
+          min={0}
+          max={100}
+          step={1}
+          hint="Below 20% adds PMI."
+        />
+        <SliderField
+          label="Interest rate"
+          suffix="%"
+          value={input.ratePct}
+          onChange={(ratePct) => onPatch({ ratePct })}
+          min={0}
+          max={12}
+          step={0.05}
+        />
+        <SliderField
+          label="Loan term"
+          suffix=" yrs"
+          value={input.termYears}
+          onChange={(termYears) => onPatch({ termYears })}
+          min={5}
+          max={40}
+          step={5}
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <NumberField
+            label="Property tax (annual)"
+            value={input.propTaxYr}
+            onChange={(propTaxYr) => onPatch({ propTaxYr })}
+          />
+          <NumberField
+            label="Insurance (annual)"
+            value={input.insuranceYr}
+            onChange={(insuranceYr) => onPatch({ insuranceYr })}
+          />
+          <NumberField
+            label="HOA (monthly)"
+            value={input.hoaMo}
+            onChange={(hoaMo) => onPatch({ hoaMo })}
+          />
+          <NumberField
+            label="PMI rate (%)"
+            value={input.pmiRatePct}
+            onChange={(pmiRatePct) => onPatch({ pmiRatePct })}
+            step={0.05}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="rounded-xl bg-brand-600 p-6 text-white">
+          <p className="text-sm font-medium text-brand-100">
+            Estimated monthly payment
+          </p>
+          <p
+            className="mt-1 text-4xl font-bold"
+            data-testid="piti-total"
+          >
+            {formatMonthly(breakdown.total)}
+          </p>
+          <p className="mt-2 text-sm text-brand-100">
+            {formatUSD(breakdown.loanAmount)} loan ·{" "}
+            {Math.round(breakdown.ltv)}% LTV
+            {breakdown.pmi > 0 ? (
+              <span
+                data-testid="pmi-badge"
+                className="ml-2 inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
+              >
+                PMI applies
+              </span>
+            ) : null}
+          </p>
+        </div>
+
+        <dl className="card space-y-3 text-sm">
+          <Row label="Principal & interest" value={formatMonthly(breakdown.pi)} />
+          <Row label="Property tax" value={formatMonthly(breakdown.tax)} />
+          <Row label="Insurance" value={formatMonthly(breakdown.insurance)} />
+          <Row label="HOA" value={formatMonthly(breakdown.hoa)} />
+          <Row label="PMI" value={formatMonthly(breakdown.pmi)} />
+          <div className="border-t border-slate-200 pt-3">
+            <Row
+              label="Total monthly (PITI)"
+              value={formatMonthly(breakdown.total)}
+              emphasize
+            />
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Affordability mode
+// ---------------------------------------------------------------------------
+
+function AffordabilityMode({
+  input,
+  onPatch,
+}: {
+  input: BudgetState["affordability"];
+  onPatch: (patch: Partial<BudgetState["affordability"]>) => void;
+}) {
+  const result = useMemo(() => maxAffordablePrice(input), [input]);
+  const bindingLabel =
+    result.bindingConstraint === "front"
+      ? "Your housing-payment (front-end) cap is the limit."
+      : "Your total-debt (back-end) cap is the limit.";
+
+  // The 43% back-end option toggles the higher Qualified-Mortgage ceiling.
+  const highBack = input.backCapPct >= HIGH_BACK_CAP_PCT;
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-2">
+      <div className="card space-y-6">
+        <NumberField
+          label="Gross monthly income"
+          value={input.grossMonthlyIncome}
+          onChange={(grossMonthlyIncome) => onPatch({ grossMonthlyIncome })}
+        />
+        <NumberField
+          label="Monthly debts (cars, cards, loans)"
+          value={input.monthlyDebts}
+          onChange={(monthlyDebts) => onPatch({ monthlyDebts })}
+        />
+        <NumberField
+          label="Down payment ($)"
+          value={input.downPayment}
+          onChange={(downPayment) => onPatch({ downPayment })}
+        />
+        <SliderField
+          label="Interest rate"
+          suffix="%"
+          value={input.ratePct}
+          onChange={(ratePct) => onPatch({ ratePct })}
+          min={0}
+          max={12}
+          step={0.05}
+        />
+        <SliderField
+          label="Loan term"
+          suffix=" yrs"
+          value={input.termYears}
+          onChange={(termYears) => onPatch({ termYears })}
+          min={5}
+          max={40}
+          step={5}
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <NumberField
+            label="Property-tax rate (%/yr)"
+            value={input.propTaxRatePct}
+            onChange={(propTaxRatePct) => onPatch({ propTaxRatePct })}
+            step={0.05}
+          />
+          <NumberField
+            label="Insurance (annual)"
+            value={input.insuranceYr}
+            onChange={(insuranceYr) => onPatch({ insuranceYr })}
+          />
+          <NumberField
+            label="HOA (monthly)"
+            value={input.hoaMo}
+            onChange={(hoaMo) => onPatch({ hoaMo })}
+          />
+          <NumberField
+            label="PMI rate (%)"
+            value={input.pmiRatePct}
+            onChange={(pmiRatePct) => onPatch({ pmiRatePct })}
+            step={0.05}
+          />
+        </div>
+
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium text-ink-soft">
+            DTI caps (front / back)
+          </legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NumberField
+              label="Front-end cap (%)"
+              value={input.frontCapPct}
+              onChange={(frontCapPct) => onPatch({ frontCapPct })}
+            />
+            <NumberField
+              label="Back-end cap (%)"
+              value={input.backCapPct}
+              onChange={(backCapPct) => onPatch({ backCapPct })}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-ink-soft">
+            <input
+              type="checkbox"
+              className="accent-brand-600"
+              checked={highBack}
+              onChange={(e) =>
+                onPatch({
+                  backCapPct: e.target.checked
+                    ? HIGH_BACK_CAP_PCT
+                    : DEFAULT_BACK_CAP_PCT,
+                })
+              }
+            />
+            Allow {HIGH_BACK_CAP_PCT}% back-end DTI (Qualified-Mortgage ceiling)
+          </label>
+        </fieldset>
+      </div>
+
+      <div className="space-y-4">
+        <div className="rounded-xl bg-brand-600 p-6 text-white">
+          <p className="text-sm font-medium text-brand-100">
+            Estimated max home price
+          </p>
+          <p className="mt-1 text-4xl font-bold" data-testid="max-price">
+            {formatUSD(result.maxPrice)}
+          </p>
+          <p className="mt-2 text-sm text-brand-100">
+            {formatUSD(result.maxLoan)} max loan ·{" "}
+            <span data-testid="binding-constraint">{bindingLabel}</span>
+            {result.piti.pmi > 0 ? (
+              <span
+                data-testid="pmi-badge"
+                className="ml-2 inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950"
+              >
+                PMI applies
+              </span>
+            ) : null}
+          </p>
+        </div>
+
+        <dl className="card space-y-3 text-sm">
+          <Row
+            label="Principal & interest"
+            value={formatMonthly(result.piti.pi)}
+          />
+          <Row label="Property tax" value={formatMonthly(result.piti.tax)} />
+          <Row label="Insurance" value={formatMonthly(result.piti.insurance)} />
+          <Row label="HOA" value={formatMonthly(result.piti.hoa)} />
+          <Row label="PMI" value={formatMonthly(result.piti.pmi)} />
+          <div className="border-t border-slate-200 pt-3">
+            <Row
+              label="Total monthly (PITI)"
+              value={formatMonthly(result.piti.total)}
+              emphasize
+            />
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared field primitives (mirrors savings-calculator + comps-worksheet)
+// ---------------------------------------------------------------------------
+
+function ModeTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+        active ? "bg-brand-600 text-white" : "text-ink-soft hover:text-ink"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SliderField({
+  label,
+  suffix,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  hint,
+}: {
+  label: string;
+  suffix: string;
+  value: number;
+  onChange: (n: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  hint?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="flex items-center justify-between text-sm font-medium text-ink-soft">
+        {label}
+        <span className="font-semibold text-ink">
+          {suffix === "$" ? formatUSD(value) : `${value}${suffix}`}
+        </span>
+      </span>
+      <input
+        type="range"
+        className="mt-2 w-full accent-brand-600"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
+      />
+      {hint ? (
+        <span className="mt-1 block text-xs text-ink-muted">{hint}</span>
+      ) : null}
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+  step,
+}: {
+  label: string;
+  value: number;
+  onChange: (n: number) => void;
+  step?: number;
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-ink-soft">{label}</span>
+      <input
+        type="number"
+        min={0}
+        step={step}
+        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        value={value || ""}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
+      />
+    </label>
+  );
+}
+
+function Row({
+  label,
+  value,
+  emphasize,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className={emphasize ? "font-semibold text-ink" : "text-ink-soft"}>
+        {label}
+      </dt>
+      <dd
+        className={
+          emphasize
+            ? "text-lg font-bold text-brand-700"
+            : "font-medium text-ink"
+        }
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+// Re-export for downstream typing/tests.
+export type { PitiBreakdown };

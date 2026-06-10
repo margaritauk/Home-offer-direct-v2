@@ -31,6 +31,12 @@ export interface ToolLink {
 export const STAGE_TOOLS: Record<string, ToolLink[]> = {
   "get-ready": [
     {
+      href: "/tools/budget",
+      label: "Budget calculator",
+      description:
+        "Estimate your monthly payment (PITI) or how much house you can afford.",
+    },
+    {
       href: "/tools/savings-calculator",
       label: "Savings Calculator",
       description: "Estimate your commission savings and cash to close.",
