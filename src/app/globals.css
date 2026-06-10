@@ -53,4 +53,26 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+  /*
+   * Free print / save-as-PDF of the term-sheet (issue #26). Scope the printout to
+   * the marked `.print-area` so the app chrome (header, footer, tab bar, buttons)
+   * is excluded, leaving just the worksheet + its attorney-review framing.
+   * Interactive controls inside the area opt out via `.no-print`.
+   */
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

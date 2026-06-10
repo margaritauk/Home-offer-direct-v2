@@ -26,15 +26,24 @@ export function TermSheetSummary({ offer }: { offer: Offer }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print-area">
       <OfferDisclaimer />
 
       <div className="card space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold">Your offer worksheet</h3>
-          <button type="button" className="btn-secondary" onClick={copy}>
-            {copied ? "Copied" : "Copy for your attorney"}
-          </button>
+          <div className="no-print flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary" onClick={copy}>
+              {copied ? "Copied" : "Copy for your attorney"}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => window.print()}
+            >
+              Print / Save as PDF
+            </button>
+          </div>
         </div>
 
         <dl className="space-y-5">
