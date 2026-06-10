@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useShowings } from "@/hooks/use-showings";
+import { AgentOutreach } from "@/components/showings/agent-outreach";
 import {
   SHOWING_STATUSES,
   showingStatusLabels,
@@ -128,6 +129,8 @@ function ShowingCard({ record }: { record: ShowingRecord }) {
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
         />
       </label>
+
+      <AgentOutreach record={record} />
 
       <button
         type="button"

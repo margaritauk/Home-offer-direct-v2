@@ -36,7 +36,10 @@ export interface TrackInput {
 
 /** Mutable fields on an existing record (location snapshot is fixed). */
 export type ShowingPatch = Partial<
-  Pick<ShowingRecord, "status" | "scheduledAt" | "notes" | "rating">
+  Pick<
+    ShowingRecord,
+    "status" | "scheduledAt" | "notes" | "rating" | "agent" | "outreach"
+  >
 >;
 
 function read(): ShowingMap {
