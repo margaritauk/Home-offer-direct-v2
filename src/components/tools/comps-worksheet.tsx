@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { HomePicker } from "@/components/homes/home-picker";
+import { isAiCompsEnabled } from "@/lib/ai/config";
 import { formatUSD } from "@/lib/savings";
 import {
   compsEstimate,
@@ -12,6 +13,9 @@ import {
   type InterestedHome,
 } from "@/lib/tools/comps";
 import { ToolDisclaimer } from "./tool-disclaimer";
+
+/** Whether the UI is allowed to offer the auto-find button (default false). */
+const AI_COMPS_ENABLED = isAiCompsEnabled();
 
 const INITIAL: CompsState = { homes: [] };
 
@@ -126,6 +130,66 @@ function HomeCard({
     [home.sqft, home.comps],
   );
 
+  const [autoState, setAutoState] = useState<{
+    loading: boolean;
+    message: string | null;
+    error: string | null;
+  }>({ loading: false, message: null, error: null });
+
+  const findCompsWithAI = async () => {
+    setAutoState({ loading: true, message: null, error: null });
+    try {
+      const res = await fetch("/api/comps/auto-find", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          subject: { label: home.label, sqft: home.sqft },
+        }),
+      });
+
+      if (res.status === 503) {
+        // Not configured server-side — fall back to the Coming-soon experience.
+        setAutoState({
+          loading: false,
+          message: null,
+          error:
+            "Auto-find isn't available yet — enter comps manually for now.",
+        });
+        return;
+      }
+
+      if (!res.ok) {
+        setAutoState({
+          loading: false,
+          message: null,
+          error: "Couldn't find comps right now. Please try again.",
+        });
+        return;
+      }
+
+      const data = (await res.json()) as { comps?: Comp[]; message?: string };
+      const found = Array.isArray(data.comps) ? data.comps : [];
+      if (found.length > 0) {
+        onPatch({ comps: [...home.comps, ...found] });
+      }
+      setAutoState({
+        loading: false,
+        message:
+          data.message ??
+          (found.length === 0
+            ? "No comparable sales found for this home."
+            : null),
+        error: null,
+      });
+    } catch {
+      setAutoState({
+        loading: false,
+        message: null,
+        error: "Couldn't reach the comps service. Please try again.",
+      });
+    }
+  };
+
   const addComp = () => onPatch({ comps: [...home.comps, newComp()] });
   const removeComp = (id: string) =>
     onPatch({ comps: home.comps.filter((c) => c.id !== id) });
@@ -197,19 +261,47 @@ function HomeCard({
             </ModeButton>
             <ModeButton
               active={home.mode === "auto"}
-              disabled
+              disabled={!AI_COMPS_ENABLED}
               onClick={() => onPatch({ mode: "auto" })}
             >
               Auto-find comps with AI
-              <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-ink-soft">
-                Coming soon
-              </span>
+              {AI_COMPS_ENABLED ? null : (
+                <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-ink-soft">
+                  Coming soon
+                </span>
+              )}
             </ModeButton>
           </div>
           {home.mode === "auto" ? (
-            <p className="text-sm text-ink-soft">
-              Coming soon — enter comps manually for now.
-            </p>
+            AI_COMPS_ENABLED ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={autoState.loading}
+                    onClick={findCompsWithAI}
+                  >
+                    {autoState.loading ? "Finding comps…" : "Find comps"}
+                  </button>
+                  <span className="text-sm text-ink-soft">
+                    We&apos;ll suggest comps from real recent sales. This is an{" "}
+                    <strong>estimate, not an appraisal</strong>; you can edit
+                    them.
+                  </span>
+                </div>
+                {autoState.message ? (
+                  <p className="text-sm text-ink-soft">{autoState.message}</p>
+                ) : null}
+                {autoState.error ? (
+                  <p className="text-sm text-amber-700">{autoState.error}</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-sm text-ink-soft">
+                Coming soon — enter comps manually for now.
+              </p>
+            )
           ) : null}
         </fieldset>
       </div>
