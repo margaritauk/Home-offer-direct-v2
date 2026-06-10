@@ -11,6 +11,7 @@ import { formatISO } from "@/lib/deadlines";
 import { buildHomeRollups } from "@/lib/homes/rollup";
 import { HomeRollupCard } from "./home-rollup-card";
 import { DashboardEmptyState } from "./empty-state";
+import { JourneyProgressSummary } from "@/components/journey/journey-progress-summary";
 
 /**
  * Client dashboard (#38). Reads every existing store via its hook and feeds them
@@ -56,11 +57,17 @@ export function Dashboard() {
   }
 
   if (rollups.length === 0) {
-    return <DashboardEmptyState />;
+    return (
+      <div>
+        <JourneyProgressSummary className="mb-6" />
+        <DashboardEmptyState />
+      </div>
+    );
   }
 
   return (
     <div>
+      <JourneyProgressSummary className="mb-6" />
       <p className="mb-4 text-sm text-ink-muted" aria-live="polite">
         {rollups.length} home{rollups.length === 1 ? "" : "s"} in progress
       </p>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useProgress, taskKey } from "@/hooks/use-progress";
+import { journeyProgress } from "@/lib/journey/progress";
 import type { JourneyStage } from "@/lib/journey/types";
 
 function stageTaskKeys(stage: JourneyStage): string[] {
@@ -11,13 +12,12 @@ function stageTaskKeys(stage: JourneyStage): string[] {
 }
 
 export function JourneyOverview({ stages }: { stages: JourneyStage[] }) {
-  const { isDone, hydrated, reset } = useProgress();
+  const { isDone, completed, hydrated, reset } = useProgress();
 
-  const allKeys = stages.flatMap(stageTaskKeys);
-  const totalDone = hydrated ? allKeys.filter(isDone).length : 0;
-  const overallPct = allKeys.length
-    ? Math.round((totalDone / allKeys.length) * 100)
-    : 0;
+  // Shared computation so the journey overview and the dashboard agree.
+  const prog = journeyProgress(stages, hydrated ? completed : {});
+  const totalDone = prog.doneTasks;
+  const overallPct = prog.pct;
 
   return (
     <div>
@@ -28,7 +28,7 @@ export function JourneyOverview({ stages }: { stages: JourneyStage[] }) {
             <p className="text-2xl font-bold" suppressHydrationWarning>
               {overallPct}%
               <span className="ml-2 text-sm font-normal text-ink-muted">
-                {totalDone} of {allKeys.length} tasks
+                {totalDone} of {prog.totalTasks} tasks
               </span>
             </p>
           </div>
