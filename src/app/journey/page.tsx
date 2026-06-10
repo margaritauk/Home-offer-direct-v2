@@ -3,6 +3,7 @@ import { getStages, totalSteps, totalTasks } from "@/lib/journey";
 import { JourneyOverview } from "@/components/journey-overview";
 import { JourneyStateBanner } from "@/components/journey-state-banner";
 import { WhatsNext } from "@/components/nav/whats-next";
+import { FirstRunOnboarding } from "@/components/journey/first-run-onboarding";
 
 export const metadata: Metadata = {
   title: "The home-buying journey",
@@ -28,6 +29,10 @@ export default function JourneyPage() {
         </p>
       </div>
       <JourneyStateBanner />
+
+      <div className="mt-8">
+        <FirstRunOnboarding />
+      </div>
 
       <div className="mt-8">
         <WhatsNext />
