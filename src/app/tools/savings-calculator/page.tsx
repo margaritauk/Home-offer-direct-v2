@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SavingsCalculator } from "@/components/savings-calculator";
 import { TrustCallout } from "@/components/trust-callout";
+import { ToolPageHeader } from "@/components/tools/tool-page-header";
 
 export const metadata: Metadata = {
   title: "Commission savings calculator",
@@ -10,19 +11,17 @@ export const metadata: Metadata = {
 
 export default function SavingsCalculatorPage() {
   return (
-    <div className="container-page py-12 lg:py-16">
-      <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold sm:text-4xl">Commission savings calculator</h1>
-        <p className="mt-4 text-lg text-ink-soft">
+    <ToolPageHeader
+      title="Commission savings calculator"
+      intro={
+        <>
           Buying without a buyer&apos;s agent puts roughly 2.5% of the price back
           in play. But it&apos;s only yours if you negotiate it into a price
           reduction or closing credit. See what that&apos;s worth on your deal.
-        </p>
-      </div>
-
-      <div className="mt-8">
-        <SavingsCalculator />
-      </div>
+        </>
+      }
+    >
+      <SavingsCalculator />
 
       <div className="mt-8 max-w-2xl">
         <TrustCallout tone="warning" title="The savings are not automatic">
@@ -32,6 +31,6 @@ export default function SavingsCalculatorPage() {
           0% to see what walking away from that conversation costs you.
         </TrustCallout>
       </div>
-    </div>
+    </ToolPageHeader>
   );
 }

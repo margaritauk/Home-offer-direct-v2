@@ -6,6 +6,7 @@ import {
   isStepComplete,
   nextStep,
   stageToolsFor,
+  toolsByStage,
 } from "./navigation";
 import type { CompletedTasks } from "@/hooks/use-progress";
 
@@ -133,5 +134,39 @@ describe("nextStep", () => {
     expect(info.isComplete).toBe(true);
     const last = flat[flat.length - 1];
     expect(info.stepSlug).toBe(last.step.slug);
+  });
+});
+
+describe("toolsByStage (tools index catalog)", () => {
+  it("groups tools under valid, journey-ordered stages", () => {
+    const groups = toolsByStage();
+    expect(groups.length).toBeGreaterThan(0);
+
+    const stageOrder = getStages().map((s) => s.slug);
+    const groupOrder = groups.map((g) => g.stageSlug);
+    // Groups appear in the same relative order as the journey stages.
+    const expectedOrder = stageOrder.filter((slug) => groupOrder.includes(slug));
+    expect(groupOrder).toEqual(expectedOrder);
+
+    // Every group references a real stage and is non-empty.
+    for (const group of groups) {
+      expect(stageOrder).toContain(group.stageSlug);
+      expect(group.tools.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("lists several known tool labels", () => {
+    const labels = toolsByStage().flatMap((g) => g.tools.map((t) => t.label));
+    expect(labels).toContain("Budget calculator");
+    expect(labels).toContain("Savings Calculator");
+    expect(labels).toContain("Offer Builder");
+    expect(labels).toContain("Comps Worksheet");
+    expect(labels).toContain("Tour Scorecard");
+    expect(labels).toContain("Inspection Findings Logger");
+  });
+
+  it("dedupes tools so each href appears only once across the catalog", () => {
+    const hrefs = toolsByStage().flatMap((g) => g.tools.map((t) => t.href));
+    expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 });

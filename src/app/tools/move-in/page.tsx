@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MoveInTracker } from "@/components/tools/move-in";
+import { ToolPageHeader } from "@/components/tools/tool-page-header";
 
 export const metadata: Metadata = {
   title: "Move-in & post-purchase tracker",
@@ -9,20 +10,17 @@ export const metadata: Metadata = {
 
 export default function MoveInPage() {
   return (
-    <div className="container-page py-12 lg:py-16">
-      <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold sm:text-4xl">
-          Move-in &amp; post-purchase
-        </h1>
-        <p className="mt-4 text-lg text-ink-soft">
+    <ToolPageHeader
+      title="Move-in & post-purchase"
+      intro={
+        <>
           The keys are yours — now settle in. Work through utilities, your
           mortgage and address updates, locks and safety, maintenance reminders,
           and confirm your closing documents are stored safely.
-        </p>
-      </div>
-      <div className="mt-8">
-        <MoveInTracker />
-      </div>
-    </div>
+        </>
+      }
+    >
+      <MoveInTracker />
+    </ToolPageHeader>
   );
 }

@@ -239,6 +239,39 @@ export function stageToolsFor(stageSlug: string): ToolLink[] {
   return STAGE_TOOLS[stageSlug] ?? [];
 }
 
+export interface StageToolGroup {
+  stageSlug: string;
+  stageTitle: string;
+  tools: ToolLink[];
+}
+
+/**
+ * The full tool catalog grouped by journey stage, in journey order, for the
+ * `/tools` index (UX audit IA fix). Each tool is shown under its FIRST (most
+ * relevant) stage only, so a tool that appears in several STAGE_TOOLS lists
+ * isn't duplicated across the catalog. Stages with no remaining tools are
+ * dropped.
+ */
+export function toolsByStage(): StageToolGroup[] {
+  const seen = new Set<string>();
+  const groups: StageToolGroup[] = [];
+  for (const stage of getStages()) {
+    const tools = stageToolsFor(stage.slug).filter((tool) => {
+      if (seen.has(tool.href)) return false;
+      seen.add(tool.href);
+      return true;
+    });
+    if (tools.length > 0) {
+      groups.push({
+        stageSlug: stage.slug,
+        stageTitle: stage.title,
+        tools,
+      });
+    }
+  }
+  return groups;
+}
+
 export interface NextStepInfo {
   /** 1-based index of the stage the next step belongs to. */
   stageOrder: number;

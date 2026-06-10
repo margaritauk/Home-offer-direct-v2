@@ -19,6 +19,7 @@ const FOOTER_GROUPS: { title: string; links: { href: string; label: string }[] }
     {
       title: "Tools",
       links: [
+        { href: "/tools", label: "All tools" },
         { href: "/tools/savings-calculator", label: "Savings Calculator" },
         { href: "/tools/offer-builder", label: "Offer Builder" },
         { href: "/offer-status", label: "Offer Status" },
