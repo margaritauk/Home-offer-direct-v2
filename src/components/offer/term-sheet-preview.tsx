@@ -23,23 +23,32 @@ export function TermSheetPreview({ offer }: { offer: Offer }) {
   const script = concessionScript(offer);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print-area">
       <OfferDisclaimer />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-lg font-bold">Document preview</h3>
-        <button
-          type="button"
-          className="btn-primary"
-          disabled
-          aria-disabled="true"
-          title="The clean, watermark-free export is coming soon."
-        >
-          Remove watermark &amp; export
-          <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold">
-            Coming soon
-          </span>
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => window.print()}
+          >
+            Print / Save as PDF
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled
+            aria-disabled="true"
+            title="The clean, watermark-free export is coming soon."
+          >
+            Remove watermark &amp; export
+            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold">
+              Coming soon
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* The watermarked "paper" document. The watermark layer sits above the
