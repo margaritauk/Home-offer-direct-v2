@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { calculateSavings, formatUSD, type SavingsInput } from "@/lib/savings";
 import { savingsSanity } from "@/lib/tools/sanity";
+import { UndoToast } from "@/components/undo-toast";
 import { SanityNotes } from "./tools/sanity-notes";
 
 /**
@@ -63,10 +64,8 @@ function Field({
 }
 
 export function SavingsCalculator() {
-  const { value, hydrated, save } = useStageTool<SavingsInput>(
-    "savings",
-    INITIAL,
-  );
+  const { value, hydrated, save, reset, undoReset, canUndoReset } =
+    useStageTool<SavingsInput>("savings", INITIAL);
 
   const patch = (p: Partial<SavingsInput>) =>
     save((prev) => ({ ...prev, ...p }));
@@ -76,7 +75,16 @@ export function SavingsCalculator() {
   if (!hydrated) return <p className="text-sm text-ink-muted">Loading…</p>;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
+        <button type="button" className="btn-secondary" onClick={reset}>
+          Reset
+        </button>
+      </div>
+
+      <UndoToast show={canUndoReset} onUndo={undoReset} />
+
+      <div className="grid gap-8 lg:grid-cols-2">
       <div className="card space-y-6">
         <Field
           label="Home price"
@@ -163,6 +171,7 @@ export function SavingsCalculator() {
           Estimates only — not financial advice. Actual costs, commission, and
           what you can negotiate vary by market, lender, and deal.
         </p>
+      </div>
       </div>
     </div>
   );

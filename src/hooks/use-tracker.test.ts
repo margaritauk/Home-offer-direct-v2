@@ -53,4 +53,37 @@ describe("useTracker", () => {
     act(() => result.current.reset());
     expect(result.current.state.underContractDate).toBe("");
   });
+
+  it("offers undo after reset and restores the prior state (issue #152)", () => {
+    const { result } = renderHook(() => useTracker());
+    act(() => result.current.setDates({ underContractDate: "2026-05-01" }));
+    act(() => result.current.toggleDoc("deed"));
+    expect(result.current.canUndoReset).toBe(false);
+
+    act(() => result.current.reset());
+    expect(result.current.state.underContractDate).toBe("");
+    expect(result.current.canUndoReset).toBe(true);
+
+    act(() => result.current.undoReset());
+    expect(result.current.state.underContractDate).toBe("2026-05-01");
+    expect(result.current.state.docs["deed"]).toBe(true);
+    expect(result.current.canUndoReset).toBe(false);
+    const raw = JSON.parse(window.localStorage.getItem("hod:tracker:v1")!);
+    expect(raw.underContractDate).toBe("2026-05-01");
+  });
+
+  it("clears the undo opportunity once another edit happens after reset", () => {
+    const { result } = renderHook(() => useTracker());
+    act(() => result.current.setDates({ underContractDate: "2026-05-01" }));
+    act(() => result.current.reset());
+    expect(result.current.canUndoReset).toBe(true);
+
+    act(() => result.current.setDates({ closingDate: "2026-07-01" }));
+    expect(result.current.canUndoReset).toBe(false);
+
+    // undoReset is now a no-op.
+    act(() => result.current.undoReset());
+    expect(result.current.state.underContractDate).toBe("");
+    expect(result.current.state.closingDate).toBe("2026-07-01");
+  });
 });

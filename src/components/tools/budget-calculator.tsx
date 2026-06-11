@@ -16,6 +16,7 @@ import {
 } from "@/lib/budget";
 import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
 import { budgetSanity } from "@/lib/tools/sanity";
+import { UndoToast } from "@/components/undo-toast";
 import { SanityNotes } from "./sanity-notes";
 import { ToolDisclaimer } from "./tool-disclaimer";
 import { ValidatedNumberField } from "./validated-field";
@@ -66,10 +67,8 @@ function formatMonthly(n: number): string {
 }
 
 export function BudgetCalculator() {
-  const { value, hydrated, save, reset } = useStageTool<BudgetState>(
-    "budget",
-    INITIAL,
-  );
+  const { value, hydrated, save, reset, undoReset, canUndoReset } =
+    useStageTool<BudgetState>("budget", INITIAL);
 
   const setMode = (mode: Mode) => save((prev) => ({ ...prev, mode }));
   const patchPiti = (patch: Partial<PitiInput>) =>
@@ -107,6 +106,8 @@ export function BudgetCalculator() {
           Reset
         </button>
       </div>
+
+      <UndoToast show={canUndoReset} onUndo={undoReset} />
 
       {value.mode === "payment" ? (
         <PaymentMode input={value.piti} onPatch={patchPiti} />

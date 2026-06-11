@@ -45,4 +45,41 @@ describe("useStageTool", () => {
     act(() => a.result.current.save(10));
     expect(b.result.current.value).toBe(2);
   });
+
+  it("offers undo after a reset and restores the exact prior value", () => {
+    const { result } = renderHook(() =>
+      useStageTool("undo-demo", { n: 0 }),
+    );
+    act(() => result.current.save({ n: 42 }));
+    expect(result.current.canUndoReset).toBe(false);
+
+    act(() => result.current.reset());
+    expect(result.current.value).toEqual({ n: 0 });
+    expect(result.current.canUndoReset).toBe(true);
+
+    act(() => result.current.undoReset());
+    expect(result.current.value).toEqual({ n: 42 });
+    expect(result.current.canUndoReset).toBe(false);
+    // Undo re-persisted the prior value to localStorage.
+    expect(window.localStorage.getItem("hod:tool:undo-demo:v1")).toContain(
+      "42",
+    );
+  });
+
+  it("clears the undo opportunity once a save happens after reset", () => {
+    const { result } = renderHook(() =>
+      useStageTool("undo-stale", { n: 7 }),
+    );
+    act(() => result.current.save({ n: 7 }));
+    act(() => result.current.reset());
+    expect(result.current.canUndoReset).toBe(true);
+
+    // A manual change after reset invalidates the stale undo snapshot.
+    act(() => result.current.save({ n: 9 }));
+    expect(result.current.canUndoReset).toBe(false);
+
+    // undoReset is now a no-op and must not clobber the new value.
+    act(() => result.current.undoReset());
+    expect(result.current.value).toEqual({ n: 9 });
+  });
 });

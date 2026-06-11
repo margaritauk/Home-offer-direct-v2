@@ -58,4 +58,26 @@ describe("SavingsCalculator", () => {
     const slider = screen.getByLabelText("Home price") as HTMLInputElement;
     expect(slider.value).toBe("800000");
   });
+
+  it("offers Undo after Reset and restores the prior value (issue #152)", () => {
+    render(<SavingsCalculator />);
+    const homePrice = () =>
+      screen.getByLabelText("Home price") as HTMLInputElement;
+
+    fireEvent.change(homePrice(), { target: { value: "800000" } });
+    expect(homePrice().value).toBe("800000");
+
+    // No undo strip until a reset happens.
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    expect(homePrice().value).toBe("400000"); // back to INITIAL
+
+    // Undo affordance appears; clicking it restores the prior value.
+    fireEvent.click(screen.getByRole("button", { name: /undo/i }));
+    expect(homePrice().value).toBe("800000");
+    expect(window.localStorage.getItem("hod:tool:savings:v1")).toContain(
+      "800000",
+    );
+  });
 });

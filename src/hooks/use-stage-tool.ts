@@ -18,6 +18,15 @@ function notifyAll() {
   listeners.forEach((l) => l());
 }
 
+/**
+ * In-memory undo snapshots keyed by toolId, captured on `reset()` so the user
+ * can immediately undo a destructive Reset/Clear (issue #152). Deliberately NOT
+ * persisted: it lives only in this tab's module scope and is lost on reload,
+ * which is acceptable for a transient "Undo" affordance. A new save or a fresh
+ * reset clears the snapshot so a stale undo can never fire.
+ */
+const undoSnapshots = new Map<string, unknown>();
+
 function keyFor(toolId: string) {
   return `hod:tool:${toolId}:v1`;
 }
@@ -35,11 +44,19 @@ function read<T>(toolId: string, fallback: T): T {
 export function useStageTool<T>(toolId: string, initial: T) {
   const [value, setValue] = useState<T>(initial);
   const [hydrated, setHydrated] = useState(false);
+  // True after a reset until undo is used, a save happens, or another reset.
+  const [canUndoReset, setCanUndoReset] = useState(
+    () => undoSnapshots.has(toolId),
+  );
 
   useEffect(() => {
     setValue(read<T>(toolId, initial));
     setHydrated(true);
-    const sync = () => setValue(read<T>(toolId, initial));
+    setCanUndoReset(undoSnapshots.has(toolId));
+    const sync = () => {
+      setValue(read<T>(toolId, initial));
+      setCanUndoReset(undoSnapshots.has(toolId));
+    };
     listeners.add(sync);
     const onStorage = (e: StorageEvent) => {
       if (e.key === keyFor(toolId)) setValue(read<T>(toolId, initial));
@@ -64,6 +81,9 @@ export function useStageTool<T>(toolId: string, initial: T) {
         } catch {
           /* best-effort */
         }
+        // Any save (manual change) invalidates a pending undo snapshot so a
+        // stale undo can't clobber the new value.
+        undoSnapshots.delete(toolId);
         notifyAll();
         emitLocalChange();
         return resolved;
@@ -73,6 +93,9 @@ export function useStageTool<T>(toolId: string, initial: T) {
   );
 
   const reset = useCallback(() => {
+    // Snapshot the current value BEFORE writing the initial value so undo can
+    // restore the exact prior state (in-memory, this tab only).
+    undoSnapshots.set(toolId, read<T>(toolId, initial));
     try {
       window.localStorage.removeItem(keyFor(toolId));
     } catch {
@@ -84,5 +107,21 @@ export function useStageTool<T>(toolId: string, initial: T) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toolId]);
 
-  return { value, hydrated, save, reset };
+  /** Restore the snapshot captured at the last reset, then clear it. */
+  const undoReset = useCallback(() => {
+    if (!undoSnapshots.has(toolId)) return;
+    const snapshot = undoSnapshots.get(toolId) as T;
+    undoSnapshots.delete(toolId);
+    try {
+      window.localStorage.setItem(keyFor(toolId), JSON.stringify(snapshot));
+    } catch {
+      /* best-effort */
+    }
+    setValue(snapshot);
+    notifyAll();
+    emitLocalChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolId]);
+
+  return { value, hydrated, save, reset, undoReset, canUndoReset };
 }

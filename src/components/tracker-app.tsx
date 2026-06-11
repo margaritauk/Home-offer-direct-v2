@@ -12,6 +12,7 @@ import {
 } from "@/lib/deadlines";
 import { useTracker } from "@/hooks/use-tracker";
 import { DocumentChecklist } from "@/components/document-checklist";
+import { UndoToast } from "@/components/undo-toast";
 
 const statusStyles: Record<MilestoneStatus, { dot: string; chip: string; label: (d: number) => string }> = {
   overdue: { dot: "bg-red-500", chip: "bg-red-100 text-red-800", label: (d) => `${Math.abs(d)}d overdue` },
@@ -40,7 +41,16 @@ function formatHuman(iso: string): string {
 }
 
 export function TrackerApp() {
-  const { state, hydrated, setDates, setOffset, toggleDoc, reset } = useTracker();
+  const {
+    state,
+    hydrated,
+    setDates,
+    setOffset,
+    toggleDoc,
+    reset,
+    undoReset,
+    canUndoReset,
+  } = useTracker();
   const [showOffsets, setShowOffsets] = useState(false);
 
   const today = formatISO(Date.now());
@@ -114,6 +124,16 @@ export function TrackerApp() {
             </button>
           ) : null}
         </div>
+
+        {hydrated ? (
+          <div className="mt-4">
+            <UndoToast
+              show={canUndoReset}
+              onUndo={undoReset}
+              label="Tracker reset"
+            />
+          </div>
+        ) : null}
 
         {showOffsets ? (
           <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -14,6 +14,7 @@ import {
 } from "@/lib/tools/comps";
 import { SampleCompsDataSource } from "@/lib/tools/comps-source";
 import { rankComps } from "@/lib/tools/comps-rank";
+import { UndoToast } from "@/components/undo-toast";
 import { ToolDisclaimer } from "./tool-disclaimer";
 
 /** Whether the UI is allowed to offer the real AI auto-find button (default false). */
@@ -56,10 +57,8 @@ function perSqftLabel(v: number | null): string {
 }
 
 export function CompsWorksheet() {
-  const { value, hydrated, save, reset } = useStageTool<CompsState>(
-    "comps",
-    INITIAL,
-  );
+  const { value, hydrated, save, reset, undoReset, canUndoReset } =
+    useStageTool<CompsState>("comps", INITIAL);
 
   // Normalize on every render so both legacy and new blobs render correctly;
   // the first save then persists the new shape. Cheap + pure (issue #103).
@@ -98,6 +97,8 @@ export function CompsWorksheet() {
           ) : null}
         </div>
       </div>
+
+      <UndoToast show={canUndoReset} onUndo={undoReset} label="Cleared" />
 
       {homes.length === 0 ? (
         <div className="card text-center text-sm text-ink-soft">
