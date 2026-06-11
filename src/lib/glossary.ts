@@ -182,6 +182,15 @@ export const glossaryTerms: GlossaryTerm[] = [
   },
 ];
 
+/**
+ * Slug → term lookup, built once from {@link glossaryTerms} so callers (notably
+ * the inline `<Term>` primitive) get O(1) single-sourced lookups without
+ * re-scanning the array. Never duplicate definition copy — read from here.
+ */
+export const glossaryBySlug: Record<string, GlossaryTerm> = Object.fromEntries(
+  glossaryTerms.map((t) => [t.slug, t]),
+);
+
 /** All glossary terms, sorted alphabetically by display name. */
 export function getAllTerms(): GlossaryTerm[] {
   return [...glossaryTerms].sort((a, b) => a.term.localeCompare(b.term));
