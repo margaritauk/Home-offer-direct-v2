@@ -17,6 +17,7 @@
 
 import {
   computeMilestones,
+  daysToClosing,
   statusFor,
   type DeadlineInput,
   type Milestone,
@@ -85,6 +86,14 @@ export interface HomeRollup {
   nextDeadline?: NextDeadline;
   /** Count of document-checklist items not yet gathered (device-wide store). */
   outstandingDocs: number;
+
+  /**
+   * Tracker closing date (YYYY-MM-DD) when set, and the signed days-to-closing
+   * from `today` (positive = remaining, 0 = today, negative = past). Both are
+   * absent when no valid closing date is set. Device-wide store (see file note).
+   */
+  closingDate?: string;
+  closingDays?: number;
 
   /** One-line "what to do next" hint. */
   nextAction: string;
@@ -271,6 +280,9 @@ export function buildHomeRollups(input: RollupInput): HomeRollup[] {
   const journey = journeyProgress(input.progress, input.totalJourneyTasks);
   const { next: nextDeadline } = computeNextDeadline(input.tracker, input.today);
   const outstandingDocs = outstandingDocCount(input.tracker.docs);
+  const closingDays = daysToClosing(input.tracker.closingDate, input.today);
+  const closingDate =
+    closingDays === null ? undefined : input.tracker.closingDate;
 
   const ids = new Set<string>([
     ...Object.keys(input.showings),
@@ -306,6 +318,8 @@ export function buildHomeRollups(input: RollupInput): HomeRollup[] {
       expiration,
       nextDeadline,
       outstandingDocs,
+      closingDate,
+      closingDays: closingDays ?? undefined,
       nextAction: action.nextAction,
       nextHref: action.nextHref,
     });

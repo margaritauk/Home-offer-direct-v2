@@ -100,6 +100,32 @@ export function businessDaysBefore(iso: string, n: number): string {
   return formatISO(ts);
 }
 
+/**
+ * Days remaining until closing. `null` for an invalid/empty closing date,
+ * otherwise the signed whole-day difference from `todayISO` to `closingISO`:
+ * positive = days remaining, 0 = closing today, negative = closing has passed.
+ */
+export function daysToClosing(
+  closingISO: string,
+  todayISO: string,
+): number | null {
+  if (!isValidDate(closingISO) || !isValidDate(todayISO)) return null;
+  return daysBetween(todayISO, closingISO);
+}
+
+/**
+ * Human label for the closing countdown. Pure so it's unit-testable:
+ *   null → "" ; >0 → "N days to closing" ; 0 → "Closing today" ;
+ *   <0 → "Closed N days ago".
+ */
+export function closingCountdownLabel(days: number | null): string {
+  if (days === null) return "";
+  if (days > 0) return `${days} ${days === 1 ? "day" : "days"} to closing`;
+  if (days === 0) return "Closing today";
+  const past = Math.abs(days);
+  return `Closed ${past} ${past === 1 ? "day" : "days"} ago`;
+}
+
 /** Status of a milestone relative to "today", with `soon` = within 3 days. */
 export function statusFor(
   milestoneISO: string,
