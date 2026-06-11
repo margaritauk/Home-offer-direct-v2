@@ -38,6 +38,15 @@ export interface Listing {
   description: string;
   /** Illustrative listing — never a real property. The UI labels these. */
   isSample: boolean;
+  /** Latitude of the property, when the source provides real coordinates. */
+  lat?: number;
+  /** Longitude of the property, when the source provides real coordinates. */
+  lng?: number;
+  /**
+   * Distance in miles from the active search center, set only when both the
+   * listing and the search carry real coordinates (see `annotateDistance`).
+   */
+  distance?: number;
 }
 
 export interface ListingFilters {
@@ -86,5 +95,6 @@ export interface ListingFilters {
     | "newest"
     | "sqft-desc"
     | "beds-desc"
-    | "days-asc";
+    | "days-asc"
+    | "distance";
 }

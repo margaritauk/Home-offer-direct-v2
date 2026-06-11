@@ -7,9 +7,11 @@ import {
   listingStates,
   queryListings,
   searchListings,
+  sortListings,
 } from "./provider";
 import { RentCastListingsDataSource } from "./source-rentcast";
 import { mockListings } from "./mock-data";
+import type { Listing } from "./types";
 
 describe("mock listings dataset", () => {
   it("has entries, all flagged as samples with unique ids", () => {
@@ -160,6 +162,40 @@ describe("queryListings", () => {
           (l.propertyType === "single-family" || l.propertyType === "condo"),
       ),
     ).toBe(true);
+  });
+
+  it("sorts by distance nearest-first and pushes distance-less listings last", () => {
+    const make = (id: string, distance?: number): Listing => ({
+      id,
+      address: `${id} St`,
+      city: "Austin",
+      state: "TX",
+      zip: "78701",
+      price: 500000,
+      beds: 3,
+      baths: 2,
+      sqft: 1800,
+      propertyType: "single-family",
+      yearBuilt: 2010,
+      daysOnMarket: 5,
+      description: "Test.",
+      isSample: false,
+      distance,
+    });
+
+    const input = [
+      make("far", 50),
+      make("none-1"),
+      make("near", 2),
+      make("mid", 10),
+      make("none-2"),
+    ];
+
+    const ids = sortListings(input, "distance").map((l) => l.id);
+    // Nearest first by distance...
+    expect(ids.slice(0, 3)).toEqual(["near", "mid", "far"]);
+    // ...then the distance-less listings, in any order, but last.
+    expect(ids.slice(3).sort()).toEqual(["none-1", "none-2"]);
   });
 
   it("sorts by sqft desc, beds desc, and days-on-market asc", () => {
