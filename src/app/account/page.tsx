@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AccountPanel } from "@/components/account-panel";
+import { DealExport } from "@/components/deal-export";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -20,6 +21,9 @@ export default function AccountPage() {
       </div>
       <div className="mt-8">
         <AccountPanel />
+      </div>
+      <div className="mt-8 max-w-2xl">
+        <DealExport />
       </div>
     </div>
   );
