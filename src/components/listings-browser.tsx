@@ -14,6 +14,11 @@ import { ListingCard } from "@/components/listing-card";
 import { DisclaimerBanner } from "@/components/disclaimer-banner";
 import { PriceRange, type PriceBounds, type RangeValue } from "@/components/listings/price-range";
 import { FilterChips, type FilterChip } from "@/components/listings/filter-chips";
+import {
+  LocationSelector,
+  DEFAULT_RADIUS,
+  type LocationValue,
+} from "@/components/search/location-selector";
 
 const stateOptions = getStateOptions();
 const stateNames = new Map(stateOptions.map((o) => [o.code, o.name]));
@@ -31,7 +36,7 @@ const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 export function ListingsBrowser() {
   const { stateCode, hydrated } = useStateSelection();
-  const [state, setState] = useState("");
+  const [location, setLocation] = useState<LocationValue>({ mode: "state" });
   const [propertyType, setPropertyType] = useState<PropertyType | "">("");
   const [minBeds, setMinBeds] = useState(0);
   const [minBaths, setMinBaths] = useState(0);
@@ -39,11 +44,15 @@ export function ListingsBrowser() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<NonNullable<ListingFilters["sort"]>>("newest");
 
-  // Default the state filter to the buyer's selected state (once on hydration).
-  // After this, clearing the chip/Clear-all just resets local `state`; we never
-  // silently re-apply it, so the buyer can browse all states.
+  // Default the location to the buyer's selected state (once on hydration), shown
+  // as a removable State chip. After this, clearing the chip/Clear-all just resets
+  // the location; we never silently re-apply it, so the buyer can browse all states.
   useEffect(() => {
-    if (hydrated && stateCode) setState(stateCode);
+    if (hydrated && stateCode) {
+      setLocation((loc) =>
+        loc.mode === "state" && !loc.state ? { mode: "state", state: stateCode } : loc,
+      );
+    }
   }, [hydrated, stateCode]);
 
   // Real listings come from the server seam (mock or RentCast) via the search
@@ -56,7 +65,12 @@ export function ListingsBrowser() {
 
   useEffect(() => {
     const filters: ListingFilters = {
-      state: state || undefined,
+      state: location.state || undefined,
+      city: location.city || undefined,
+      zip: location.zip || undefined,
+      lat: location.lat,
+      lng: location.lng,
+      radius: location.lat != null ? location.radius ?? DEFAULT_RADIUS : undefined,
       propertyType: propertyType || undefined,
       minBeds: minBeds || undefined,
       minBaths: minBaths || undefined,
@@ -92,10 +106,10 @@ export function ListingsBrowser() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [state, propertyType, minBeds, minBaths, price, query, sort]);
+  }, [location, propertyType, minBeds, minBaths, price, query, sort]);
 
   const clearAll = () => {
-    setState("");
+    setLocation({ mode: location.mode });
     setPropertyType("");
     setMinBeds(0);
     setMinBaths(0);
@@ -104,7 +118,18 @@ export function ListingsBrowser() {
   };
 
   const chips: FilterChip[] = [];
-  if (state) chips.push({ id: "state", label: `State: ${stateNames.get(state) ?? state}` });
+  if (location.lat != null && location.lng != null)
+    chips.push({ id: "location", label: `Near me · ${location.radius ?? DEFAULT_RADIUS} mi` });
+  else if (location.zip) chips.push({ id: "location", label: `ZIP ${location.zip}` });
+  else if (location.city)
+    chips.push({
+      id: "location",
+      label: location.state
+        ? `${location.city}, ${location.state}`
+        : location.city,
+    });
+  else if (location.state)
+    chips.push({ id: "location", label: stateNames.get(location.state) ?? location.state });
   if (propertyType)
     chips.push({ id: "propertyType", label: `Type: ${propertyTypeLabels[propertyType]}` });
   if (minBeds) chips.push({ id: "minBeds", label: `${minBeds}+ beds` });
@@ -115,8 +140,8 @@ export function ListingsBrowser() {
 
   const removeChip = (id: string) => {
     switch (id) {
-      case "state":
-        setState("");
+      case "location":
+        setLocation((loc) => ({ mode: loc.mode }));
         break;
       case "propertyType":
         setPropertyType("");
@@ -142,21 +167,10 @@ export function ListingsBrowser() {
   return (
     <div>
       <div className="card grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">State</span>
-          <select
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            aria-label="State"
-            suppressHydrationWarning
-          >
-            <option value="">All states</option>
-            {stateOptions.map((o) => (
-              <option key={o.code} value={o.code}>{o.name}</option>
-            ))}
-          </select>
-        </label>
+        <div className="block sm:col-span-2 lg:col-span-3">
+          <span className="mb-1 block text-sm font-medium text-ink-soft">Location</span>
+          <LocationSelector value={location} onChange={setLocation} />
+        </div>
 
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-ink-soft">Property type</span>
@@ -213,12 +227,12 @@ export function ListingsBrowser() {
         </div>
 
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">Search</span>
+          <span className="mb-1 block text-sm font-medium text-ink-soft">Keyword</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="City, address, or keyword…"
+            placeholder="Keyword in description…"
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
             aria-label="Search listings"
           />
