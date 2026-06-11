@@ -19,6 +19,11 @@ import {
   DEFAULT_RADIUS,
   type LocationValue,
 } from "@/components/search/location-selector";
+import {
+  MoreFilters,
+  EMPTY_MORE_FILTERS,
+  type MoreFiltersValue,
+} from "@/components/search/more-filters";
 
 const stateOptions = getStateOptions();
 const stateNames = new Map(stateOptions.map((o) => [o.code, o.name]));
@@ -43,6 +48,7 @@ export function ListingsBrowser() {
   const [price, setPrice] = useState<RangeValue>({ min: 0, max: 0 });
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<NonNullable<ListingFilters["sort"]>>("newest");
+  const [more, setMore] = useState<MoreFiltersValue>(EMPTY_MORE_FILTERS);
 
   // Default the location to the buyer's selected state (once on hydration), shown
   // as a removable State chip. After this, clearing the chip/Clear-all just resets
@@ -72,8 +78,15 @@ export function ListingsBrowser() {
       lng: location.lng,
       radius: location.lat != null ? location.radius ?? DEFAULT_RADIUS : undefined,
       propertyType: propertyType || undefined,
+      propertyTypes: more.propertyTypes.length ? more.propertyTypes : undefined,
       minBeds: minBeds || undefined,
+      maxBeds: more.maxBeds || undefined,
       minBaths: minBaths || undefined,
+      minSqft: more.minSqft || undefined,
+      maxSqft: more.maxSqft || undefined,
+      minYearBuilt: more.minYearBuilt || undefined,
+      maxYearBuilt: more.maxYearBuilt || undefined,
+      maxDaysOnMarket: more.maxDaysOnMarket || undefined,
       minPrice: price.min || undefined,
       maxPrice: price.max || undefined,
       query: query || undefined,
@@ -106,7 +119,7 @@ export function ListingsBrowser() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [location, propertyType, minBeds, minBaths, price, query, sort]);
+  }, [location, propertyType, minBeds, minBaths, price, query, sort, more]);
 
   const clearAll = () => {
     setLocation({ mode: location.mode });
@@ -115,6 +128,7 @@ export function ListingsBrowser() {
     setMinBaths(0);
     setPrice({ min: 0, max: 0 });
     setQuery("");
+    setMore(EMPTY_MORE_FILTERS);
   };
 
   const chips: FilterChip[] = [];
@@ -133,12 +147,29 @@ export function ListingsBrowser() {
   if (propertyType)
     chips.push({ id: "propertyType", label: `Type: ${propertyTypeLabels[propertyType]}` });
   if (minBeds) chips.push({ id: "minBeds", label: `${minBeds}+ beds` });
+  if (more.maxBeds) chips.push({ id: "maxBeds", label: `Up to ${more.maxBeds} beds` });
   if (minBaths) chips.push({ id: "minBaths", label: `${minBaths}+ baths` });
   if (price.min) chips.push({ id: "minPrice", label: `Min ${usd(price.min)}` });
   if (price.max) chips.push({ id: "maxPrice", label: `Max ${usd(price.max)}` });
+  if (more.minSqft) chips.push({ id: "minSqft", label: `Min ${more.minSqft.toLocaleString("en-US")} sqft` });
+  if (more.maxSqft) chips.push({ id: "maxSqft", label: `Max ${more.maxSqft.toLocaleString("en-US")} sqft` });
+  if (more.minYearBuilt) chips.push({ id: "minYearBuilt", label: `Built ${more.minYearBuilt}+` });
+  if (more.maxYearBuilt) chips.push({ id: "maxYearBuilt", label: `Built ≤ ${more.maxYearBuilt}` });
+  if (more.maxDaysOnMarket)
+    chips.push({ id: "maxDaysOnMarket", label: `≤ ${more.maxDaysOnMarket} days on market` });
+  for (const t of more.propertyTypes)
+    chips.push({ id: `propertyTypes:${t}`, label: `Type: ${propertyTypeLabels[t]}` });
   if (query.trim()) chips.push({ id: "query", label: `“${query.trim()}”` });
 
   const removeChip = (id: string) => {
+    if (id.startsWith("propertyTypes:")) {
+      const t = id.slice("propertyTypes:".length) as PropertyType;
+      setMore((m) => ({
+        ...m,
+        propertyTypes: m.propertyTypes.filter((x) => x !== t),
+      }));
+      return;
+    }
     switch (id) {
       case "location":
         setLocation((loc) => ({ mode: loc.mode }));
@@ -149,6 +180,9 @@ export function ListingsBrowser() {
       case "minBeds":
         setMinBeds(0);
         break;
+      case "maxBeds":
+        setMore((m) => ({ ...m, maxBeds: 0 }));
+        break;
       case "minBaths":
         setMinBaths(0);
         break;
@@ -157,6 +191,21 @@ export function ListingsBrowser() {
         break;
       case "maxPrice":
         setPrice((p) => ({ ...p, max: 0 }));
+        break;
+      case "minSqft":
+        setMore((m) => ({ ...m, minSqft: 0 }));
+        break;
+      case "maxSqft":
+        setMore((m) => ({ ...m, maxSqft: 0 }));
+        break;
+      case "minYearBuilt":
+        setMore((m) => ({ ...m, minYearBuilt: 0 }));
+        break;
+      case "maxYearBuilt":
+        setMore((m) => ({ ...m, maxYearBuilt: 0 }));
+        break;
+      case "maxDaysOnMarket":
+        setMore((m) => ({ ...m, maxDaysOnMarket: 0 }));
         break;
       case "query":
         setQuery("");
@@ -249,8 +298,15 @@ export function ListingsBrowser() {
             <option value="newest">Newest</option>
             <option value="price-asc">Price: low to high</option>
             <option value="price-desc">Price: high to low</option>
+            <option value="sqft-desc">Largest (sqft)</option>
+            <option value="beds-desc">Most beds</option>
+            <option value="days-asc">Freshest on market</option>
           </select>
         </label>
+
+        <div className="block sm:col-span-2 lg:col-span-3">
+          <MoreFilters value={more} onChange={setMore} />
+        </div>
       </div>
 
       {source === "rentcast" ? (
