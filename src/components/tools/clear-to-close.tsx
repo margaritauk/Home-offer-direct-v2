@@ -13,6 +13,7 @@ import {
 } from "@/lib/tools/clear-to-close";
 import { ToolDisclaimer } from "./tool-disclaimer";
 import { ValidatedNumberField } from "./validated-field";
+import { Term } from "@/components/term";
 
 interface ClearToCloseState {
   /** Optional label for the home this checklist is about (#112). */
@@ -172,7 +173,7 @@ export function ClearToClose() {
             <div className="space-y-4">
               <div className="rounded-xl bg-brand-600 p-6 text-white">
                 <p className="text-sm font-medium text-brand-100">
-                  Appraisal gap
+                  <Term slug="appraisal-gap">Appraisal gap</Term>
                 </p>
                 <p className="mt-1 text-3xl font-bold">{formatUSD(gap.gap)}</p>
                 <p className="mt-2 text-sm text-brand-100">

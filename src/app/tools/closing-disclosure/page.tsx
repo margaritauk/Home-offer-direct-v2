@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClosingDisclosureTool } from "@/components/tools/closing-disclosure";
 import { ToolPageHeader } from "@/components/tools/tool-page-header";
+import { Term } from "@/components/term";
 
 export const metadata: Metadata = {
   title: "Closing Disclosure check",
@@ -14,8 +15,10 @@ export default function ClosingDisclosurePage() {
       title="Closing Disclosure check"
       intro={
         <>
-          Your Closing Disclosure (CD) should match the Loan Estimate (LE) you
-          got when you applied. Enter both sets of figures to see what changed,
+          Your <Term slug="closing-disclosure">Closing Disclosure (CD)</Term>{" "}
+          should match the <Term slug="loan-estimate">Loan Estimate (LE)</Term>{" "}
+          you got when you applied. Enter both sets of figures to see what
+          changed,
           catch any increase beyond the CFPB tolerance limits, and confirm the
           3-business-day review window before you sign.
         </>

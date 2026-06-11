@@ -17,6 +17,7 @@ import {
 import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
 import { budgetSanity } from "@/lib/tools/sanity";
 import { UndoToast } from "@/components/undo-toast";
+import { Term } from "@/components/term";
 import { SanityNotes } from "./sanity-notes";
 import { ToolDisclaimer } from "./tool-disclaimer";
 import { ValidatedNumberField } from "./validated-field";
@@ -252,7 +253,7 @@ function PaymentMode({
           </p>
           <p className="mt-2 text-sm text-brand-100">
             {formatUSD(breakdown.loanAmount)} loan ·{" "}
-            {Math.round(breakdown.ltv)}% LTV
+            {Math.round(breakdown.ltv)}% <Term slug="loan-to-value">LTV</Term>
             {breakdown.pmi > 0 ? (
               <span
                 data-testid="pmi-badge"
@@ -406,7 +407,7 @@ function AffordabilityMode({
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-ink-soft">
-            DTI caps (front / back)
+            <Term slug="debt-to-income">DTI</Term> caps (front / back)
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <ValidatedNumberField

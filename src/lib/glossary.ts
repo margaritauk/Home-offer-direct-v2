@@ -90,6 +90,41 @@ export const glossaryTerms: GlossaryTerm[] = [
     related: ["underwriting", "comps", "contingency"],
   },
   {
+    slug: "appraisal-gap",
+    term: "Appraisal gap",
+    definition:
+      "The shortfall when a home appraises for less than the agreed price. Because the lender bases the loan on the lower appraised value, you must cover the gap with extra cash, renegotiate the price, or exit under an appraisal contingency.",
+    related: ["appraisal", "contingency", "loan-to-value"],
+  },
+  {
+    slug: "piti",
+    term: "PITI",
+    definition:
+      "The four parts of a typical monthly mortgage payment: Principal, Interest, Taxes, and Insurance. Lenders use PITI (sometimes plus HOA dues) to gauge whether a payment fits your budget.",
+    related: ["pmi", "debt-to-income", "down-payment"],
+  },
+  {
+    slug: "pmi",
+    term: "PMI (private mortgage insurance)",
+    definition:
+      "Insurance that protects the lender, not you, typically required on conventional loans when your down payment is under 20%. It's added to your monthly payment and can usually be removed once you reach about 20% equity.",
+    related: ["piti", "down-payment", "loan-to-value"],
+  },
+  {
+    slug: "debt-to-income",
+    term: "Debt-to-income ratio (DTI)",
+    definition:
+      "The share of your gross monthly income that goes to debt payments. The front-end ratio counts housing only; the back-end ratio counts all debts. Lenders use DTI limits to decide how much you can borrow.",
+    related: ["piti", "pre-approval", "underwriting"],
+  },
+  {
+    slug: "loan-to-value",
+    term: "Loan-to-value ratio (LTV)",
+    definition:
+      "The loan amount divided by the home's value, shown as a percentage. A lower LTV means more equity and less risk to the lender; above 80% LTV on a conventional loan usually triggers PMI.",
+    related: ["down-payment", "pmi", "appraisal"],
+  },
+  {
     slug: "title-search",
     term: "Title search",
     definition:

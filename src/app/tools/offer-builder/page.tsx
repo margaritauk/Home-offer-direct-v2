@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { OfferWizard } from "@/components/offer/offer-wizard";
 import { TrustCallout } from "@/components/trust-callout";
 import { ToolPageHeader } from "@/components/tools/tool-page-header";
+import { Term } from "@/components/term";
 
 export const metadata: Metadata = {
   title: "Offer worksheet builder",
@@ -15,8 +16,9 @@ export default function OfferBuilderPage() {
       title="Offer worksheet builder"
       intro={
         <>
-          Assemble a complete, well-organized offer one step at a time — price,
-          earnest money, financing, contingencies, dates, and the
+          Assemble a complete, well-organized offer one step at a time — price,{" "}
+          <Term slug="earnest-money">earnest money</Term>, financing,{" "}
+          <Term slug="contingency">contingencies</Term>, dates, and the
           commission-savings ask. Everything saves as you go, so you can leave
           and pick up where you left off.
         </>
