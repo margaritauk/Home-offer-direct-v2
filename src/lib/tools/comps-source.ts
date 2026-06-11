@@ -12,6 +12,8 @@
  * clear "no comparable sales found" message — it does not fabricate anything.
  */
 
+import { RentCastCompsDataSource } from "./comps-source-rentcast";
+
 /** The subject home we want comparable sales for. Neutral facts only. */
 export interface CompsSubject {
   /** Address/label of the subject home. */
@@ -150,14 +152,22 @@ export const SampleCompsDataSource: CompsDataSource = {
 
 /**
  * The seam. Returns the configured data source, or {@link NullCompsDataSource}
- * by default. A real ATTOM/MLS connector plugs in HERE (gated on the
- * `COMPS_DATA_SOURCE` env var); until then every caller gets zero candidates.
+ * by default. The first real connector — RentCast (issue #169) — plugs in HERE,
+ * gated on the `COMPS_DATA_SOURCE` env var AND its API key; until then every
+ * caller gets zero candidates.
  *
  * Server-only: reads `process.env`. Never imported by client components.
  */
 export function getCompsDataSource(): CompsDataSource {
-  // No real connector ships in this scaffolding. When `COMPS_DATA_SOURCE` names
-  // a supported provider, return its implementation here. Default: the null
-  // source, so no source == no fabricated comps.
+  // RentCast: selected only when `COMPS_DATA_SOURCE === "rentcast"` AND its
+  // server key is present. Without the key there are no real candidates, so we
+  // fall back to the null source rather than wire up a source that can't query.
+  if (
+    process.env.COMPS_DATA_SOURCE === "rentcast" &&
+    Boolean(process.env.RENTCAST_API_KEY)
+  ) {
+    return new RentCastCompsDataSource();
+  }
+  // Default: the null source, so no source == no fabricated comps.
   return NullCompsDataSource;
 }

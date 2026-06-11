@@ -25,6 +25,33 @@ export function isAiCompsConfigured(): boolean {
 }
 
 /**
+ * SERVER gate (issue #169). True when a REAL comps data source is selected and
+ * its key is present — regardless of whether a Claude key exists. This is what
+ * lets real comps work WITHOUT an Anthropic key: the route can fetch real
+ * candidates and rank them deterministically.
+ *
+ * Currently the only real source is RentCast (`COMPS_DATA_SOURCE === "rentcast"`
+ * + `RENTCAST_API_KEY`). Default false. Server-only: reads non-public env vars.
+ */
+export function isCompsSourceConfigured(): boolean {
+  return (
+    process.env.COMPS_DATA_SOURCE === "rentcast" &&
+    Boolean(process.env.RENTCAST_API_KEY)
+  );
+}
+
+/**
+ * CLIENT surface gate (issue #169). The UI offers the REAL "Auto-find comps"
+ * button (which POSTs the route and populates genuine comps, with NO sample
+ * banner) only when `NEXT_PUBLIC_COMPS_AUTOFIND === "true"`. Default false.
+ * Decoupled from the server gate: the server still gates independently and
+ * returns 503 when nothing is configured.
+ */
+export function isCompsAutofindEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_COMPS_AUTOFIND === "true";
+}
+
+/**
  * CLIENT surface gate. The UI offers the "Auto-find comps with AI" button only
  * when `NEXT_PUBLIC_AI_COMPS_ENABLED === "true"`. Default false, so the UI keeps
  * showing "Coming soon". This is decoupled from {@link isAiCompsConfigured}: the

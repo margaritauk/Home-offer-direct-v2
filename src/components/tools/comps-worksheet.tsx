@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { HomePicker } from "@/components/homes/home-picker";
-import { isAiCompsEnabled, isCompsDemoEnabled } from "@/lib/ai/config";
+import {
+  isAiCompsEnabled,
+  isCompsAutofindEnabled,
+  isCompsDemoEnabled,
+} from "@/lib/ai/config";
 import { formatUSD } from "@/lib/savings";
 import {
   compsEstimate,
@@ -17,18 +21,27 @@ import { rankComps } from "@/lib/tools/comps-rank";
 import { UndoToast } from "@/components/undo-toast";
 import { ToolDisclaimer } from "./tool-disclaimer";
 
+/**
+ * Whether the UI offers the REAL auto-find button (issue #169): it POSTs the
+ * route, populates GENUINE comps from the configured data source (e.g. RentCast)
+ * and shows NO "sample" banner. Highest precedence — takes priority over the
+ * demo and AI-flag paths below.
+ */
+const COMPS_AUTOFIND_ENABLED = isCompsAutofindEnabled();
+
 /** Whether the UI is allowed to offer the real AI auto-find button (default false). */
 const AI_COMPS_ENABLED = isAiCompsEnabled();
 
 /**
  * Whether the DEMO (illustrative sample comps) auto option is offered. Only
- * consulted when the real AI path is OFF, so the real path always takes
+ * consulted when the real autofind path is OFF, so the real path always takes
  * precedence (issue #127).
  */
 const COMPS_DEMO_ENABLED = isCompsDemoEnabled();
 
-/** True when the auto mode is offered at all (real AI OR sample demo). */
-const AUTO_MODE_OFFERED = AI_COMPS_ENABLED || COMPS_DEMO_ENABLED;
+/** True when the auto mode is offered at all (real autofind OR AI OR sample demo). */
+const AUTO_MODE_OFFERED =
+  COMPS_AUTOFIND_ENABLED || COMPS_DEMO_ENABLED || AI_COMPS_ENABLED;
 
 const INITIAL: CompsState = { homes: [] };
 
@@ -313,8 +326,8 @@ function HomeCard({
               disabled={!AUTO_MODE_OFFERED}
               onClick={() => onPatch({ mode: "auto" })}
             >
-              {AI_COMPS_ENABLED
-                ? "Auto-find comps with AI"
+              {COMPS_AUTOFIND_ENABLED
+                ? "Auto-find comps"
                 : COMPS_DEMO_ENABLED
                   ? "Auto-find comps (sample data)"
                   : "Auto-find comps with AI"}
@@ -326,30 +339,17 @@ function HomeCard({
             </ModeButton>
           </div>
           {home.mode === "auto" ? (
-            AI_COMPS_ENABLED ? (
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    disabled={autoState.loading}
-                    onClick={findCompsWithAI}
-                  >
-                    {autoState.loading ? "Finding comps…" : "Find comps"}
-                  </button>
-                  <span className="text-sm text-ink-soft">
-                    We&apos;ll suggest comps from real recent sales. This is an{" "}
-                    <strong>estimate, not an appraisal</strong>; you can edit
-                    them.
-                  </span>
-                </div>
-                {autoState.message ? (
-                  <p className="text-sm text-ink-soft">{autoState.message}</p>
-                ) : null}
-                {autoState.error ? (
-                  <p className="text-sm text-amber-700">{autoState.error}</p>
-                ) : null}
-              </div>
+            // Precedence (issue #169): real autofind > sample demo > AI flag >
+            // "Coming soon". Real autofind and the legacy AI flag share the same
+            // route-backed UI (POST → real comps, NO sample banner); demo is the
+            // only path that adds the "not real sales" banner.
+            COMPS_AUTOFIND_ENABLED ? (
+              <RealAutofindPanel
+                loading={autoState.loading}
+                message={autoState.message}
+                error={autoState.error}
+                onFind={findCompsWithAI}
+              />
             ) : COMPS_DEMO_ENABLED ? (
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
@@ -378,6 +378,13 @@ function HomeCard({
                   <p className="text-sm text-amber-700">{autoState.error}</p>
                 ) : null}
               </div>
+            ) : AI_COMPS_ENABLED ? (
+              <RealAutofindPanel
+                loading={autoState.loading}
+                message={autoState.message}
+                error={autoState.error}
+                onFind={findCompsWithAI}
+              />
             ) : (
               <p className="text-sm text-ink-soft">
                 Coming soon — enter comps manually for now.
@@ -491,6 +498,45 @@ function HomeCard({
         </section>
       ) : null}
     </section>
+  );
+}
+
+/**
+ * Real route-backed auto-find panel (issue #169). Used by BOTH the real autofind
+ * flag and the legacy AI flag: it POSTs `/api/comps/auto-find`, which returns
+ * GENUINE comps from the configured data source. Deliberately renders NO sample
+ * banner — these are real recorded sales, not illustrative data.
+ */
+function RealAutofindPanel({
+  loading,
+  message,
+  error,
+  onFind,
+}: {
+  loading: boolean;
+  message: string | null;
+  error: string | null;
+  onFind: () => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={loading}
+          onClick={onFind}
+        >
+          {loading ? "Finding comps…" : "Find comps"}
+        </button>
+        <span className="text-sm text-ink-soft">
+          We&apos;ll suggest comps from real recent sales. This is an{" "}
+          <strong>estimate, not an appraisal</strong>; you can edit them.
+        </span>
+      </div>
+      {message ? <p className="text-sm text-ink-soft">{message}</p> : null}
+      {error ? <p className="text-sm text-amber-700">{error}</p> : null}
+    </div>
   );
 }
 
