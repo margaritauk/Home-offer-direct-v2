@@ -189,8 +189,17 @@ function buildQuery(filters: ListingFilters): string {
     if (filters.state) params.set("state", filters.state.toUpperCase());
   }
 
-  if (filters.propertyType) {
-    params.set("propertyType", filters.propertyType);
+  // Property type: RentCast takes a single `propertyType`. We can only push it
+  // server-side when the multi-select resolves to exactly one type; otherwise
+  // we leave it off and let the shared `matches()` post-filter narrow the set.
+  const singleType =
+    filters.propertyTypes && filters.propertyTypes.length === 1
+      ? filters.propertyTypes[0]
+      : filters.propertyTypes && filters.propertyTypes.length > 1
+        ? undefined
+        : filters.propertyType;
+  if (singleType) {
+    params.set("propertyType", singleType);
   }
   if (typeof filters.minBeds === "number" && filters.minBeds > 0) {
     params.set("bedrooms", String(filters.minBeds));
@@ -203,6 +212,13 @@ function buildQuery(filters: ListingFilters): string {
   }
   if (typeof filters.minPrice === "number" && filters.minPrice > 0) {
     params.set("minPrice", String(filters.minPrice));
+  }
+  // Freshness: RentCast supports `daysOld` (listings on market <= N days).
+  if (
+    typeof filters.maxDaysOnMarket === "number" &&
+    filters.maxDaysOnMarket > 0
+  ) {
+    params.set("daysOld", String(filters.maxDaysOnMarket));
   }
 
   params.set("status", "Active");

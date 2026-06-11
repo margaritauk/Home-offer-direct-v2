@@ -56,10 +56,35 @@ export interface ListingFilters {
   minPrice?: number;
   maxPrice?: number;
   minBeds?: number;
+  /** Upper bound on beds; undefined = no cap. */
+  maxBeds?: number;
   minBaths?: number;
+  /** Living-area lower/upper bounds in square feet. */
+  minSqft?: number;
+  maxSqft?: number;
+  /** Construction-year lower/upper bounds. */
+  minYearBuilt?: number;
+  maxYearBuilt?: number;
+  /** Freshness cap: only listings on market <= this many days. */
+  maxDaysOnMarket?: number;
+  /**
+   * Single property type. Kept for back-compat with existing callers; when
+   * {@link propertyTypes} is present it takes precedence.
+   */
   propertyType?: PropertyType;
+  /**
+   * Multi-select property types. When non-empty, a listing matches if its type
+   * is in this set (OR semantics). Falls back to {@link propertyType} when absent.
+   */
+  propertyTypes?: PropertyType[];
   /** Free-text match against address / city / state / zip / description. */
   query?: string;
   /** Sort order; defaults to newest-on-market. */
-  sort?: "price-asc" | "price-desc" | "newest";
+  sort?:
+    | "price-asc"
+    | "price-desc"
+    | "newest"
+    | "sqft-desc"
+    | "beds-desc"
+    | "days-asc";
 }

@@ -27,8 +27,26 @@ export function matches(listing: Listing, f: ListingFilters): boolean {
   if (typeof f.minPrice === "number" && listing.price < f.minPrice) return false;
   if (typeof f.maxPrice === "number" && listing.price > f.maxPrice) return false;
   if (typeof f.minBeds === "number" && listing.beds < f.minBeds) return false;
+  if (typeof f.maxBeds === "number" && listing.beds > f.maxBeds) return false;
   if (typeof f.minBaths === "number" && listing.baths < f.minBaths) return false;
-  if (f.propertyType && listing.propertyType !== f.propertyType) return false;
+  if (typeof f.minSqft === "number" && listing.sqft < f.minSqft) return false;
+  if (typeof f.maxSqft === "number" && listing.sqft > f.maxSqft) return false;
+  if (typeof f.minYearBuilt === "number" && listing.yearBuilt < f.minYearBuilt)
+    return false;
+  if (typeof f.maxYearBuilt === "number" && listing.yearBuilt > f.maxYearBuilt)
+    return false;
+  if (
+    typeof f.maxDaysOnMarket === "number" &&
+    listing.daysOnMarket > f.maxDaysOnMarket
+  )
+    return false;
+  // Multi-select property type takes precedence (OR semantics); fall back to the
+  // single `propertyType` for back-compat. An empty `propertyTypes` is ignored.
+  if (f.propertyTypes && f.propertyTypes.length > 0) {
+    if (!f.propertyTypes.includes(listing.propertyType)) return false;
+  } else if (f.propertyType && listing.propertyType !== f.propertyType) {
+    return false;
+  }
   if (f.query) {
     const q = f.query.trim().toLowerCase();
     if (q) {
@@ -46,6 +64,11 @@ function sortListings(listings: Listing[], sort: ListingFilters["sort"]): Listin
       return out.sort((a, b) => a.price - b.price);
     case "price-desc":
       return out.sort((a, b) => b.price - a.price);
+    case "sqft-desc":
+      return out.sort((a, b) => b.sqft - a.sqft);
+    case "beds-desc":
+      return out.sort((a, b) => b.beds - a.beds);
+    case "days-asc":
     case "newest":
     default:
       return out.sort((a, b) => a.daysOnMarket - b.daysOnMarket);

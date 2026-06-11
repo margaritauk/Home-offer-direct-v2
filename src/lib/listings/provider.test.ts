@@ -94,6 +94,84 @@ describe("queryListings", () => {
     const res = queryListings({ minBeds: 2, maxPrice: 900_000, sort: "price-asc" });
     expect(res.every((l) => l.beds >= 2 && l.price <= 900_000)).toBe(true);
   });
+
+  it("filters by sqft range (min and max)", () => {
+    const min = queryListings({ minSqft: 1500 });
+    expect(min.length).toBeGreaterThan(0);
+    expect(min.every((l) => l.sqft >= 1500)).toBe(true);
+
+    const range = queryListings({ minSqft: 1500, maxSqft: 2000 });
+    expect(range.length).toBeGreaterThan(0);
+    expect(range.every((l) => l.sqft >= 1500 && l.sqft <= 2000)).toBe(true);
+  });
+
+  it("filters by year-built range", () => {
+    const res = queryListings({ minYearBuilt: 2000, maxYearBuilt: 2015 });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.yearBuilt >= 2000 && l.yearBuilt <= 2015)).toBe(true);
+  });
+
+  it("filters by maxDaysOnMarket", () => {
+    const res = queryListings({ maxDaysOnMarket: 20 });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.daysOnMarket <= 20)).toBe(true);
+  });
+
+  it("filters by maxBeds", () => {
+    const res = queryListings({ maxBeds: 2 });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.beds <= 2)).toBe(true);
+  });
+
+  it("filters by propertyTypes multi-select (OR semantics)", () => {
+    const res = queryListings({ propertyTypes: ["condo", "townhouse"] });
+    expect(res.length).toBeGreaterThan(0);
+    expect(
+      res.every((l) => l.propertyType === "condo" || l.propertyType === "townhouse"),
+    ).toBe(true);
+    // An empty propertyTypes array is ignored (falls through to no type filter).
+    expect(queryListings({ propertyTypes: [] })).toHaveLength(mockListings.length);
+  });
+
+  it("propertyTypes takes precedence over single propertyType", () => {
+    const res = queryListings({
+      propertyType: "single-family",
+      propertyTypes: ["condo"],
+    });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.propertyType === "condo")).toBe(true);
+  });
+
+  it("combines the new home-facts predicates", () => {
+    const res = queryListings({
+      minSqft: 1000,
+      maxSqft: 2500,
+      minYearBuilt: 1990,
+      maxBeds: 4,
+      propertyTypes: ["single-family", "condo"],
+    });
+    expect(
+      res.every(
+        (l) =>
+          l.sqft >= 1000 &&
+          l.sqft <= 2500 &&
+          l.yearBuilt >= 1990 &&
+          l.beds <= 4 &&
+          (l.propertyType === "single-family" || l.propertyType === "condo"),
+      ),
+    ).toBe(true);
+  });
+
+  it("sorts by sqft desc, beds desc, and days-on-market asc", () => {
+    const sqft = queryListings({ sort: "sqft-desc" }).map((l) => l.sqft);
+    expect(sqft).toEqual([...sqft].sort((a, b) => b - a));
+
+    const beds = queryListings({ sort: "beds-desc" }).map((l) => l.beds);
+    expect(beds).toEqual([...beds].sort((a, b) => b - a));
+
+    const days = queryListings({ sort: "days-asc" }).map((l) => l.daysOnMarket);
+    expect(days).toEqual([...days].sort((a, b) => a - b));
+  });
 });
 
 describe("lookups", () => {

@@ -83,6 +83,47 @@ describe("ListingsBrowser", () => {
     });
   });
 
+  it("applying a sqft min narrows results and shows a removable chip", async () => {
+    render(<ListingsBrowser />);
+
+    const countText = async () =>
+      (await screen.findByText(/^\d+ listings?$/)).textContent;
+    const countBefore = await countText();
+
+    // Expand the collapsible "More filters" panel, then set a high sqft min.
+    fireEvent.click(screen.getByRole("button", { name: /More filters/ }));
+    fireEvent.change(screen.getByLabelText("Min sqft"), {
+      target: { value: "2000" },
+    });
+
+    // A chip appears for the new filter.
+    const chips = filtersRegion();
+    expect(within(chips).getByText(/Min 2,000 sqft/)).toBeInTheDocument();
+
+    // Results narrow.
+    await waitFor(async () => {
+      expect(await countText()).not.toBe(countBefore);
+    });
+
+    // Removing the chip clears the filter and restores the count. It was the only
+    // active filter, so the whole Active-filters region disappears with it.
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remove Min 2,000 sqft" }),
+    );
+    expect(screen.queryByText(/Min 2,000 sqft/)).not.toBeInTheDocument();
+    await waitFor(async () => {
+      expect(await countText()).toBe(countBefore);
+    });
+  });
+
+  it("multi-select property type adds a chip per type", () => {
+    render(<ListingsBrowser />);
+    fireEvent.click(screen.getByRole("button", { name: /More filters/ }));
+    fireEvent.click(screen.getByLabelText("Condo"));
+
+    expect(within(filtersRegion()).getByText("Type: Condo")).toBeInTheDocument();
+  });
+
   it("Clear all resets every filter and hides the chips", () => {
     render(<ListingsBrowser />);
 
