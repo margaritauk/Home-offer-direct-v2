@@ -1,14 +1,20 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import {
   PriceRange,
   clampRange,
   clampToBounds,
+  cohereRange,
   sliderValue,
   type PriceBounds,
+  type RangeValue,
 } from "./price-range";
 
 const bounds: PriceBounds = { lo: 0, hi: 2_000_000 };
+// A dataset whose cheapest home is $250k — the case that produced the bug where
+// typing a small number snapped up to the floor.
+const flooredBounds: PriceBounds = { lo: 250_000, hi: 2_000_000 };
 
 describe("clamp/sync helpers", () => {
   it("clampToBounds keeps values inside the data range; 0 stays unbounded", () => {
@@ -39,6 +45,16 @@ describe("clamp/sync helpers", () => {
     expect(clampRange(500_000, 0, bounds, "max")).toEqual({ min: 500_000, max: 0 });
   });
 
+  it("cohereRange takes a typed price at face value (no snapping to data floor)", () => {
+    // The bug: a typed min below the cheapest listing must NOT jump to the floor.
+    expect(cohereRange(3, 0, "min")).toEqual({ min: 3, max: 0 });
+    expect(cohereRange(50_000, 0, "min")).toEqual({ min: 50_000, max: 0 });
+    // Negatives floor to 0 (unbounded); coherence still respects the edited side.
+    expect(cohereRange(-5, 0, "min")).toEqual({ min: 0, max: 0 });
+    expect(cohereRange(900_000, 400_000, "min")).toEqual({ min: 900_000, max: 900_000 });
+    expect(cohereRange(500_000, 300_000, "max")).toEqual({ min: 300_000, max: 300_000 });
+  });
+
   it("sliderValue snaps unbounded sides to the matching edge", () => {
     expect(sliderValue(0, "min", bounds)).toBe(bounds.lo);
     expect(sliderValue(0, "max", bounds)).toBe(bounds.hi);
@@ -58,6 +74,23 @@ describe("PriceRange (RTL)", () => {
     // Dual-range slider thumbs exist and are accessible.
     expect(screen.getByLabelText("Minimum price")).toBeInTheDocument();
     expect(screen.getByLabelText("Maximum price")).toBeInTheDocument();
+  });
+
+  // A controlled host that actually stores the range, the way the real page
+  // does — so the rendered field reflects state updates, not a frozen prop.
+  function Controlled({ bounds }: { bounds: PriceBounds }) {
+    const [range, setRange] = useState<RangeValue>({ min: 0, max: 0 });
+    return <PriceRange min={range.min} max={range.max} onChange={setRange} bounds={bounds} />;
+  }
+
+  it("keeps a typed value below the dataset floor instead of snapping it up", () => {
+    // Regression: with a $250k floor, typing 3,000 used to display 250,000.
+    render(<Controlled bounds={flooredBounds} />);
+
+    const minField = screen.getByLabelText("Min price") as HTMLInputElement;
+    fireEvent.change(minField, { target: { value: "3,000" } });
+    // The field echoes exactly what was typed, not the dataset floor.
+    expect(minField.value).toBe("3,000");
   });
 
   it("displays the current min value formatted in the currency field", () => {

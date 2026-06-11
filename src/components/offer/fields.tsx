@@ -78,12 +78,19 @@ export function NumberField({
 }
 
 /** Whole-dollar currency input: empty when 0 (so the "0" is deletable) and
- * formatted with thousands separators as you type (e.g. 700,000). */
+ * formatted with thousands separators as you type (e.g. 700,000).
+ *
+ * While focused, a local `draft` mirrors exactly what the user typed, so any
+ * reformatting/clamping a parent applies to `value` never fights their keystrokes
+ * mid-entry — the box always shows their own digits until they leave it. Use the
+ * optional `onCommit` to resolve cross-field rules (e.g. min/max coherence) on
+ * blur rather than on every keystroke. */
 export function CurrencyField({
   label,
   explainer,
   value,
   onChange,
+  onCommit,
   placeholder = "0",
   hydrated,
 }: {
@@ -91,10 +98,19 @@ export function CurrencyField({
   explainer: ReactNode;
   value: number;
   onChange: (n: number) => void;
+  onCommit?: () => void;
   placeholder?: string;
   hydrated: boolean;
 }) {
-  const display = !hydrated ? "" : value > 0 ? value.toLocaleString("en-US") : "";
+  const [draft, setDraft] = useState<string | null>(null);
+  const formatted = value > 0 ? value.toLocaleString("en-US") : "";
+  // Honor the draft only while it still represents the current value. If the
+  // parent resets `value` out from under us (e.g. "Clear all"), the draft is
+  // stale and we fall back to the canonical formatted value.
+  const draftNum =
+    draft !== null ? Number(draft.replace(/[^0-9]/g, "")) || 0 : null;
+  const useDraft = draft !== null && draftNum === value;
+  const display = !hydrated ? "" : useDraft ? draft : formatted;
   return (
     <FieldShell label={label} explainer={explainer}>
       <div className="flex items-center rounded-lg border border-slate-300 px-3 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
@@ -107,7 +123,14 @@ export function CurrencyField({
           placeholder={placeholder}
           onChange={(e) => {
             const digits = e.target.value.replace(/[^0-9]/g, "");
-            onChange(digits ? parseInt(digits, 10) : 0);
+            const n = digits ? parseInt(digits, 10) : 0;
+            // Echo the user's own digits (comma-grouped) until they blur.
+            setDraft(n > 0 ? n.toLocaleString("en-US") : "");
+            onChange(n);
+          }}
+          onBlur={() => {
+            setDraft(null);
+            onCommit?.();
           }}
           aria-label={label}
           suppressHydrationWarning

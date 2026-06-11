@@ -47,6 +47,28 @@ export function clampRange(
   return { min: lo, max: hi };
 }
 
+/**
+ * Resolve a *manually typed* range. Unlike {@link clampRange} this does NOT snap
+ * values into the dataset's price bounds — a typed price is taken at face value
+ * (otherwise typing "3" would jump to the cheapest listing's price). It only
+ * floors negatives to 0 and, when both sides are set and min > max, pulls the
+ * just-edited side to meet the other so the range stays coherent.
+ */
+export function cohereRange(
+  min: number,
+  max: number,
+  edited: "min" | "max" = "min",
+): RangeValue {
+  const lo = min > 0 ? min : 0;
+  let hi = max > 0 ? max : 0;
+  let loOut = lo;
+  if (lo > 0 && hi > 0 && lo > hi) {
+    if (edited === "min") hi = lo;
+    else loOut = hi;
+  }
+  return { min: loOut, max: hi };
+}
+
 /** Slider position for a side: unbounded snaps to the relevant bound edge. */
 export function sliderValue(n: number, side: "min" | "max", bounds: PriceBounds): number {
   if (n <= 0) return side === "min" ? bounds.lo : bounds.hi;
@@ -76,14 +98,18 @@ export function PriceRange({
           label="Min price"
           explainer=""
           value={min}
-          onChange={(n) => onChange(clampRange(n, max, bounds, "min"))}
+          // Take the typed value at face value while editing; resolve min/max
+          // coherence only on blur so multi-digit entry never jumps.
+          onChange={(n) => onChange({ min: n, max })}
+          onCommit={() => onChange(cohereRange(min, max, "min"))}
           hydrated={hydrated}
         />
         <CurrencyField
           label="Max price"
           explainer=""
           value={max}
-          onChange={(n) => onChange(clampRange(min, n, bounds, "max"))}
+          onChange={(n) => onChange({ min, max: n })}
+          onCommit={() => onChange(cohereRange(min, max, "max"))}
           hydrated={hydrated}
         />
       </div>
