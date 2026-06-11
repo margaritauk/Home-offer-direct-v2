@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   queryListings,
+  allListings,
   propertyTypeLabels,
   type ListingFilters,
   type PropertyType,
@@ -11,20 +12,36 @@ import { getStateOptions } from "@/lib/states";
 import { useStateSelection } from "@/hooks/use-state-selection";
 import { ListingCard } from "@/components/listing-card";
 import { DisclaimerBanner } from "@/components/disclaimer-banner";
+import { PriceRange, type PriceBounds, type RangeValue } from "@/components/listings/price-range";
+import { FilterChips, type FilterChip } from "@/components/listings/filter-chips";
 
 const stateOptions = getStateOptions();
+const stateNames = new Map(stateOptions.map((o) => [o.code, o.name]));
 const propertyTypes = Object.keys(propertyTypeLabels) as PropertyType[];
+
+/** Data-derived price bounds for the slider; floor the hi at a sensible cap. */
+const priceBounds: PriceBounds = (() => {
+  const prices = allListings().map((l) => l.price);
+  const lo = prices.length ? Math.min(...prices) : 0;
+  const dataHi = prices.length ? Math.max(...prices) : 2_000_000;
+  return { lo: Math.max(0, Math.floor(lo / 1000) * 1000), hi: Math.max(dataHi, 2_000_000) };
+})();
+
+const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 export function ListingsBrowser() {
   const { stateCode, hydrated } = useStateSelection();
   const [state, setState] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType | "">("");
   const [minBeds, setMinBeds] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(0);
+  const [minBaths, setMinBaths] = useState(0);
+  const [price, setPrice] = useState<RangeValue>({ min: 0, max: 0 });
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<NonNullable<ListingFilters["sort"]>>("newest");
 
-  // Default the state filter to the buyer's selected state.
+  // Default the state filter to the buyer's selected state (once on hydration).
+  // After this, clearing the chip/Clear-all just resets local `state`; we never
+  // silently re-apply it, so the buyer can browse all states.
   useEffect(() => {
     if (hydrated && stateCode) setState(stateCode);
   }, [hydrated, stateCode]);
@@ -35,12 +52,59 @@ export function ListingsBrowser() {
         state: state || undefined,
         propertyType: propertyType || undefined,
         minBeds: minBeds || undefined,
-        maxPrice: maxPrice || undefined,
+        minBaths: minBaths || undefined,
+        minPrice: price.min || undefined,
+        maxPrice: price.max || undefined,
         query: query || undefined,
         sort,
       }),
-    [state, propertyType, minBeds, maxPrice, query, sort],
+    [state, propertyType, minBeds, minBaths, price, query, sort],
   );
+
+  const clearAll = () => {
+    setState("");
+    setPropertyType("");
+    setMinBeds(0);
+    setMinBaths(0);
+    setPrice({ min: 0, max: 0 });
+    setQuery("");
+  };
+
+  const chips: FilterChip[] = [];
+  if (state) chips.push({ id: "state", label: `State: ${stateNames.get(state) ?? state}` });
+  if (propertyType)
+    chips.push({ id: "propertyType", label: `Type: ${propertyTypeLabels[propertyType]}` });
+  if (minBeds) chips.push({ id: "minBeds", label: `${minBeds}+ beds` });
+  if (minBaths) chips.push({ id: "minBaths", label: `${minBaths}+ baths` });
+  if (price.min) chips.push({ id: "minPrice", label: `Min ${usd(price.min)}` });
+  if (price.max) chips.push({ id: "maxPrice", label: `Max ${usd(price.max)}` });
+  if (query.trim()) chips.push({ id: "query", label: `“${query.trim()}”` });
+
+  const removeChip = (id: string) => {
+    switch (id) {
+      case "state":
+        setState("");
+        break;
+      case "propertyType":
+        setPropertyType("");
+        break;
+      case "minBeds":
+        setMinBeds(0);
+        break;
+      case "minBaths":
+        setMinBaths(0);
+        break;
+      case "minPrice":
+        setPrice((p) => ({ ...p, min: 0 }));
+        break;
+      case "maxPrice":
+        setPrice((p) => ({ ...p, max: 0 }));
+        break;
+      case "query":
+        setQuery("");
+        break;
+    }
+  };
 
   return (
     <div>
@@ -91,19 +155,29 @@ export function ListingsBrowser() {
         </label>
 
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">Max price</span>
+          <span className="mb-1 block text-sm font-medium text-ink-soft">Min baths</span>
           <select
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(Number(e.target.value))}
-            aria-label="Maximum price"
+            value={minBaths}
+            onChange={(e) => setMinBaths(Number(e.target.value))}
+            aria-label="Minimum baths"
           >
-            <option value={0}>No max</option>
-            {[300_000, 400_000, 500_000, 750_000, 1_000_000].map((n) => (
-              <option key={n} value={n}>${(n / 1000).toLocaleString()}k</option>
+            {[0, 1, 2, 3].map((n) => (
+              <option key={n} value={n}>{n === 0 ? "Any" : `${n}+`}</option>
             ))}
           </select>
         </label>
+
+        <div className="block sm:col-span-2 lg:col-span-1">
+          <span className="mb-1 block text-sm font-medium text-ink-soft">Price range</span>
+          <PriceRange
+            min={price.min}
+            max={price.max}
+            onChange={setPrice}
+            bounds={priceBounds}
+            hydrated={hydrated}
+          />
+        </div>
 
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-ink-soft">Search</span>
@@ -111,7 +185,7 @@ export function ListingsBrowser() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="City or address…"
+            placeholder="City, address, or keyword…"
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
             aria-label="Search listings"
           />
@@ -137,6 +211,12 @@ export function ListingsBrowser() {
         real homes for sale. Live MLS listings are coming — see the roadmap.
       </DisclaimerBanner>
 
+      {chips.length > 0 ? (
+        <div className="mt-4">
+          <FilterChips chips={chips} onRemove={removeChip} onClearAll={clearAll} />
+        </div>
+      ) : null}
+
       <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
         {results.length} listing{results.length === 1 ? "" : "s"}
       </p>
@@ -148,7 +228,14 @@ export function ListingsBrowser() {
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-ink-muted">No sample listings match those filters.</p>
+        <div className="mt-3 space-y-3">
+          <p className="text-ink-muted">No sample listings match those filters.</p>
+          {chips.length > 0 ? (
+            <button type="button" className="btn-secondary" onClick={clearAll}>
+              Clear filters
+            </button>
+          ) : null}
+        </div>
       )}
     </div>
   );

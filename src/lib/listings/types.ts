@@ -48,7 +48,7 @@ export interface ListingFilters {
   minBeds?: number;
   minBaths?: number;
   propertyType?: PropertyType;
-  /** Free-text match against address / city. */
+  /** Free-text match against address / city / state / zip / description. */
   query?: string;
   /** Sort order; defaults to newest-on-market. */
   sort?: "price-asc" | "price-desc" | "newest";

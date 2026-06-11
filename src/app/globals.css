@@ -40,6 +40,30 @@
   }
 }
 
+/*
+ * Dual-range price slider (issue #172). Two stacked <input type="range"> share a
+ * track; the tracks must let clicks fall through (pointer-events-none on the
+ * element) while the THUMBS stay grabbable (pointer-events re-enabled), so the
+ * lower thumb isn't shadowed by the upper input's full-width hitbox.
+ */
+.dual-range {
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.dual-range::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.dual-range::-moz-range-thumb {
+  pointer-events: auto;
+}
+.dual-range:focus-visible {
+  outline: 2px solid theme("colors.brand.500");
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

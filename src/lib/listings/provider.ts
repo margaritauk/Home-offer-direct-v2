@@ -18,7 +18,7 @@ function matches(listing: Listing, f: ListingFilters): boolean {
   if (f.query) {
     const q = f.query.trim().toLowerCase();
     if (q) {
-      const hay = `${listing.address} ${listing.city} ${listing.state} ${listing.zip}`.toLowerCase();
+      const hay = `${listing.address} ${listing.city} ${listing.state} ${listing.zip} ${listing.description}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
   }
