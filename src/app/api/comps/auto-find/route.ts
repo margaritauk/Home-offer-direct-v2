@@ -1,29 +1,33 @@
 /**
- * AI auto-find comps route (issue #104). POST { subject } → { comps } | message.
+ * Auto-find comps route (issues #104 / #169). POST { subject } → { comps } | message.
  *
  * Gating + anti-fabrication live here so the client can never bypass them:
- *   - If the feature isn't configured server-side, respond 503 (no key, or no
- *     real data source). The UI falls back to its "Coming soon" note.
+ *   - Configured when a REAL data source is selected ({@link isCompsSourceConfigured},
+ *     e.g. RentCast) OR the existing AI config ({@link isAiCompsConfigured}). When
+ *     neither is configured, respond 503; the UI falls back to "Coming soon".
  *   - Otherwise pull REAL candidate sales from the data source. If there are
  *     none, return an empty result with a clear message — NEVER fabricate comps.
- *   - Only with real candidates do we call the model to rank/adjust them.
+ *   - With real candidates: if a Claude key is present, rank/adjust them with the
+ *     AI ({@link selectCompsWithAI}). Otherwise rank them DETERMINISTICALLY with
+ *     {@link rankComps} — so real comps work without an Anthropic key.
  *
  * Everything is wrapped so the route never throws raw: failures become a 502.
  */
 
 import { NextResponse } from "next/server";
-import { isAiCompsConfigured } from "@/lib/ai/config";
+import { isAiCompsConfigured, isCompsSourceConfigured } from "@/lib/ai/config";
 import { selectCompsWithAI } from "@/lib/ai/comps-ai";
 import { getCompsDataSource, type CompsSubject } from "@/lib/tools/comps-source";
+import { rankComps } from "@/lib/tools/comps-rank";
 
 interface AutoFindBody {
   subject?: CompsSubject;
 }
 
 export async function POST(request: Request) {
-  if (!isAiCompsConfigured()) {
+  if (!isCompsSourceConfigured() && !isAiCompsConfigured()) {
     return NextResponse.json(
-      { available: false, reason: "AI comps is not configured" },
+      { available: false, reason: "Auto-find comps is not configured" },
       { status: 503 },
     );
   }
@@ -41,9 +45,12 @@ export async function POST(request: Request) {
       });
     }
 
-    // isAiCompsConfigured() guarantees the key is present.
-    const apiKey = process.env.ANTHROPIC_API_KEY as string;
-    const comps = await selectCompsWithAI(subject, candidates, { apiKey });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const comps = apiKey
+      ? // AI rank/adjust when a Claude key is available.
+        await selectCompsWithAI(subject, candidates, { apiKey })
+      : // No Claude key: deterministic ranking over the same real candidates.
+        rankComps(subject, candidates);
 
     return NextResponse.json({ comps });
   } catch (error) {

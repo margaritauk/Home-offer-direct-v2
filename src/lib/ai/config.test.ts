@@ -2,14 +2,18 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   isAiCompsConfigured,
   isAiCompsEnabled,
+  isCompsAutofindEnabled,
   isCompsDemoEnabled,
+  isCompsSourceConfigured,
 } from "./config";
 
 const KEYS = [
   "ANTHROPIC_API_KEY",
   "COMPS_DATA_SOURCE",
+  "RENTCAST_API_KEY",
   "NEXT_PUBLIC_AI_COMPS_ENABLED",
   "NEXT_PUBLIC_COMPS_DEMO",
+  "NEXT_PUBLIC_COMPS_AUTOFIND",
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -72,6 +76,49 @@ describe("isAiCompsEnabled (client surface gate)", () => {
   it('is true only when set to exactly "true"', () => {
     process.env.NEXT_PUBLIC_AI_COMPS_ENABLED = "true";
     expect(isAiCompsEnabled()).toBe(true);
+  });
+});
+
+describe("isCompsSourceConfigured (real data-source gate, issue #169)", () => {
+  it("is false by default (no env set)", () => {
+    expect(isCompsSourceConfigured()).toBe(false);
+  });
+
+  it("is false when COMPS_DATA_SOURCE=rentcast but no RENTCAST_API_KEY", () => {
+    process.env.COMPS_DATA_SOURCE = "rentcast";
+    expect(isCompsSourceConfigured()).toBe(false);
+  });
+
+  it("is false with a key but a non-rentcast source", () => {
+    process.env.COMPS_DATA_SOURCE = "attom";
+    process.env.RENTCAST_API_KEY = "rc-test";
+    expect(isCompsSourceConfigured()).toBe(false);
+  });
+
+  it("is true only with rentcast + a key (no Claude key needed)", () => {
+    process.env.COMPS_DATA_SOURCE = "rentcast";
+    process.env.RENTCAST_API_KEY = "rc-test";
+    expect(isCompsSourceConfigured()).toBe(true);
+    // Independent of the Anthropic key.
+    expect(process.env.ANTHROPIC_API_KEY).toBeUndefined();
+  });
+});
+
+describe("isCompsAutofindEnabled (real autofind client gate, issue #169)", () => {
+  it("is false by default (unset)", () => {
+    expect(isCompsAutofindEnabled()).toBe(false);
+  });
+
+  it('is false for any value other than exactly "true"', () => {
+    process.env.NEXT_PUBLIC_COMPS_AUTOFIND = "1";
+    expect(isCompsAutofindEnabled()).toBe(false);
+    process.env.NEXT_PUBLIC_COMPS_AUTOFIND = "TRUE";
+    expect(isCompsAutofindEnabled()).toBe(false);
+  });
+
+  it('is true only when set to exactly "true"', () => {
+    process.env.NEXT_PUBLIC_COMPS_AUTOFIND = "true";
+    expect(isCompsAutofindEnabled()).toBe(true);
   });
 });
 
