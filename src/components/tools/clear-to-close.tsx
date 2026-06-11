@@ -12,6 +12,7 @@ import {
   type StepState,
 } from "@/lib/tools/clear-to-close";
 import { ToolDisclaimer } from "./tool-disclaimer";
+import { ValidatedNumberField } from "./validated-field";
 
 interface ClearToCloseState {
   /** Optional label for the home this checklist is about (#112). */
@@ -143,38 +144,27 @@ export function ClearToClose() {
       <section className="card space-y-4">
         <h2 className="text-lg font-semibold">Low-appraisal calculator</h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className="block">
-            <span className="text-sm font-medium text-ink-soft">Contract price</span>
-            <input
-              type="number"
-              min={0}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              value={value.contractPrice || ""}
-              onChange={(e) => setField({ contractPrice: Number(e.target.value) })}
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-ink-soft">Appraised value</span>
-            <input
-              type="number"
-              min={0}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              value={value.appraisedValue || ""}
-              onChange={(e) => setField({ appraisedValue: Number(e.target.value) })}
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-ink-soft">
-              Planned down payment
-            </span>
-            <input
-              type="number"
-              min={0}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              value={value.plannedDownPayment || ""}
-              onChange={(e) => setField({ plannedDownPayment: Number(e.target.value) })}
-            />
-          </label>
+          <ValidatedNumberField
+            label="Contract price"
+            unit="$"
+            value={value.contractPrice}
+            onChange={(contractPrice) => setField({ contractPrice })}
+            bounds={{ min: 0, max: 5_000_000, softMax: 2_000_000 }}
+          />
+          <ValidatedNumberField
+            label="Appraised value"
+            unit="$"
+            value={value.appraisedValue}
+            onChange={(appraisedValue) => setField({ appraisedValue })}
+            bounds={{ min: 0, max: 5_000_000, softMax: 2_000_000 }}
+          />
+          <ValidatedNumberField
+            label="Planned down payment"
+            unit="$"
+            value={value.plannedDownPayment}
+            onChange={(plannedDownPayment) => setField({ plannedDownPayment })}
+            bounds={{ min: 0, max: 5_000_000, softMax: 1_000_000 }}
+          />
         </div>
 
         {value.contractPrice > 0 && value.appraisedValue > 0 ? (

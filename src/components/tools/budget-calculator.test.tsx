@@ -76,6 +76,17 @@ describe("BudgetCalculator", () => {
     expect(screen.getByTestId("max-price").textContent).not.toBe(before);
   });
 
+  it("shows an inline validation message for an out-of-range input but STILL computes", () => {
+    render(<BudgetCalculator />);
+    // PMI rate hard max is 5% → 99 is out of range.
+    fireEvent.change(screen.getByLabelText("PMI rate (%)"), {
+      target: { value: "99" },
+    });
+    expect(screen.getByText(/Must be (at most|between)/)).toBeInTheDocument();
+    // Non-blocking: the result panel still renders a payment.
+    expect(screen.getByTestId("piti-total").textContent).toMatch(/\/mo$/);
+  });
+
   it("renders the not-financial-advice disclaimer", () => {
     const { container } = render(<BudgetCalculator />);
     expect(
