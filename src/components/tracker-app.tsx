@@ -12,6 +12,7 @@ import {
 } from "@/lib/deadlines";
 import { useTracker } from "@/hooks/use-tracker";
 import { DocumentChecklist } from "@/components/document-checklist";
+import { TrackerClosingCountdown } from "@/components/tracker-closing-countdown";
 import { UndoToast } from "@/components/undo-toast";
 
 const statusStyles: Record<MilestoneStatus, { dot: string; chip: string; label: (d: number) => string }> = {
@@ -75,6 +76,15 @@ export function TrackerApp() {
 
   return (
     <div className="space-y-12">
+      {/* Closing countdown + compact timeline (#165) */}
+      <TrackerClosingCountdown
+        underContractDate={state.underContractDate}
+        closingDate={state.closingDate}
+        offsets={state.offsets}
+        today={today}
+        hydrated={hydrated}
+      />
+
       {/* Inputs */}
       <section className="card">
         <div className="grid gap-4 sm:grid-cols-2">

@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   businessDaysBefore,
+  closingCountdownLabel,
   computeMilestones,
   daysBetween,
+  daysToClosing,
   defaultOffsets,
   isValidDate,
   parseDate,
@@ -50,6 +52,44 @@ describe("businessDaysBefore (Closing Disclosure rule)", () => {
     const dow = new Date(parseDate(d)).getUTCDay();
     expect(dow).not.toBe(0);
     expect(dow).not.toBe(6);
+  });
+});
+
+describe("daysToClosing", () => {
+  const today = "2026-06-07";
+  it("counts days remaining for a future closing", () => {
+    expect(daysToClosing("2026-06-17", today)).toBe(10);
+  });
+  it("returns 0 when closing is today", () => {
+    expect(daysToClosing("2026-06-07", today)).toBe(0);
+  });
+  it("returns a negative number once closing has passed", () => {
+    expect(daysToClosing("2026-06-01", today)).toBe(-6);
+  });
+  it("returns null for an invalid or empty closing date", () => {
+    expect(daysToClosing("", today)).toBeNull();
+    expect(daysToClosing("not-a-date", today)).toBeNull();
+    expect(daysToClosing("2026-02-30", today)).toBeNull();
+  });
+  it("returns null when today is invalid", () => {
+    expect(daysToClosing("2026-06-17", "")).toBeNull();
+  });
+});
+
+describe("closingCountdownLabel", () => {
+  it("renders nothing for null", () => {
+    expect(closingCountdownLabel(null)).toBe("");
+  });
+  it("renders days remaining (pluralized)", () => {
+    expect(closingCountdownLabel(10)).toBe("10 days to closing");
+    expect(closingCountdownLabel(1)).toBe("1 day to closing");
+  });
+  it("renders closing today", () => {
+    expect(closingCountdownLabel(0)).toBe("Closing today");
+  });
+  it("renders a past closing (pluralized)", () => {
+    expect(closingCountdownLabel(-6)).toBe("Closed 6 days ago");
+    expect(closingCountdownLabel(-1)).toBe("Closed 1 day ago");
   });
 });
 

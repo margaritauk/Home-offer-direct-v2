@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { closingCountdownLabel } from "@/lib/deadlines";
 import { showingStatusLabels } from "@/lib/showings/types";
 import { OfferStatusBadge } from "@/components/offer-status/offer-status-badge";
 import type { HomeRollup } from "@/lib/homes/rollup";
@@ -104,6 +105,16 @@ export function HomeRollupCard({ rollup }: { rollup: HomeRollup }) {
             : "All gathered"}
         </Stat>
       </div>
+
+      {rollup.closingDays !== undefined ? (
+        <p
+          className={`text-sm font-medium ${
+            rollup.closingDays <= 7 ? "text-amber-600" : "text-ink-muted"
+          }`}
+        >
+          {closingCountdownLabel(rollup.closingDays)}
+        </p>
+      ) : null}
 
       <div className="rounded-lg bg-brand-50 p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
