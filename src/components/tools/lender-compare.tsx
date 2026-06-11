@@ -5,6 +5,7 @@ import { useStageTool } from "@/hooks/use-stage-tool";
 import { formatUSD } from "@/lib/savings";
 import { compareLenders, type LenderQuote } from "@/lib/tools/lender-compare";
 import { ToolDisclaimer } from "./tool-disclaimer";
+import { ValidatedNumberField } from "./validated-field";
 
 interface LenderState {
   horizonMonths: number;
@@ -123,12 +124,50 @@ export function LenderCompare() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                <Num label="Loan amount" value={row.loanAmount} onChange={(n) => patchQuote(row.id, { loanAmount: n })} />
-                <Num label="Rate %" value={row.ratePercent} onChange={(n) => patchQuote(row.id, { ratePercent: n })} step={0.01} />
-                <Num label="Points" value={row.points} onChange={(n) => patchQuote(row.id, { points: n })} step={0.125} />
-                <Num label="Lender fees" value={row.lenderFees} onChange={(n) => patchQuote(row.id, { lenderFees: n })} />
-                <Num label="Monthly P&I" value={row.monthlyPI} onChange={(n) => patchQuote(row.id, { monthlyPI: n })} />
-                <Num label="APR %" value={row.aprPercent} onChange={(n) => patchQuote(row.id, { aprPercent: n })} step={0.01} />
+                <ValidatedNumberField
+                  label="Loan amount"
+                  unit="$"
+                  value={row.loanAmount}
+                  onChange={(n) => patchQuote(row.id, { loanAmount: n })}
+                  bounds={{ min: 25_000, max: 5_000_000 }}
+                />
+                <ValidatedNumberField
+                  label="Rate %"
+                  unit="%"
+                  value={row.ratePercent}
+                  onChange={(n) => patchQuote(row.id, { ratePercent: n })}
+                  step={0.01}
+                  bounds={{ min: 0, max: 20, softMin: 2, softMax: 9 }}
+                />
+                <ValidatedNumberField
+                  label="Points"
+                  value={row.points}
+                  onChange={(n) => patchQuote(row.id, { points: n })}
+                  step={0.125}
+                  bounds={{ min: 0, max: 10, softMax: 4 }}
+                />
+                <ValidatedNumberField
+                  label="Lender fees"
+                  unit="$"
+                  value={row.lenderFees}
+                  onChange={(n) => patchQuote(row.id, { lenderFees: n })}
+                  bounds={{ min: 0, max: 100_000, softMax: 20_000 }}
+                />
+                <ValidatedNumberField
+                  label="Monthly P&I"
+                  unit="$"
+                  value={row.monthlyPI}
+                  onChange={(n) => patchQuote(row.id, { monthlyPI: n })}
+                  bounds={{ min: 0, max: 100_000, softMax: 20_000 }}
+                />
+                <ValidatedNumberField
+                  label="APR %"
+                  unit="%"
+                  value={row.aprPercent}
+                  onChange={(n) => patchQuote(row.id, { aprPercent: n })}
+                  step={0.01}
+                  bounds={{ min: 0, max: 20, softMin: 2, softMax: 9 }}
+                />
               </div>
 
               <dl className="grid gap-2 border-t border-slate-200 pt-3 text-sm sm:grid-cols-3">
@@ -154,32 +193,6 @@ export function LenderCompare() {
         for you.
       </ToolDisclaimer>
     </div>
-  );
-}
-
-function Num({
-  label,
-  value,
-  onChange,
-  step,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-  step?: number;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-ink-soft">{label}</span>
-      <input
-        type="number"
-        min={0}
-        step={step}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
-        value={value || ""}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
-    </label>
   );
 }
 

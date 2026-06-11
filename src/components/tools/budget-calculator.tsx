@@ -16,6 +16,7 @@ import {
 } from "@/lib/budget";
 import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
 import { ToolDisclaimer } from "./tool-disclaimer";
+import { ValidatedNumberField } from "./validated-field";
 
 type Mode = "payment" | "affordability";
 
@@ -203,26 +204,34 @@ function PaymentMode({
           step={5}
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <NumberField
+          <ValidatedNumberField
             label="Property tax (annual)"
+            unit="$"
             value={input.propTaxYr}
             onChange={(propTaxYr) => onPatch({ propTaxYr })}
+            bounds={{ min: 0, max: 200_000, softMax: 50_000 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="Insurance (annual)"
+            unit="$"
             value={input.insuranceYr}
             onChange={(insuranceYr) => onPatch({ insuranceYr })}
+            bounds={{ min: 0, max: 100_000, softMax: 20_000 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="HOA (monthly)"
+            unit="$"
             value={input.hoaMo}
             onChange={(hoaMo) => onPatch({ hoaMo })}
+            bounds={{ min: 0, max: 10_000, softMax: 2_000 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="PMI rate (%)"
+            unit="%"
             value={input.pmiRatePct}
             onChange={(pmiRatePct) => onPatch({ pmiRatePct })}
             step={0.05}
+            bounds={{ min: 0, max: 5, softMax: 2 }}
           />
         </div>
       </div>
@@ -319,20 +328,26 @@ function AffordabilityMode({
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="card space-y-6">
-        <NumberField
+        <ValidatedNumberField
           label="Gross monthly income"
+          unit="$"
           value={input.grossMonthlyIncome}
           onChange={(grossMonthlyIncome) => onPatch({ grossMonthlyIncome })}
+          bounds={{ min: 0, max: 1_000_000, softMax: 100_000 }}
         />
-        <NumberField
+        <ValidatedNumberField
           label="Monthly debts (cars, cards, loans)"
+          unit="$"
           value={input.monthlyDebts}
           onChange={(monthlyDebts) => onPatch({ monthlyDebts })}
+          bounds={{ min: 0, max: 100_000, softMax: 20_000 }}
         />
-        <NumberField
+        <ValidatedNumberField
           label="Down payment ($)"
+          unit="$"
           value={input.downPayment}
           onChange={(downPayment) => onPatch({ downPayment })}
+          bounds={{ min: 0, max: 5_000_000, softMax: 1_000_000 }}
         />
         <SliderField
           label="Interest rate"
@@ -353,27 +368,35 @@ function AffordabilityMode({
           step={5}
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <NumberField
+          <ValidatedNumberField
             label="Property-tax rate (%/yr)"
+            unit="%"
             value={input.propTaxRatePct}
             onChange={(propTaxRatePct) => onPatch({ propTaxRatePct })}
             step={0.05}
+            bounds={{ min: 0, max: 10, softMax: 3 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="Insurance (annual)"
+            unit="$"
             value={input.insuranceYr}
             onChange={(insuranceYr) => onPatch({ insuranceYr })}
+            bounds={{ min: 0, max: 100_000, softMax: 20_000 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="HOA (monthly)"
+            unit="$"
             value={input.hoaMo}
             onChange={(hoaMo) => onPatch({ hoaMo })}
+            bounds={{ min: 0, max: 10_000, softMax: 2_000 }}
           />
-          <NumberField
+          <ValidatedNumberField
             label="PMI rate (%)"
+            unit="%"
             value={input.pmiRatePct}
             onChange={(pmiRatePct) => onPatch({ pmiRatePct })}
             step={0.05}
+            bounds={{ min: 0, max: 5, softMax: 2 }}
           />
         </div>
 
@@ -382,15 +405,19 @@ function AffordabilityMode({
             DTI caps (front / back)
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <NumberField
+            <ValidatedNumberField
               label="Front-end cap (%)"
+              unit="%"
               value={input.frontCapPct}
               onChange={(frontCapPct) => onPatch({ frontCapPct })}
+              bounds={{ min: 0, max: 60 }}
             />
-            <NumberField
+            <ValidatedNumberField
               label="Back-end cap (%)"
+              unit="%"
               value={input.backCapPct}
               onChange={(backCapPct) => onPatch({ backCapPct })}
+              bounds={{ min: 0, max: 60 }}
             />
           </div>
           <label className="flex items-center gap-2 text-sm text-ink-soft">
@@ -561,33 +588,6 @@ function SliderField({
       {hint ? (
         <span className="mt-1 block text-xs text-ink-muted">{hint}</span>
       ) : null}
-    </label>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  step,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-  step?: number;
-}) {
-  return (
-    <label className="block">
-      <span className="text-sm font-medium text-ink-soft">{label}</span>
-      <input
-        type="number"
-        min={0}
-        step={step}
-        className="field mt-1"
-        value={value || ""}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-      />
     </label>
   );
 }

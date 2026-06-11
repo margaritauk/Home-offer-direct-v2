@@ -1,7 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { calculateSavings, formatUSD } from "@/lib/savings";
+import { useMemo } from "react";
+import { useStageTool } from "@/hooks/use-stage-tool";
+import { calculateSavings, formatUSD, type SavingsInput } from "@/lib/savings";
+
+/**
+ * Persisted savings-calculator inputs (issue #150, A2). Migrated from local
+ * `useState` to `useStageTool` so the inputs persist + sync like every other
+ * tool. Defaults are unchanged from the previous local state so the existing
+ * E2E ($10,000 captured at 100% on a $400k home, 2.5% commission) stays green.
+ */
+export const INITIAL: SavingsInput = {
+  homePrice: 400_000,
+  downPaymentPercent: 10,
+  buyerCommissionPercent: 2.5,
+  captureRatePercent: 100,
+  closingCostPercent: 3,
+};
 
 function Field({
   label,
@@ -46,23 +61,17 @@ function Field({
 }
 
 export function SavingsCalculator() {
-  const [homePrice, setHomePrice] = useState(400_000);
-  const [downPaymentPercent, setDownPaymentPercent] = useState(10);
-  const [buyerCommissionPercent, setBuyerCommissionPercent] = useState(2.5);
-  const [captureRatePercent, setCaptureRatePercent] = useState(100);
-  const [closingCostPercent, setClosingCostPercent] = useState(3);
-
-  const result = useMemo(
-    () =>
-      calculateSavings({
-        homePrice,
-        downPaymentPercent,
-        buyerCommissionPercent,
-        captureRatePercent,
-        closingCostPercent,
-      }),
-    [homePrice, downPaymentPercent, buyerCommissionPercent, captureRatePercent, closingCostPercent],
+  const { value, hydrated, save } = useStageTool<SavingsInput>(
+    "savings",
+    INITIAL,
   );
+
+  const patch = (p: Partial<SavingsInput>) =>
+    save((prev) => ({ ...prev, ...p }));
+
+  const result = useMemo(() => calculateSavings(value), [value]);
+
+  if (!hydrated) return <p className="text-sm text-ink-muted">Loading…</p>;
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
@@ -70,8 +79,8 @@ export function SavingsCalculator() {
         <Field
           label="Home price"
           suffix="$"
-          value={homePrice}
-          onChange={setHomePrice}
+          value={value.homePrice}
+          onChange={(homePrice) => patch({ homePrice })}
           min={100_000}
           max={2_000_000}
           step={5_000}
@@ -79,8 +88,8 @@ export function SavingsCalculator() {
         <Field
           label="Down payment"
           suffix="%"
-          value={downPaymentPercent}
-          onChange={setDownPaymentPercent}
+          value={value.downPaymentPercent}
+          onChange={(downPaymentPercent) => patch({ downPaymentPercent })}
           min={0}
           max={100}
           step={1}
@@ -89,8 +98,8 @@ export function SavingsCalculator() {
         <Field
           label="Buyer-side commission on the table"
           suffix="%"
-          value={buyerCommissionPercent}
-          onChange={setBuyerCommissionPercent}
+          value={value.buyerCommissionPercent}
+          onChange={(buyerCommissionPercent) => patch({ buyerCommissionPercent })}
           min={0}
           max={4}
           step={0.1}
@@ -99,8 +108,8 @@ export function SavingsCalculator() {
         <Field
           label="How much of it you negotiate to capture"
           suffix="%"
-          value={captureRatePercent}
-          onChange={setCaptureRatePercent}
+          value={value.captureRatePercent}
+          onChange={(captureRatePercent) => patch({ captureRatePercent })}
           min={0}
           max={100}
           step={5}
@@ -109,8 +118,8 @@ export function SavingsCalculator() {
         <Field
           label="Estimated closing costs"
           suffix="%"
-          value={closingCostPercent}
-          onChange={setClosingCostPercent}
+          value={value.closingCostPercent}
+          onChange={(closingCostPercent) => patch({ closingCostPercent })}
           min={0}
           max={6}
           step={0.5}
