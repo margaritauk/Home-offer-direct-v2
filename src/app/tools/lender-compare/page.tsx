@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LenderCompare } from "@/components/tools/lender-compare";
 import { ToolPageHeader } from "@/components/tools/tool-page-header";
+import { Term } from "@/components/term";
 
 export const metadata: Metadata = {
   title: "Lender comparison",
@@ -15,9 +16,9 @@ export default function LenderComparePage() {
       intro={
         <>
           The lowest rate isn&apos;t always the best deal once points and fees
-          are in the picture. Transcribe the numbers from your own Loan Estimates
-          to compare lenders by total cost over the time you expect to keep the
-          loan.
+          are in the picture. Transcribe the numbers from your own{" "}
+          <Term slug="loan-estimate">Loan Estimates</Term> to compare lenders by
+          total cost over the time you expect to keep the loan.
         </>
       }
     >

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CompsWorksheet } from "@/components/tools/comps-worksheet";
 import { ToolPageHeader } from "@/components/tools/tool-page-header";
+import { Term } from "@/components/term";
 
 export const metadata: Metadata = {
   title: "Comps worksheet",
@@ -15,8 +16,9 @@ export default function CompsPage() {
       intro={
         <>
           Ground your offer in recent comparable sales. Enter the subject home
-          and a few comps, adjust for differences, and see an estimated
-          fair-value range based on adjusted price per square foot.
+          and a few <Term slug="comps">comps</Term>, adjust for differences, and
+          see an estimated fair-value range based on adjusted price per square
+          foot.
         </>
       }
     >
