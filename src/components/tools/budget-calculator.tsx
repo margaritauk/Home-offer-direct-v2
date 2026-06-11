@@ -15,6 +15,8 @@ import {
   type PitiInput,
 } from "@/lib/budget";
 import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
+import { budgetSanity } from "@/lib/tools/sanity";
+import { SanityNotes } from "./sanity-notes";
 import { ToolDisclaimer } from "./tool-disclaimer";
 import { ValidatedNumberField } from "./validated-field";
 
@@ -300,6 +302,7 @@ function PaymentMode({
         </p>
 
         <BudgetInsights insights={explainBudget(breakdown)} />
+        <SanityNotes notes={budgetSanity(input)} />
       </div>
     </div>
   );
@@ -482,6 +485,24 @@ function AffordabilityMode({
           insights={explainBudget(result.piti, {
             grossMonthlyIncome: input.grossMonthlyIncome,
           })}
+        />
+        <SanityNotes
+          notes={budgetSanity(
+            {
+              // Anchor the price at the solved max so the down-payment-vs-price
+              // check has a price to compare against; the rest of the fields are
+              // ignored when the affordability arg is supplied.
+              price: result.maxPrice,
+              downPct: 0,
+              ratePct: input.ratePct,
+              termYears: input.termYears,
+              propTaxYr: 0,
+              insuranceYr: input.insuranceYr,
+              hoaMo: input.hoaMo,
+              pmiRatePct: input.pmiRatePct,
+            },
+            input,
+          )}
         />
       </div>
     </div>

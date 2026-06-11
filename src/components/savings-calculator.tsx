@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { calculateSavings, formatUSD, type SavingsInput } from "@/lib/savings";
+import { savingsSanity } from "@/lib/tools/sanity";
+import { SanityNotes } from "./tools/sanity-notes";
 
 /**
  * Persisted savings-calculator inputs (issue #150, A2). Migrated from local
@@ -156,6 +158,7 @@ export function SavingsCalculator() {
             />
           </div>
         </dl>
+        <SanityNotes notes={savingsSanity(value)} />
         <p className="text-xs text-ink-muted">
           Estimates only — not financial advice. Actual costs, commission, and
           what you can negotiate vary by market, lender, and deal.

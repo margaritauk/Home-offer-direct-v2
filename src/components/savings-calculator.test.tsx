@@ -24,6 +24,24 @@ describe("SavingsCalculator", () => {
     expect(screen.getByTestId("captured-savings").textContent).not.toBe(before);
   });
 
+  it("renders a sanity note for a flagged input (100% capture is a best case)", () => {
+    // The default 100% capture rate trips the savingsSanity best-case nudge.
+    render(<SavingsCalculator />);
+    const note = screen.getByTestId("sanity-note");
+    expect(note.textContent).toMatch(/best case/i);
+  });
+
+  it("hides the sanity note once the flagged input is corrected", () => {
+    render(<SavingsCalculator />);
+    expect(screen.getByTestId("sanity-note")).toBeInTheDocument();
+    // Drop capture below 100% → the only flagged condition clears.
+    fireEvent.change(
+      screen.getByLabelText("How much of it you negotiate to capture"),
+      { target: { value: "80" } },
+    );
+    expect(screen.queryByTestId("sanity-note")).not.toBeInTheDocument();
+  });
+
   it("persists an input change across a fresh render (useStageTool)", () => {
     const first = render(<SavingsCalculator />);
     fireEvent.change(first.getByLabelText("Home price"), {
