@@ -260,14 +260,18 @@ export class RentCastListingsDataSource {
     const apiKey = process.env.RENTCAST_API_KEY;
     if (!apiKey || !id) return undefined;
 
-    const url = `${RENTCAST_LISTINGS_URL}?id=${encodeURIComponent(id)}&limit=1`;
+    // RentCast exposes a single listing at /listings/sale/{id}.
+    const url = `${RENTCAST_LISTINGS_URL}/${encodeURIComponent(id)}`;
     try {
       const res = await fetch(url, {
         method: "GET",
         headers: { "X-Api-Key": apiKey },
       });
       if (!res.ok) return undefined;
-      return mapRentCastListings(await res.json())[0];
+      const body = await res.json();
+      // The endpoint may return a single object or a one-element array.
+      const arr = Array.isArray(body) ? body : [body];
+      return mapRentCastListings(arr)[0];
     } catch {
       return undefined;
     }

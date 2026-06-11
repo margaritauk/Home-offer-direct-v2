@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { allListings, getListingById, propertyTypeLabels } from "@/lib/listings";
+import { getListingsDataSource } from "@/lib/listings/provider";
+import { propertyTypeLabels } from "@/lib/listings";
 import { formatUSD } from "@/lib/savings";
 import { ListingImage } from "@/components/listing-image";
 import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { TrackShowingButton } from "@/components/showings/track-showing-button";
 
-export function generateStaticParams() {
-  return allListings().map((l) => ({ id: l.id }));
-}
+// Listings can be live (RentCast) and looked up by id at request time, so render
+// on demand through the data-source seam rather than statically from mock ids.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -17,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const listing = getListingById(id);
+  const listing = await getListingsDataSource().getById(id);
   if (!listing) return { title: "Listing not found" };
   return {
     title: `${listing.address}, ${listing.city} ${listing.state}`,
@@ -40,7 +41,7 @@ export default async function ListingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const listing = getListingById(id);
+  const listing = await getListingsDataSource().getById(id);
   if (!listing) notFound();
 
   return (
@@ -56,10 +57,18 @@ export default async function ListingDetailPage({
             propertyType={listing.propertyType}
             className="aspect-[5/3] w-full rounded-xl"
           />
-          <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-            <strong>Sample listing.</strong> This is an illustrative placeholder,
-            not a real home for sale. Live MLS listings are on the roadmap.
-          </div>
+          {listing.isSample ? (
+            <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+              <strong>Sample listing.</strong> This is an illustrative
+              placeholder, not a real home for sale.
+            </div>
+          ) : (
+            <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-ink-soft">
+              <strong>Live listing data via RentCast.</strong> Photos are
+              placeholders — our data source doesn&apos;t license MLS listing
+              images.
+            </div>
+          )}
           <h2 className="mt-6 text-xl font-bold">About this home</h2>
           <p className="mt-2 text-ink-soft">{listing.description}</p>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
