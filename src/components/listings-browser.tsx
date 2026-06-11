@@ -67,6 +67,8 @@ export function ListingsBrowser() {
   const [results, setResults] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState<"rentcast" | "mock">("mock");
+  // RentCast requires a location to search; true → prompt instead of "no results".
+  const [needsLocation, setNeedsLocation] = useState(false);
   const reqId = useRef(0);
 
   useEffect(() => {
@@ -105,14 +107,17 @@ export function ListingsBrowser() {
         const data = (await res.json()) as {
           listings?: Listing[];
           source?: "rentcast" | "mock";
+          needsLocation?: boolean;
         };
         // Ignore stale responses (a newer request superseded this one).
         if (id !== reqId.current) return;
         setResults(Array.isArray(data.listings) ? data.listings : []);
         setSource(data.source === "rentcast" ? "rentcast" : "mock");
+        setNeedsLocation(Boolean(data.needsLocation));
       } catch {
         if (id !== reqId.current) return;
         setResults([]);
+        setNeedsLocation(false);
       } finally {
         if (id === reqId.current) setLoading(false);
       }
@@ -331,7 +336,9 @@ export function ListingsBrowser() {
       <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
         {loading
           ? "Searching…"
-          : `${results.length} listing${results.length === 1 ? "" : "s"}`}
+          : needsLocation
+            ? "Choose a location to search"
+            : `${results.length} listing${results.length === 1 ? "" : "s"}`}
       </p>
 
       {loading ? (
@@ -345,6 +352,16 @@ export function ListingsBrowser() {
               className="card h-72 animate-pulse bg-slate-100 p-0"
             />
           ))}
+        </div>
+      ) : needsLocation ? (
+        <div className="mt-3 card text-center">
+          <p className="font-medium text-ink">Pick where you want to search</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            Real listings are searched by location. Use the{" "}
+            <strong>current location</strong>, <strong>ZIP</strong>,{" "}
+            <strong>city</strong>, or <strong>state</strong> selector above to
+            see homes.
+          </p>
         </div>
       ) : results.length > 0 ? (
         <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

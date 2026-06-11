@@ -199,3 +199,29 @@ describe("RentCastListingsDataSource.search", () => {
     expect(await source.search({ state: "TX" })).toEqual([]);
   });
 });
+
+import { rentcastHasLocation } from "./source-rentcast";
+
+describe("rentcastHasLocation", () => {
+  it("is true with lat+lng, zip, city, or state; false otherwise", () => {
+    expect(rentcastHasLocation({ lat: 30, lng: -97 })).toBe(true);
+    expect(rentcastHasLocation({ zip: "78704" })).toBe(true);
+    expect(rentcastHasLocation({ city: "Austin" })).toBe(true);
+    expect(rentcastHasLocation({ state: "TX" })).toBe(true);
+    expect(rentcastHasLocation({})).toBe(false);
+    expect(rentcastHasLocation({ minBeds: 3, maxPrice: 500000 })).toBe(false);
+  });
+});
+
+describe("RentCastListingsDataSource location guard", () => {
+  it("returns [] without firing a request when there is no location", async () => {
+    const prev = process.env.RENTCAST_API_KEY;
+    process.env.RENTCAST_API_KEY = "rc-test";
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const out = await new RentCastListingsDataSource().search({ minBeds: 3 });
+    expect(out).toEqual([]);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+    process.env.RENTCAST_API_KEY = prev;
+  });
+});
