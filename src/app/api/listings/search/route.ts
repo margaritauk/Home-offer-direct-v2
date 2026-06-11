@@ -18,6 +18,7 @@ import {
   getListingsDataSource,
   isRentCastListingsActive,
 } from "@/lib/listings/provider";
+import { rentcastHasLocation } from "@/lib/listings/source-rentcast";
 import type { ListingFilters } from "@/lib/listings/types";
 
 export async function POST(request: Request) {
@@ -27,8 +28,16 @@ export async function POST(request: Request) {
     const filters = (await request
       .json()
       .catch(() => ({}))) as ListingFilters;
+    const f = filters ?? {};
 
-    const listings = await getListingsDataSource().search(filters ?? {});
+    // RentCast can't search without a location — tell the client to prompt for
+    // one instead of returning a confusing empty list. (Mock data has no such
+    // requirement.)
+    if (source === "rentcast" && !rentcastHasLocation(f)) {
+      return NextResponse.json({ listings: [], source, needsLocation: true });
+    }
+
+    const listings = await getListingsDataSource().search(f);
     return NextResponse.json({ listings, source });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

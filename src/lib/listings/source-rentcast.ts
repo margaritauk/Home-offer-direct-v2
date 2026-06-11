@@ -164,24 +164,43 @@ export function mapRentCastListings(payload: unknown): Listing[] {
 }
 
 /**
+ * Whether the filters carry a geographic scope RentCast can query. RentCast's
+ * `/listings/sale` REQUIRES at least one location param (lat+lng, zipCode, city,
+ * or state) — a location-less request errors. The route uses this to prompt the
+ * buyer to pick a location instead of firing a guaranteed-to-fail query.
+ */
+export function rentcastHasLocation(filters: ListingFilters): boolean {
+  return (
+    (typeof filters.lat === "number" && typeof filters.lng === "number") ||
+    Boolean(filters.zip) ||
+    Boolean(filters.city) ||
+    Boolean(filters.state)
+  );
+}
+
+/**
  * Build the RentCast query string from our neutral {@link ListingFilters}.
- * Only the filters RentCast supports server-side are sent; the rest are applied
- * client-side afterwards via {@link matches}. `status=Active` + `limit` are
- * always set.
+ *
+ * We deliberately send ONLY a location scope + freshness (`daysOld`) +
+ * status/limit, and post-filter everything else via {@link matches}. Reasons:
+ *  - RentCast's `bedrooms`/`bathrooms` are EXACT matches, so sending them for a
+ *    "3+" search would wrongly drop 4-bed homes.
+ *  - RentCast's `propertyType` labels ("Single Family") differ from our enum
+ *    ("single-family"), so sending ours wouldn't match.
+ *  - Price min/max aren't reliably supported on this endpoint.
+ * `matches()` enforces all of those client-side, so results stay correct.
  */
 function buildQuery(filters: ListingFilters): string {
   const params = new URLSearchParams();
 
-  // Geographic scope: a lat/lng/radius search takes precedence; otherwise fall
-  // back to zip, then city+state, then state alone.
-  if (
-    typeof filters.lat === "number" &&
-    typeof filters.lng === "number" &&
-    typeof filters.radius === "number"
-  ) {
+  // Geographic scope: lat/lng (+radius) takes precedence; then zip; then
+  // city+state; then state alone.
+  if (typeof filters.lat === "number" && typeof filters.lng === "number") {
     params.set("latitude", String(filters.lat));
     params.set("longitude", String(filters.lng));
-    params.set("radius", String(filters.radius));
+    if (typeof filters.radius === "number") {
+      params.set("radius", String(filters.radius));
+    }
   } else if (filters.zip) {
     params.set("zipCode", filters.zip);
   } else {
@@ -189,31 +208,7 @@ function buildQuery(filters: ListingFilters): string {
     if (filters.state) params.set("state", filters.state.toUpperCase());
   }
 
-  // Property type: RentCast takes a single `propertyType`. We can only push it
-  // server-side when the multi-select resolves to exactly one type; otherwise
-  // we leave it off and let the shared `matches()` post-filter narrow the set.
-  const singleType =
-    filters.propertyTypes && filters.propertyTypes.length === 1
-      ? filters.propertyTypes[0]
-      : filters.propertyTypes && filters.propertyTypes.length > 1
-        ? undefined
-        : filters.propertyType;
-  if (singleType) {
-    params.set("propertyType", singleType);
-  }
-  if (typeof filters.minBeds === "number" && filters.minBeds > 0) {
-    params.set("bedrooms", String(filters.minBeds));
-  }
-  if (typeof filters.minBaths === "number" && filters.minBaths > 0) {
-    params.set("bathrooms", String(filters.minBaths));
-  }
-  if (typeof filters.maxPrice === "number" && filters.maxPrice > 0) {
-    params.set("maxPrice", String(filters.maxPrice));
-  }
-  if (typeof filters.minPrice === "number" && filters.minPrice > 0) {
-    params.set("minPrice", String(filters.minPrice));
-  }
-  // Freshness: RentCast supports `daysOld` (listings on market <= N days).
+  // Freshness is a genuine RentCast filter (listings on market <= N days).
   if (
     typeof filters.maxDaysOnMarket === "number" &&
     filters.maxDaysOnMarket > 0
@@ -241,6 +236,8 @@ export class RentCastListingsDataSource {
     const apiKey = process.env.RENTCAST_API_KEY;
     // No key → we can't query; return nothing rather than guess.
     if (!apiKey) return [];
+    // RentCast requires a location; without one, don't fire a failing request.
+    if (!rentcastHasLocation(filters)) return [];
 
     const url = `${RENTCAST_LISTINGS_URL}?${buildQuery(filters)}`;
 
