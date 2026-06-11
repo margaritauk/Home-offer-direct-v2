@@ -28,6 +28,16 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <span>{listing.baths} ba</span>
           <span>·</span>
           <span>{listing.sqft.toLocaleString()} sqft</span>
+          {typeof listing.distance === "number" ? (
+            <>
+              <span>·</span>
+              <span className="font-medium text-brand-700">
+                {listing.distance < 0.1
+                  ? "<0.1 mi"
+                  : `${listing.distance.toFixed(1)} mi away`}
+              </span>
+            </>
+          ) : null}
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-ink-muted">
           <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium">

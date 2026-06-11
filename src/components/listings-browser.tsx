@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   allListings,
   propertyTypeLabels,
@@ -8,6 +8,8 @@ import {
   type ListingFilters,
   type PropertyType,
 } from "@/lib/listings";
+import { annotateDistance } from "@/lib/listings/distance";
+import { useGeolocation } from "@/hooks/use-geolocation";
 import { getStateOptions } from "@/lib/states";
 import { useStateSelection } from "@/hooks/use-state-selection";
 import { ListingCard } from "@/components/listing-card";
@@ -53,10 +55,18 @@ export function ListingsBrowser() {
     useState<NonNullable<ListingFilters["sort"]> | null>(null);
   const [more, setMore] = useState<MoreFiltersValue>(EMPTY_MORE_FILTERS);
 
-  // A real search center exists only when "current location" resolved coords.
-  const hasCenter = location.lat != null && location.lng != null;
+  // Distance is measured from the buyer's location. That comes from the
+  // "current location" filter if active, otherwise from a one-time geolocation
+  // request the buyer can trigger by choosing the Distance sort — so "sort by
+  // distance" works no matter HOW they searched (state, ZIP, city, or near me).
+  const geo = useGeolocation();
+  const center =
+    location.lat != null && location.lng != null
+      ? { lat: location.lat, lng: location.lng }
+      : geo.coords;
+  const hasCenter = center != null;
   const sort: NonNullable<ListingFilters["sort"]> =
-    sortChoice ?? (hasCenter ? "distance" : "newest");
+    sortChoice ?? (location.lat != null ? "distance" : "newest");
 
   // Default the location to the buyer's selected state (once on hydration), shown
   // as a removable State chip. After this, clearing the chip/Clear-all just resets
@@ -146,6 +156,29 @@ export function ListingsBrowser() {
   // of blanking the list / flashing skeletons.
   const firstLoad = loading && !hasLoaded && results.length === 0;
   const updating = loading && !firstLoad;
+
+  // When sorting by distance, annotate + order from the buyer's center on the
+  // client — so it works for ANY search mode (the server can only sort by
+  // distance when the search itself is lat/lng). Listings without coordinates
+  // (e.g. mock data) keep their order at the end.
+  const displayed = useMemo(() => {
+    if (sort !== "distance" || !center) return results;
+    return [...annotateDistance(results, center)].sort(
+      (a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity),
+    );
+  }, [sort, center, results]);
+
+  // Picking "Distance" without a center yet → ask for the buyer's location once.
+  const chooseSort = (value: NonNullable<ListingFilters["sort"]>) => {
+    setSortChoice(value);
+    if (
+      value === "distance" &&
+      !center &&
+      (geo.status === "idle" || geo.status === "denied")
+    ) {
+      geo.request();
+    }
+  };
 
   const clearAll = () => {
     setLocation({ mode: location.mode });
@@ -367,19 +400,26 @@ export function ListingsBrowser() {
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
               value={sort}
               onChange={(e) =>
-                setSortChoice(e.target.value as NonNullable<ListingFilters["sort"]>)
+                chooseSort(e.target.value as NonNullable<ListingFilters["sort"]>)
               }
               aria-label="Sort"
             >
-              {hasCenter ? (
-                <option value="distance">Distance (nearest)</option>
-              ) : null}
+              <option value="distance">Distance (nearest)</option>
               <option value="price-asc">Price (low to high)</option>
               <option value="price-desc">Price (high to low)</option>
               <option value="newest">Newest on market</option>
               <option value="sqft-desc">Largest (sqft)</option>
               <option value="beds-desc">Most beds</option>
             </select>
+            {sort === "distance" && !hasCenter ? (
+              <span className="text-xs text-ink-muted">
+                {geo.status === "loading"
+                  ? "Locating…"
+                  : geo.status === "denied" || geo.status === "insecure"
+                    ? "Allow location to sort by distance"
+                    : null}
+              </span>
+            ) : null}
           </label>
         ) : null}
       </div>
@@ -413,7 +453,7 @@ export function ListingsBrowser() {
           }`}
           aria-busy={updating}
         >
-          {results.map((l) => (
+          {displayed.map((l) => (
             <ListingCard key={l.id} listing={l} />
           ))}
         </div>
