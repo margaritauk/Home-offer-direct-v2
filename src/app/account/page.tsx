@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AccountPanel } from "@/components/account-panel";
 import { DealExport } from "@/components/deal-export";
 
@@ -24,6 +25,22 @@ export default function AccountPage() {
       </div>
       <div className="mt-8 max-w-2xl">
         <DealExport />
+      </div>
+      <div className="mt-8 max-w-2xl">
+        <div className="card">
+          <h2 className="text-lg font-semibold">Print your binder</h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            See everything you&apos;ve entered — budget, savings, comps, offer,
+            deadlines, and journey progress — on one printable page you can save
+            as a PDF or hand to your attorney.
+          </p>
+          <Link
+            href="/deal/print"
+            className="btn-secondary mt-4 inline-flex w-full sm:w-auto"
+          >
+            Open your buyer binder
+          </Link>
+        </div>
       </div>
     </div>
   );

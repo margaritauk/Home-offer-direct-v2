@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { WhatsNext } from "@/components/nav/whats-next";
 
@@ -22,6 +23,12 @@ export default function DashboardPage() {
           documents still outstanding, and the next action on each. Everything
           saves on this device.
         </p>
+        <Link
+          href="/deal/print"
+          className="mt-4 inline-flex text-sm font-medium text-brand-700 hover:underline"
+        >
+          Print your binder →
+        </Link>
       </div>
 
       <div className="mt-8">
