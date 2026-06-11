@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  queryListings,
   allListings,
   propertyTypeLabels,
+  type Listing,
   type ListingFilters,
   type PropertyType,
 } from "@/lib/listings";
@@ -46,20 +46,53 @@ export function ListingsBrowser() {
     if (hydrated && stateCode) setState(stateCode);
   }, [hydrated, stateCode]);
 
-  const results = useMemo(
-    () =>
-      queryListings({
-        state: state || undefined,
-        propertyType: propertyType || undefined,
-        minBeds: minBeds || undefined,
-        minBaths: minBaths || undefined,
-        minPrice: price.min || undefined,
-        maxPrice: price.max || undefined,
-        query: query || undefined,
-        sort,
-      }),
-    [state, propertyType, minBeds, minBaths, price, query, sort],
-  );
+  // Real listings come from the server seam (mock or RentCast) via the search
+  // route. We debounce filter changes (~300ms) and fetch async, tracking a
+  // loading state and the response `source` so the disclaimer stays honest.
+  const [results, setResults] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState<"rentcast" | "mock">("mock");
+  const reqId = useRef(0);
+
+  useEffect(() => {
+    const filters: ListingFilters = {
+      state: state || undefined,
+      propertyType: propertyType || undefined,
+      minBeds: minBeds || undefined,
+      minBaths: minBaths || undefined,
+      minPrice: price.min || undefined,
+      maxPrice: price.max || undefined,
+      query: query || undefined,
+      sort,
+    };
+
+    setLoading(true);
+    const id = ++reqId.current;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/listings/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(filters),
+        });
+        const data = (await res.json()) as {
+          listings?: Listing[];
+          source?: "rentcast" | "mock";
+        };
+        // Ignore stale responses (a newer request superseded this one).
+        if (id !== reqId.current) return;
+        setResults(Array.isArray(data.listings) ? data.listings : []);
+        setSource(data.source === "rentcast" ? "rentcast" : "mock");
+      } catch {
+        if (id !== reqId.current) return;
+        setResults([]);
+      } finally {
+        if (id === reqId.current) setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [state, propertyType, minBeds, minBaths, price, query, sort]);
 
   const clearAll = () => {
     setState("");
@@ -206,10 +239,18 @@ export function ListingsBrowser() {
         </label>
       </div>
 
-      <DisclaimerBanner icon={null} className="mt-4">
-        <strong>Sample listings.</strong> These are illustrative placeholders, not
-        real homes for sale. Live MLS listings are coming — see the roadmap.
-      </DisclaimerBanner>
+      {source === "rentcast" ? (
+        <DisclaimerBanner icon={null} className="mt-4">
+          <strong>Live data via RentCast.</strong> Listing photos are
+          placeholders.
+        </DisclaimerBanner>
+      ) : (
+        <DisclaimerBanner icon={null} className="mt-4">
+          <strong>Sample listings.</strong> These are illustrative placeholders,
+          not real homes for sale. Live MLS listings are coming — see the
+          roadmap.
+        </DisclaimerBanner>
+      )}
 
       {chips.length > 0 ? (
         <div className="mt-4">
@@ -218,10 +259,24 @@ export function ListingsBrowser() {
       ) : null}
 
       <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
-        {results.length} listing{results.length === 1 ? "" : "s"}
+        {loading
+          ? "Searching…"
+          : `${results.length} listing${results.length === 1 ? "" : "s"}`}
       </p>
 
-      {results.length > 0 ? (
+      {loading ? (
+        <div
+          className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          aria-hidden
+        >
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="card h-72 animate-pulse bg-slate-100 p-0"
+            />
+          ))}
+        </div>
+      ) : results.length > 0 ? (
         <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((l) => (
             <ListingCard key={l.id} listing={l} />
@@ -229,7 +284,7 @@ export function ListingsBrowser() {
         </div>
       ) : (
         <div className="mt-3 space-y-3">
-          <p className="text-ink-muted">No sample listings match those filters.</p>
+          <p className="text-ink-muted">No listings match those filters.</p>
           {chips.length > 0 ? (
             <button type="button" className="btn-secondary" onClick={clearAll}>
               Clear filters

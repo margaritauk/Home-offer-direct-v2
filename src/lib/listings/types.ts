@@ -43,6 +43,16 @@ export interface Listing {
 export interface ListingFilters {
   /** State code; empty/undefined = all states. */
   state?: string;
+  /** City name; used by the real (RentCast) source for a geographic query. */
+  city?: string;
+  /** ZIP code; used by the real (RentCast) source for a geographic query. */
+  zip?: string;
+  /** Latitude; with `lng`/`radius`, drives a radius search on the real source. */
+  lat?: number;
+  /** Longitude; with `lat`/`radius`, drives a radius search on the real source. */
+  lng?: number;
+  /** Search radius in miles, paired with `lat`/`lng` on the real source. */
+  radius?: number;
   minPrice?: number;
   maxPrice?: number;
   minBeds?: number;
