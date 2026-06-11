@@ -47,6 +47,33 @@ describe("queryListings", () => {
     expect(results.some((l) => l.id === sample.id)).toBe(true);
   });
 
+  it("matches the free-text query against the description (case-insensitive)", () => {
+    // Pick a word that lives ONLY in some listing's description, not in its
+    // address/city/state/zip — so a hit proves description is searched.
+    const target = mockListings.find((l) => {
+      const meta = `${l.address} ${l.city} ${l.state} ${l.zip}`.toLowerCase();
+      return l.description
+        .toLowerCase()
+        .split(/[^a-z]+/)
+        .some((w) => w.length > 4 && !meta.includes(w));
+    });
+    expect(target).toBeDefined();
+    const meta = `${target!.address} ${target!.city} ${target!.state} ${target!.zip}`.toLowerCase();
+    const word = target!.description
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .find((w) => w.length > 4 && !meta.includes(w))!;
+
+    const results = queryListings({ query: word.toUpperCase() });
+    expect(results.some((l) => l.id === target!.id)).toBe(true);
+  });
+
+  it("filters by a min+max price combo", () => {
+    const res = queryListings({ minPrice: 400_000, maxPrice: 900_000 });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.price >= 400_000 && l.price <= 900_000)).toBe(true);
+  });
+
   it("sorts by price ascending and descending", () => {
     const asc = queryListings({ sort: "price-asc" }).map((l) => l.price);
     expect(asc).toEqual([...asc].sort((a, b) => a - b));
