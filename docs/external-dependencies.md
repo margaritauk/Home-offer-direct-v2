@@ -15,7 +15,7 @@ recommend adopting it. Keep this updated as stories are added or shipped.
 | **Supabase** | Auth + Postgres + cloud sync + (opt-in) deals | 🟢 Active | #56, #59–62 | Free tier; Pro $25/mo | ✅ Done | **Yes** (in use) |
 | **Vercel** | Hosting / deploy / preview builds | 🟢 Active | — | Free Hobby; Pro ~$20/mo | ✅ Done | **Yes** (in use) |
 | **Anthropic (Claude) API** | All AI features (grounded, no math) | 🟡 Needed soon | #104, #57, #36, #33, #40, #51 | Usage-based; pennies/call on Haiku | 🟢 Easy (REST) | **Yes, when AI work starts** |
-| **Live home feed (listings)** | Real for-sale listings behind Search Homes (replaces mock data) | 🟡 Needed soon | #11, ADR-011 | $0–$$$ (see below) | 🟠 Medium–Hard | **Defer; start with a listing API** |
+| **Live home feed (listings)** | Real for-sale listings behind Search Homes (replaces mock data) | 🟢 Wired (RentCast; pending key on deploy) | #11, #174, ADR-011 | $0–$$$ (see below) | 🟠 Medium–Hard | **Yes — RentCast connector wired** |
 | **Recent-sales / comps data** | Real sold-comps for AI comps | 🟡 Needed soon | #104, #16, ADR-011 | $0–$$$ (see below) | 🟠 Medium–Hard | **Defer; start with a comps API** |
 | **Stripe** | Payments for any paid tier | ⚪ Deferred | #41, #58, #63, #34, #51 | No monthly; 2.9% + 30¢/txn | 🟢 Easy | **Yes, only when monetizing** |
 | **Email provider** | Transactional email (invites, paid exports) | ⚪ Deferred | #42, #60, #29 | Free tiers; ~$20/mo at scale | 🟢 Easy | **Defer (not needed yet)** |
@@ -47,9 +47,11 @@ recommend adopting it. Keep this updated as stories are added or shipped.
 - **Pros:** strong, cheap on Haiku, simple REST, fits the "grounded, no-math" guardrail. **Cons:** paid (needs a card); must enforce grounding/anti-fabrication in our prompts + parsing.
 - **Recommendation: Yes, when AI work starts.** One key unlocks every AI story.
 
-### 🟡 Live home feed (real for-sale listings)
-- **Why:** the **Search Homes** experience currently serves **mock samples** (`isSample: true`). To show real homes the buyer can actually pursue, we need a live for-sale listing feed. The ADR-011 provider seam (`src/lib/listings/provider.ts`) is built so a real feed drops in behind the existing `Listing` type and UI with no rework.
-- **Stories:** #11 (listings/search epic), ADR-011 (data pipeline).
+### 🟢 Live home feed (real for-sale listings) — RentCast wired (issue #174)
+- **Status:** the live home feed is now **wired via RentCast** behind the ADR-011 provider seam (`src/lib/listings/provider.ts` → `src/lib/listings/source-rentcast.ts`, `RentCastListingsDataSource`). Search runs on REAL homes when `LISTINGS_DATA_SOURCE=rentcast` and the server secret `RENTCAST_API_KEY` are set (reuses the same key as the comps connector). It is **off by default** and **pending the env key on the deploy**; until then Search Homes serves the bundled illustrative samples (`isSample: true`), clearly labeled.
+- **Photos remain placeholders:** RentCast does not license listing photos, so cards still render the seeded SVG placeholder. Real photos need an IDX/MLS display feed with the appropriate licensing (deferred — see options below).
+- **Why:** the **Search Homes** experience previously served **mock samples** (`isSample: true`). The seam lets a real feed drop in behind the existing `Listing` type and UI with no rework — which is exactly what #174 did.
+- **Stories:** #11 (listings/search epic), #174 (RentCast wiring), ADR-011 (data pipeline).
 - **Options:**
   | Option | Cost | Ease | Notes |
   |---|---|---|---|

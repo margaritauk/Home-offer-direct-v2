@@ -1,10 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  MockListingsDataSource,
   allListings,
   getListingById,
+  getListingsDataSource,
   listingStates,
   queryListings,
+  searchListings,
 } from "./provider";
+import { RentCastListingsDataSource } from "./source-rentcast";
 import { mockListings } from "./mock-data";
 
 describe("mock listings dataset", () => {
@@ -106,5 +110,49 @@ describe("lookups", () => {
 
   it("allListings returns the full set", () => {
     expect(allListings()).toHaveLength(mockListings.length);
+  });
+});
+
+describe("listings data-source seam", () => {
+  const ORIGINAL_SOURCE = process.env.LISTINGS_DATA_SOURCE;
+  const ORIGINAL_KEY = process.env.RENTCAST_API_KEY;
+
+  beforeEach(() => {
+    delete process.env.LISTINGS_DATA_SOURCE;
+    delete process.env.RENTCAST_API_KEY;
+  });
+
+  afterEach(() => {
+    if (ORIGINAL_SOURCE === undefined) delete process.env.LISTINGS_DATA_SOURCE;
+    else process.env.LISTINGS_DATA_SOURCE = ORIGINAL_SOURCE;
+    if (ORIGINAL_KEY === undefined) delete process.env.RENTCAST_API_KEY;
+    else process.env.RENTCAST_API_KEY = ORIGINAL_KEY;
+  });
+
+  it("defaults to the mock source", () => {
+    expect(getListingsDataSource()).toBeInstanceOf(MockListingsDataSource);
+  });
+
+  it("stays on mock when source=rentcast but no key is set", () => {
+    process.env.LISTINGS_DATA_SOURCE = "rentcast";
+    expect(getListingsDataSource()).toBeInstanceOf(MockListingsDataSource);
+  });
+
+  it("selects RentCast when source=rentcast AND a key is set", () => {
+    process.env.LISTINGS_DATA_SOURCE = "rentcast";
+    process.env.RENTCAST_API_KEY = "test-key";
+    expect(getListingsDataSource()).toBeInstanceOf(RentCastListingsDataSource);
+  });
+
+  it("searchListings goes through the mock seam by default", async () => {
+    const res = await searchListings({ propertyType: "condo" });
+    expect(res.length).toBeGreaterThan(0);
+    expect(res.every((l) => l.propertyType === "condo" && l.isSample)).toBe(true);
+  });
+
+  it("MockListingsDataSource.getById resolves a known id", async () => {
+    const src = new MockListingsDataSource();
+    expect((await src.getById(mockListings[0].id))?.id).toBe(mockListings[0].id);
+    expect(await src.getById("nope")).toBeUndefined();
   });
 });
