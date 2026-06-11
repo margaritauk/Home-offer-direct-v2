@@ -47,8 +47,16 @@ export function ListingsBrowser() {
   const [minBaths, setMinBaths] = useState(0);
   const [price, setPrice] = useState<RangeValue>({ min: 0, max: 0 });
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<NonNullable<ListingFilters["sort"]>>("newest");
+  // `null` = follow the location-derived default (distance when a center exists,
+  // else newest); once the buyer picks a sort we respect their choice.
+  const [sortChoice, setSortChoice] =
+    useState<NonNullable<ListingFilters["sort"]> | null>(null);
   const [more, setMore] = useState<MoreFiltersValue>(EMPTY_MORE_FILTERS);
+
+  // A real search center exists only when "current location" resolved coords.
+  const hasCenter = location.lat != null && location.lng != null;
+  const sort: NonNullable<ListingFilters["sort"]> =
+    sortChoice ?? (hasCenter ? "distance" : "newest");
 
   // Default the location to the buyer's selected state (once on hydration), shown
   // as a removable State chip. After this, clearing the chip/Clear-all just resets
@@ -66,6 +74,9 @@ export function ListingsBrowser() {
   // loading state and the response `source` so the disclaimer stays honest.
   const [results, setResults] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  // Becomes true after the first search resolves. Until then we may show
+  // skeletons; afterwards we keep the previous results visible while refetching.
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [source, setSource] = useState<"rentcast" | "mock">("mock");
   // RentCast requires a location to search; true → prompt instead of "no results".
   const [needsLocation, setNeedsLocation] = useState(false);
@@ -119,12 +130,22 @@ export function ListingsBrowser() {
         setResults([]);
         setNeedsLocation(false);
       } finally {
-        if (id === reqId.current) setLoading(false);
+        if (id === reqId.current) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     }, 300);
 
     return () => clearTimeout(timer);
   }, [location, propertyType, minBeds, minBaths, price, query, sort, more]);
+
+  // Stale-while-revalidate (issue #182): show skeletons ONLY on the very first
+  // load (nothing to keep on screen yet). For every later refetch, keep the
+  // previous cards rendered and surface a subtle "Updating…" indicator instead
+  // of blanking the list / flashing skeletons.
+  const firstLoad = loading && !hasLoaded && results.length === 0;
+  const updating = loading && !firstLoad;
 
   const clearAll = () => {
     setLocation({ mode: location.mode });
@@ -292,23 +313,6 @@ export function ListingsBrowser() {
           />
         </label>
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">Sort</span>
-          <select
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as NonNullable<ListingFilters["sort"]>)}
-            aria-label="Sort"
-          >
-            <option value="newest">Newest</option>
-            <option value="price-asc">Price: low to high</option>
-            <option value="price-desc">Price: high to low</option>
-            <option value="sqft-desc">Largest (sqft)</option>
-            <option value="beds-desc">Most beds</option>
-            <option value="days-asc">Freshest on market</option>
-          </select>
-        </label>
-
         <div className="block sm:col-span-2 lg:col-span-3">
           <MoreFilters value={more} onChange={setMore} />
         </div>
@@ -333,15 +337,54 @@ export function ListingsBrowser() {
         </div>
       ) : null}
 
-      <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
-        {loading
-          ? "Searching…"
-          : needsLocation
-            ? "Choose a location to search"
-            : `${results.length} listing${results.length === 1 ? "" : "s"}`}
-      </p>
+      {/*
+        Results bar (issue #182): the result count + a small "Updating…" spinner
+        for stale-while-revalidate, alongside the Sort control (moved out of the
+        filter grid so it sits with the results it reorders).
+      */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-sm text-ink-muted" aria-live="polite">
+          {firstLoad
+            ? "Searching…"
+            : needsLocation
+              ? "Choose a location to search"
+              : `${results.length} listing${results.length === 1 ? "" : "s"}`}
+          {updating ? (
+            <span className="inline-flex items-center gap-1.5 text-ink-soft">
+              <span
+                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600"
+                aria-hidden
+              />
+              Updating…
+            </span>
+          ) : null}
+        </p>
 
-      {loading ? (
+        {!needsLocation && (results.length > 0 || updating) ? (
+          <label className="flex items-center gap-2 text-sm">
+            <span className="font-medium text-ink-soft">Sort</span>
+            <select
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
+              value={sort}
+              onChange={(e) =>
+                setSortChoice(e.target.value as NonNullable<ListingFilters["sort"]>)
+              }
+              aria-label="Sort"
+            >
+              {hasCenter ? (
+                <option value="distance">Distance (nearest)</option>
+              ) : null}
+              <option value="price-asc">Price (low to high)</option>
+              <option value="price-desc">Price (high to low)</option>
+              <option value="newest">Newest on market</option>
+              <option value="sqft-desc">Largest (sqft)</option>
+              <option value="beds-desc">Most beds</option>
+            </select>
+          </label>
+        ) : null}
+      </div>
+
+      {firstLoad ? (
         <div
           className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
           aria-hidden
@@ -364,7 +407,12 @@ export function ListingsBrowser() {
           </p>
         </div>
       ) : results.length > 0 ? (
-        <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={`mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 transition-opacity ${
+            updating ? "pointer-events-none opacity-60" : ""
+          }`}
+          aria-busy={updating}
+        >
           {results.map((l) => (
             <ListingCard key={l.id} listing={l} />
           ))}

@@ -82,12 +82,14 @@ export function LocationSelector({
       ? geo.error
       : null;
 
+  const loading = geo.status === "loading";
+
   return (
     <div className="space-y-3">
       <div
         role="tablist"
         aria-label="Location search mode"
-        className="inline-flex flex-wrap rounded-full border border-slate-300 p-1"
+        className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
       >
         {MODES.map((m) => {
           const active = value.mode === m.id;
@@ -98,8 +100,10 @@ export function LocationSelector({
               role="tab"
               aria-selected={active}
               onClick={() => setMode(m.id)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
-                active ? "bg-brand-600 text-white" : "text-ink-soft hover:text-ink"
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
+                active
+                  ? "bg-white text-brand-700 shadow-sm ring-1 ring-slate-200"
+                  : "text-ink-soft hover:text-ink"
               }`}
             >
               {m.label}
@@ -109,14 +113,22 @@ export function LocationSelector({
       </div>
 
       {value.mode === "current" ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <button
             type="button"
             className="btn-secondary"
             onClick={useMyLocation}
-            disabled={geo.status === "loading"}
+            disabled={loading}
           >
-            {geo.status === "loading"
+            {loading ? (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600"
+                aria-hidden
+              />
+            ) : (
+              <span aria-hidden>📍</span>
+            )}
+            {loading
               ? "Locating…"
               : hasCoords
                 ? "Update my location"
@@ -130,25 +142,36 @@ export function LocationSelector({
           ) : null}
 
           {hasCoords ? (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-ink-soft">
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-ink-soft">
                 Within
               </span>
-              <select
-                className="field bg-white"
-                value={value.radius ?? DEFAULT_RADIUS}
-                onChange={(e) =>
-                  onChange({ ...value, radius: Number(e.target.value) })
-                }
+              <div
+                role="radiogroup"
                 aria-label="Search radius (miles)"
+                className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
               >
-                {RADIUS_OPTIONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r} mi
-                  </option>
-                ))}
-              </select>
-            </label>
+                {RADIUS_OPTIONS.map((r) => {
+                  const selected = (value.radius ?? DEFAULT_RADIUS) === r;
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => onChange({ ...value, radius: r })}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
+                        selected
+                          ? "bg-white text-brand-700 shadow-sm ring-1 ring-slate-200"
+                          : "text-ink-soft hover:text-ink"
+                      }`}
+                    >
+                      {r} mi
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ) : null}
         </div>
       ) : null}

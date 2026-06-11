@@ -124,6 +124,64 @@ describe("ListingsBrowser", () => {
     expect(within(filtersRegion()).getByText("Type: Condo")).toBeInTheDocument();
   });
 
+  it("retains the previous results while a new search is in flight (no skeleton flash)", async () => {
+    // A unique address per listing so we can assert specific cards stay mounted.
+    const first = [
+      { ...queryListings()[0], id: "keep-1", address: "111 Keep St" },
+    ];
+    const second = [
+      { ...queryListings()[0], id: "keep-2", address: "222 Fresh Ave" },
+    ];
+
+    // The "fresh" search (minBeds=2) is deferred so we can observe the in-flight
+    // window; every other (initial) search resolves immediately with `first`.
+    // The resolver is only set once the debounced fetch actually fires, so the
+    // test waits for it before resolving.
+    let resolveSecond: (() => void) | null = null;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
+      const filters = JSON.parse(String(init?.body ?? "{}")) as ListingFilters;
+      if (filters.minBeds === 2) {
+        await new Promise<void>((r) => {
+          resolveSecond = r;
+        });
+        return new Response(
+          JSON.stringify({ listings: second, source: "mock" }),
+          { status: 200 },
+        );
+      }
+      return new Response(
+        JSON.stringify({ listings: first, source: "mock" }),
+        { status: 200 },
+      );
+    });
+
+    render(<ListingsBrowser />);
+
+    // First results land.
+    expect(await screen.findByText("111 Keep St")).toBeInTheDocument();
+
+    // Trigger a new search (changing a filter) — the second fetch is in flight.
+    fireEvent.change(screen.getByLabelText("Minimum beds"), {
+      target: { value: "2" },
+    });
+
+    // The previous card stays visible during the refetch (no empty state, no
+    // skeletons), and an "Updating…" indicator appears.
+    expect(await screen.findByText("Updating…")).toBeInTheDocument();
+    expect(screen.getByText("111 Keep St")).toBeInTheDocument();
+    // No skeleton placeholders mid-refetch.
+    expect(document.querySelector(".animate-pulse")).toBeNull();
+
+    // Wait for the deferred fetch to actually be in flight, then resolve it; the
+    // fresh card replaces the old one.
+    await waitFor(() => expect(resolveSecond).not.toBeNull());
+    resolveSecond!();
+    expect(await screen.findByText("222 Fresh Ave")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText("Updating…")).not.toBeInTheDocument(),
+    );
+  });
+
   it("Clear all resets every filter and hides the chips", () => {
     render(<ListingsBrowser />);
 

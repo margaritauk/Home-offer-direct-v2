@@ -15,6 +15,7 @@
  */
 import { RentCastListingsDataSource } from "./source-rentcast";
 import { mockListings } from "./mock-data";
+import { annotateDistance } from "./distance";
 import type { Listing, ListingFilters } from "./types";
 
 /**
@@ -57,7 +58,10 @@ export function matches(listing: Listing, f: ListingFilters): boolean {
   return true;
 }
 
-function sortListings(listings: Listing[], sort: ListingFilters["sort"]): Listing[] {
+export function sortListings(
+  listings: Listing[],
+  sort: ListingFilters["sort"],
+): Listing[] {
   const out = [...listings];
   switch (sort) {
     case "price-asc":
@@ -68,6 +72,12 @@ function sortListings(listings: Listing[], sort: ListingFilters["sort"]): Listin
       return out.sort((a, b) => b.sqft - a.sqft);
     case "beds-desc":
       return out.sort((a, b) => b.beds - a.beds);
+    case "distance":
+      // Nearest first; listings without a distance sort last (Infinity).
+      return out.sort(
+        (a, b) =>
+          (a.distance ?? Infinity) - (b.distance ?? Infinity),
+      );
     case "days-asc":
     case "newest":
     default:
@@ -76,15 +86,31 @@ function sortListings(listings: Listing[], sort: ListingFilters["sort"]): Listin
 }
 
 /**
+ * Annotate listings with distance from the filters' center when the search
+ * carries real coordinates (`lat`/`lng`). Otherwise returns them unchanged — we
+ * never fabricate a distance for a location-less search.
+ */
+function annotateForFilters(
+  listings: Listing[],
+  filters: ListingFilters,
+): Listing[] {
+  if (typeof filters.lat === "number" && typeof filters.lng === "number") {
+    return annotateDistance(listings, { lat: filters.lat, lng: filters.lng });
+  }
+  return listings;
+}
+
+/**
  * Query the bundled mock listings synchronously. Kept for back-compat with the
  * existing callers/tests and the static detail page; the seam below builds on it
  * for the async (real-source-capable) path.
  */
 export function queryListings(filters: ListingFilters = {}): Listing[] {
-  return sortListings(
+  const filtered = annotateForFilters(
     mockListings.filter((l) => matches(l, filters)),
-    filters.sort,
+    filters,
   );
+  return sortListings(filtered, filters.sort);
 }
 
 export function getListingById(id: string): Listing | undefined {

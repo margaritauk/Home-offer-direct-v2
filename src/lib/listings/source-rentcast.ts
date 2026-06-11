@@ -35,7 +35,8 @@
  * records, never illustrative samples.
  */
 
-import { matches } from "./provider";
+import { matches, sortListings } from "./provider";
+import { annotateDistance } from "./distance";
 import type { Listing, ListingFilters, PropertyType } from "./types";
 
 const RENTCAST_LISTINGS_URL = "https://api.rentcast.io/v1/listings/sale";
@@ -56,6 +57,11 @@ function asPositiveNumber(v: unknown): number | undefined {
 
 function asNumberOr(v: unknown, fallback: number): number {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
+/** A finite number (allowing 0 and negatives, e.g. longitude), else undefined. */
+function asFiniteNumber(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
 }
 
 /**
@@ -134,6 +140,10 @@ export function mapRentCastListings(payload: unknown): Listing[] {
     const state = (asString(raw.state) ?? "").toUpperCase();
     const beds = asNumberOr(raw.bedrooms, 0);
     const baths = asNumberOr(raw.bathrooms, 0);
+    // Real coordinates when present — drive distance + the "nearest" sort. Left
+    // undefined when RentCast omits them (never fabricated).
+    const lat = asFiniteNumber(raw.latitude);
+    const lng = asFiniteNumber(raw.longitude);
 
     const description =
       asString(raw.description) ??
@@ -157,6 +167,8 @@ export function mapRentCastListings(payload: unknown): Listing[] {
       description,
       // REAL listing — never flagged as an illustrative sample.
       isSample: false,
+      ...(lat !== undefined ? { lat } : {}),
+      ...(lng !== undefined ? { lng } : {}),
     });
   }
 
@@ -250,7 +262,14 @@ export class RentCastListingsDataSource {
       const mapped = mapRentCastListings(await res.json());
       // Post-filter for safety (RentCast may not honor every filter), reusing
       // the shared predicate so behavior matches the mock path exactly.
-      return mapped.filter((l) => matches(l, filters));
+      const filtered = mapped.filter((l) => matches(l, filters));
+      // Annotate distance from the search center (when one exists) and sort with
+      // the same shared logic as the mock path, so "distance"/etc. behave alike.
+      const annotated =
+        typeof filters.lat === "number" && typeof filters.lng === "number"
+          ? annotateDistance(filtered, { lat: filters.lat, lng: filters.lng })
+          : filtered;
+      return sortListings(annotated, filters.sort);
     } catch {
       return [];
     }
