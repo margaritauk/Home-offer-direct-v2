@@ -6,6 +6,14 @@ import { emitLocalChange } from "@/lib/sync/local-store";
 
 const STORAGE_KEY = "hod:tracker:v1";
 
+/**
+ * In-memory undo snapshot for the tracker (issue #152). Captured on `reset()`
+ * before the state is cleared so the user can immediately undo. Not persisted —
+ * lost on reload, which is acceptable for a transient affordance. Module-scoped
+ * to a single tab, mirroring useStageTool's approach.
+ */
+let undoSnapshot: TrackerState | null = null;
+
 export interface TrackerState {
   underContractDate: string;
   closingDate: string;
@@ -42,14 +50,16 @@ function read(): TrackerState {
 export function useTracker() {
   const [state, setState] = useState<TrackerState>(empty);
   const [hydrated, setHydrated] = useState(false);
+  // True after a reset until undo is used or any other mutating write happens.
+  const [canUndoReset, setCanUndoReset] = useState(false);
 
   useEffect(() => {
     setState(read());
     setHydrated(true);
+    setCanUndoReset(undoSnapshot !== null);
   }, []);
 
-  const persist = useCallback((next: TrackerState) => {
-    setState(next);
+  const writeThrough = useCallback((next: TrackerState) => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch {
@@ -60,50 +70,74 @@ export function useTracker() {
 
   const setDates = useCallback(
     (dates: { underContractDate?: string; closingDate?: string }) => {
+      // Any manual edit invalidates a pending undo snapshot.
+      undoSnapshot = null;
+      setCanUndoReset(false);
       setState((prev) => {
         const next = { ...prev, ...dates };
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {
-          /* best-effort */
-        }
-        emitLocalChange();
+        writeThrough(next);
         return next;
       });
     },
-    [],
+    [writeThrough],
   );
 
-  const setOffset = useCallback((key: keyof DeadlineOffsets, value: number) => {
+  const setOffset = useCallback(
+    (key: keyof DeadlineOffsets, value: number) => {
+      undoSnapshot = null;
+      setCanUndoReset(false);
+      setState((prev) => {
+        const next = { ...prev, offsets: { ...prev.offsets, [key]: value } };
+        writeThrough(next);
+        return next;
+      });
+    },
+    [writeThrough],
+  );
+
+  const toggleDoc = useCallback(
+    (id: string) => {
+      undoSnapshot = null;
+      setCanUndoReset(false);
+      setState((prev) => {
+        const docs = { ...prev.docs };
+        if (docs[id]) delete docs[id];
+        else docs[id] = true;
+        const next = { ...prev, docs };
+        writeThrough(next);
+        return next;
+      });
+    },
+    [writeThrough],
+  );
+
+  const reset = useCallback(() => {
     setState((prev) => {
-      const next = { ...prev, offsets: { ...prev.offsets, [key]: value } };
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* best-effort */
-      }
-      emitLocalChange();
-      return next;
+      // Snapshot the current state BEFORE clearing so undo can restore it.
+      undoSnapshot = prev;
+      writeThrough(empty);
+      return empty;
     });
-  }, []);
+    setCanUndoReset(true);
+  }, [writeThrough]);
 
-  const toggleDoc = useCallback((id: string) => {
-    setState((prev) => {
-      const docs = { ...prev.docs };
-      if (docs[id]) delete docs[id];
-      else docs[id] = true;
-      const next = { ...prev, docs };
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* best-effort */
-      }
-      emitLocalChange();
-      return next;
-    });
-  }, []);
+  const undoReset = useCallback(() => {
+    if (undoSnapshot === null) return;
+    const snapshot = undoSnapshot;
+    undoSnapshot = null;
+    setCanUndoReset(false);
+    setState(snapshot);
+    writeThrough(snapshot);
+  }, [writeThrough]);
 
-  const reset = useCallback(() => persist(empty), [persist]);
-
-  return { state, hydrated, setDates, setOffset, toggleDoc, reset };
+  return {
+    state,
+    hydrated,
+    setDates,
+    setOffset,
+    toggleDoc,
+    reset,
+    undoReset,
+    canUndoReset,
+  };
 }
