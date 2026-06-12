@@ -5,8 +5,9 @@ process of buying a house without a buyer's agent** — from search to closing a
 beyond — so they can confidently handle it themselves and capture the commission
 savings (~2.5% of price) that would otherwise be lost.
 
-> Built by an agentic "scrum pod" (research → product → architecture →
-> development → test → deploy) in agile sprints.
+> Built by an agentic "scrum pod" (research → business → product → architecture
+> → design → development → test → marketing → deploy) in agile sprints. See the
+> team roster in [`docs/team/agent-team.md`](docs/team/agent-team.md).
 
 ## Why this exists
 
@@ -17,9 +18,11 @@ price reduction or closing credit. No incumbent offers a guided, state-aware,
 transactional workflow for the unrepresented buyer. That's the gap this fills.
 
 See [`docs/research/market-research.md`](docs/research/market-research.md) for the
-full market analysis, [`docs/product/prd.md`](docs/product/prd.md) for the product
-spec, and [`docs/architecture/adr.md`](docs/architecture/adr.md) for architecture
-decisions.
+full market analysis, [`docs/business/business-analysis.md`](docs/business/business-analysis.md)
+for the business case, [`docs/product/prd.md`](docs/product/prd.md) for the product
+spec, [`docs/architecture/adr.md`](docs/architecture/adr.md) for architecture
+decisions, and [`docs/marketing/marketing-analysis.md`](docs/marketing/marketing-analysis.md)
+for go-to-market.
 
 ## Features
 
