@@ -6,6 +6,7 @@ import { screenText } from "@/lib/ai/screening";
 import { formatUSD } from "@/lib/savings";
 import { PropertyField } from "@/components/homes/property-field";
 import { TrustCallout } from "@/components/trust-callout";
+import { NegotiationPlaybook } from "@/components/offer/negotiation-playbook";
 import {
   ROUND_STATUSES,
   currentTerms,
@@ -167,6 +168,8 @@ export function CounterOfferTracker() {
         not legal or financial advice and not a negotiation script. Your
         purchase contract governs the actual terms.
       </ToolDisclaimer>
+
+      <NegotiationPlaybook />
     </div>
   );
 }
