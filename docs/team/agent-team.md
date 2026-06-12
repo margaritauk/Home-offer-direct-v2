@@ -38,6 +38,7 @@ is traceable. Two header styles are in use:
 | **Engineer** | Build the product in `src/` to spec, behind the data/source seams. | `src/**`, tests co-located |
 | **QA / Test** | Gate quality: unit/component (Vitest) + E2E (Playwright); every PR green. | `src/**/*.test.*`, `e2e/**` |
 | **Marketing Analyst** | Own positioning, audience, channels, messaging, and the acquisition funnel — within the FHA/UPL guardrails. | `docs/marketing/*.md` |
+| **Buyer's Agent Advisor** | Domain advisor: audit the product against what a buyer's agent actually does for buyers; surface coverage gaps and keep the guidance true to real-world practice. | `docs/advisory/*.md` |
 
 ## Compliance is everyone's job
 
