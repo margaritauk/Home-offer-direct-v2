@@ -31,6 +31,12 @@ export interface ToolLink {
 export const STAGE_TOOLS: Record<string, ToolLink[]> = {
   "get-ready": [
     {
+      href: "/tools/go-solo",
+      label: "Should I go solo?",
+      description:
+        "A balanced read on when self-representation is reasonable vs. when to bring in a flat-fee attorney — plus the post-NAR reality.",
+    },
+    {
       href: "/tools/budget",
       label: "Budget calculator",
       description:
