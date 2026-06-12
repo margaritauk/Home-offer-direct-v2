@@ -358,9 +358,37 @@ export function ListingsBrowser() {
         </DisclaimerBanner>
       ) : (
         <DisclaimerBanner icon={null} className="mt-4">
-          <strong>Sample listings.</strong> These are illustrative placeholders,
-          not real homes for sale. Live MLS listings are coming — see the
-          roadmap.
+          <strong>This is a starter shortlist, not a full search engine.</strong>{" "}
+          These are illustrative sample homes — not a complete or real-time view
+          of the market, and they don&apos;t reflect MLS coverage. For serious
+          search, set up saved-search alerts on the major portals —{" "}
+          <a
+            href="https://www.zillow.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium underline"
+          >
+            Zillow
+          </a>
+          ,{" "}
+          <a
+            href="https://www.redfin.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium underline"
+          >
+            Redfin
+          </a>
+          , and{" "}
+          <a
+            href="https://www.realtor.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium underline"
+          >
+            Realtor.com
+          </a>{" "}
+          (we endorse none) — and watch their coming-soon sections.
         </DisclaimerBanner>
       )}
 

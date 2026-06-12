@@ -46,7 +46,25 @@ describe("ListingsBrowser", () => {
     render(<ListingsBrowser />);
     // After the debounced fetch resolves, real sample cards appear.
     expect(await screen.findByText(/\d+ listings?/)).toBeInTheDocument();
-    expect(screen.getByText("Sample listings.")).toBeInTheDocument();
+    expect(
+      screen.getByText(/starter shortlist, not a full search engine/i),
+    ).toBeInTheDocument();
+  });
+
+  it("labels the demo plainly and routes serious search to the major portals (J3)", () => {
+    render(<ListingsBrowser />);
+    // Honest framing: a shortlist/demo, not an MLS-complete search engine.
+    expect(
+      screen.getByText(/starter shortlist, not a full search engine/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/don't reflect MLS coverage/i)).toBeInTheDocument();
+    // Cross-links to the portals, endorsing none, opening with rel="noopener".
+    for (const name of ["Zillow", "Redfin", "Realtor.com"]) {
+      const link = screen.getByRole("link", { name });
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link.getAttribute("rel")).toMatch(/noopener/);
+    }
+    expect(screen.getByText(/we endorse none/i)).toBeInTheDocument();
   });
 
   it("shows chips when a price + beds filter is applied", () => {
