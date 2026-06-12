@@ -16,6 +16,7 @@
 import { RentCastListingsDataSource } from "./source-rentcast";
 import { mockListings } from "./mock-data";
 import { annotateDistance } from "./distance";
+import { isRentCastDisabled } from "@/lib/rentcast-flag";
 import type { Listing, ListingFilters } from "./types";
 
 /**
@@ -153,15 +154,13 @@ export class MockListingsDataSource implements ListingsDataSource {
 
 /**
  * The seam (server-only). Returns {@link RentCastListingsDataSource} when
- * `LISTINGS_DATA_SOURCE === "rentcast"` AND `RENTCAST_API_KEY` is set; otherwise
- * the {@link MockListingsDataSource}. Without the key we fall back to mock
- * rather than wire up a source that can't query.
+ * `LISTINGS_DATA_SOURCE === "rentcast"` AND `RENTCAST_API_KEY` is set AND the
+ * {@link isRentCastDisabled} kill switch is off; otherwise the
+ * {@link MockListingsDataSource}. Without the key we fall back to mock rather
+ * than wire up a source that can't query.
  */
 export function getListingsDataSource(): ListingsDataSource {
-  if (
-    process.env.LISTINGS_DATA_SOURCE === "rentcast" &&
-    Boolean(process.env.RENTCAST_API_KEY)
-  ) {
+  if (isRentCastListingsActive()) {
     return new RentCastListingsDataSource();
   }
   return new MockListingsDataSource();
@@ -170,6 +169,7 @@ export function getListingsDataSource(): ListingsDataSource {
 /** Whether the active source is the real RentCast feed (server-only). */
 export function isRentCastListingsActive(): boolean {
   return (
+    !isRentCastDisabled() &&
     process.env.LISTINGS_DATA_SOURCE === "rentcast" &&
     Boolean(process.env.RENTCAST_API_KEY)
   );

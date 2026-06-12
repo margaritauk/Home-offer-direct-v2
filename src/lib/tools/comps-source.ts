@@ -13,6 +13,7 @@
  */
 
 import { RentCastCompsDataSource } from "./comps-source-rentcast";
+import { isRentCastDisabled } from "@/lib/rentcast-flag";
 
 /** The subject home we want comparable sales for. Neutral facts only. */
 export interface CompsSubject {
@@ -160,9 +161,11 @@ export const SampleCompsDataSource: CompsDataSource = {
  */
 export function getCompsDataSource(): CompsDataSource {
   // RentCast: selected only when `COMPS_DATA_SOURCE === "rentcast"` AND its
-  // server key is present. Without the key there are no real candidates, so we
-  // fall back to the null source rather than wire up a source that can't query.
+  // server key is present AND the kill switch is off. Without the key (or with
+  // RentCast disabled) there are no real candidates, so we fall back to the null
+  // source rather than wire up a source that can't query.
   if (
+    !isRentCastDisabled() &&
     process.env.COMPS_DATA_SOURCE === "rentcast" &&
     Boolean(process.env.RENTCAST_API_KEY)
   ) {
