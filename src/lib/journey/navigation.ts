@@ -81,6 +81,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Comps Worksheet",
       description: "Estimate a fair-value range from comparable sales.",
     },
+    {
+      href: "/tools/market",
+      label: "Market Conditions",
+      description:
+        "Read whether your area is a buyer's or seller's market from the underlying numbers.",
+    },
   ],
   "tour-and-evaluate": [
     {
@@ -104,6 +110,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       href: "/tools/offer-builder",
       label: "Offer Builder",
       description: "Assemble your price, contingencies, and deadlines.",
+    },
+    {
+      href: "/tools/market",
+      label: "Market Conditions",
+      description:
+        "Check buyer's vs. seller's market conditions before you size your offer.",
     },
     {
       href: "/tools/savings-calculator",

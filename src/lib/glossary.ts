@@ -48,6 +48,27 @@ export const glossaryTerms: GlossaryTerm[] = [
     related: ["mls", "appraisal"],
   },
   {
+    slug: "days-on-market",
+    term: "Days on market (DOM)",
+    definition:
+      "How long a listing has been active before going under contract. Read it relative to the local norm: single-digit days signal a hot, competitive market; long or rising days suggest buyers have more leverage. A relist can reset the count, so check cumulative days where you can.",
+    related: ["months-of-supply", "list-to-sale-ratio"],
+  },
+  {
+    slug: "list-to-sale-ratio",
+    term: "List-to-sale price ratio",
+    definition:
+      "The sale price divided by the final list price, as a percent. Above 100% means homes are closing above asking (competitive); around 98–100% is balanced; below ~97% means buyers are negotiating under list.",
+    related: ["days-on-market", "months-of-supply"],
+  },
+  {
+    slug: "months-of-supply",
+    term: "Months of supply",
+    definition:
+      "How long the current inventory would last at the current sales pace. Under ~4 months points to a seller's market, 4–6 is balanced, and over ~6 points to a buyer's market. It's the most-cited signal of market temperature.",
+    related: ["days-on-market", "list-to-sale-ratio"],
+  },
+  {
     slug: "mls",
     term: "MLS (Multiple Listing Service)",
     definition:
