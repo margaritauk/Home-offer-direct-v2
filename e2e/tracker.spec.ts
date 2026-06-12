@@ -22,6 +22,29 @@ test("entering deal dates produces a deadline timeline", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("the .ics export enables once dates are set and downloads a calendar file", async ({
+  page,
+}) => {
+  await page.goto("/tracker");
+
+  // Disabled until a contract date is set, with an accessible explanation.
+  const exportBtn = page.getByRole("button", { name: /export deadlines/i });
+  await expect(exportBtn).toBeDisabled();
+  await expect(
+    page.getByText(/set your contract date to enable calendar export/i),
+  ).toBeVisible();
+
+  await page.getByLabel(/date you went under contract/i).fill("2026-06-01");
+  await page.getByLabel(/target closing date/i).fill("2026-07-01");
+
+  await expect(exportBtn).toBeEnabled();
+
+  const downloadPromise = page.waitForEvent("download");
+  await exportBtn.click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/\.ics$/);
+});
+
 test("document checklist persists across reload", async ({ page }) => {
   await page.goto("/tracker");
   const checkbox = page

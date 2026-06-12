@@ -13,6 +13,7 @@ import {
 import { useTracker } from "@/hooks/use-tracker";
 import { DocumentChecklist } from "@/components/document-checklist";
 import { TrackerClosingCountdown } from "@/components/tracker-closing-countdown";
+import { TrackerIcsExport } from "@/components/tracker-ics-export";
 import { UndoToast } from "@/components/undo-toast";
 
 const statusStyles: Record<MilestoneStatus, { dot: string; chip: string; label: (d: number) => string }> = {
@@ -217,6 +218,9 @@ export function TrackerApp() {
           </p>
         ) : null}
       </section>
+
+      {/* Calendar export (A8) */}
+      <TrackerIcsExport milestones={datesOutOfOrder ? [] : milestones} />
 
       {/* Documents */}
       <DocumentChecklist docs={state.docs} onToggle={toggleDoc} hydrated={hydrated} />
