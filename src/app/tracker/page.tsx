@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TrackerApp } from "@/components/tracker-app";
+import { ContactsHub } from "@/components/tools/contacts-hub";
 
 export const metadata: Metadata = {
   title: "Deadline & document tracker",
@@ -28,6 +29,19 @@ export default function TrackerPage() {
       <div className="mt-10">
         <TrackerApp />
       </div>
+
+      <section className="mt-12" aria-labelledby="contacts-heading">
+        <h2 id="contacts-heading" className="text-2xl font-bold">
+          Who&apos;s who on your deal
+        </h2>
+        <p className="mt-2 max-w-2xl text-ink-soft">
+          One place for everyone you&apos;ll need to reach — your switchboard for
+          the transaction. Pure organization; nothing is shared.
+        </p>
+        <div className="mt-6">
+          <ContactsHub />
+        </div>
+      </section>
     </div>
   );
 }

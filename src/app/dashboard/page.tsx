@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { WhatsNext } from "@/components/nav/whats-next";
+import { ContactsHub } from "@/components/tools/contacts-hub";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -38,6 +39,19 @@ export default function DashboardPage() {
       <div className="mt-10">
         <Dashboard />
       </div>
+
+      <section className="mt-12" aria-labelledby="contacts-heading">
+        <h2 id="contacts-heading" className="text-2xl font-bold">
+          Who&apos;s who on your deal
+        </h2>
+        <p className="mt-2 max-w-2xl text-ink-soft">
+          The cast an agent normally quarterbacks — keep everyone&apos;s contact
+          details in one place. Pure organization; nothing is shared.
+        </p>
+        <div className="mt-6">
+          <ContactsHub />
+        </div>
+      </section>
     </div>
   );
 }
