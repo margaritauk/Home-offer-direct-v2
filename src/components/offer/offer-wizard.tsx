@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOffer } from "@/hooks/use-offer";
+import { track } from "@/lib/analytics";
+import { savingsBucket } from "@/lib/analytics/events";
 import { OfferDisclaimer } from "./offer-disclaimer";
 import {
   DatesStep,
@@ -15,9 +17,11 @@ import { DeadlinesStep } from "./deadlines-step";
 import { TermSheetSummary } from "./term-sheet-summary";
 import { TermSheetPreview } from "./term-sheet-preview";
 import { OfferStrength } from "./offer-strength";
+import { SuggestedRangeStep } from "./suggested-range-step";
 
 const STEPS = [
   "Price & deposit",
+  "Suggested range",
   "Financing",
   "Dates & possession",
   "Fixtures & costs",
@@ -44,6 +48,33 @@ export function OfferWizard() {
 
   const last = STEPS.length - 1;
   const progress = Math.round((step / last) * 100);
+
+  // Funnel: offer-builder start (once per mount, after hydration).
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (hydrated && !startedRef.current) {
+      startedRef.current = true;
+      track("offer_builder_started", {});
+    }
+  }, [hydrated]);
+
+  // North-star: offer-builder completion when the buyer reaches the Worksheet.
+  const completedRef = useRef(false);
+  useEffect(() => {
+    if (step === last && !completedRef.current) {
+      completedRef.current = true;
+      const hasConcessionAsk =
+        offer.concession.type !== "none" && offer.concession.percent > 0;
+      const estCaptured =
+        hasConcessionAsk && offer.price > 0
+          ? (offer.price * offer.concession.percent) / 100
+          : 0;
+      track("offer_builder_completed", {
+        hasConcessionAsk,
+        savingsBucket: savingsBucket(estCaptured),
+      });
+    }
+  }, [step, last, offer]);
 
   return (
     <div className="space-y-6">
@@ -75,19 +106,20 @@ export function OfferWizard() {
         <h2 className="text-xl font-bold">{STEPS[step]}</h2>
         <div className="mt-4">
           {step === 0 ? <PriceStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
-          {step === 1 ? <FinancingStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
-          {step === 2 ? <DatesStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
-          {step === 3 ? <PropertyStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
-          {step === 4 ? (
+          {step === 1 ? <SuggestedRangeStep listPrice={offer.price || undefined} /> : null}
+          {step === 2 ? <FinancingStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
+          {step === 3 ? <DatesStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
+          {step === 4 ? <PropertyStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
+          {step === 5 ? (
             <ContingenciesStep
               contingencies={offer.contingencies}
               onChange={setContingency}
               hydrated={hydrated}
             />
           ) : null}
-          {step === 5 ? <ConcessionStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
-          {step === 6 ? <DeadlinesStep offer={offer} /> : null}
-          {step === 7 ? (
+          {step === 6 ? <ConcessionStep offer={offer} onChange={update} hydrated={hydrated} /> : null}
+          {step === 7 ? <DeadlinesStep offer={offer} /> : null}
+          {step === 8 ? (
             <div className="space-y-4">
               <div
                 role="tablist"
