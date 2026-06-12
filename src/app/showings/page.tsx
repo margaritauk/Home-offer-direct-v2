@@ -4,6 +4,7 @@ import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { MessageComposer } from "@/components/showings/message-composer";
 import { ManualAddShowing } from "@/components/showings/manual-add-showing";
 import { PreApprovalPrep } from "@/components/showings/pre-approval-prep";
+import { ShowingAccess } from "@/components/showings/showing-access";
 
 export const metadata: Metadata = {
   title: "Showings tracker",
@@ -38,6 +39,10 @@ export default function ShowingsPage() {
           <AgencyExplainer />
         </aside>
       </div>
+
+      <section className="mt-14 border-t border-slate-200 pt-12">
+        <ShowingAccess />
+      </section>
     </div>
   );
 }
