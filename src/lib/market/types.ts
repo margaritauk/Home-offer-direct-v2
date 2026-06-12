@@ -32,6 +32,12 @@ export interface MarketStats {
   monthsOfSupply?: number;
   /** Median price for context (not classified; shown for transparency). */
   medianPrice?: number;
+  /** Average price for context (not classified; shown for transparency). */
+  averagePrice?: number;
+  /** Total active listings — inventory context only (not classified). */
+  totalListings?: number;
+  /** New listings in the period — inventory context only (not classified). */
+  newListings?: number;
   /** Recent median-price trend, as a PERCENT change (e.g. -1.5 = down 1.5%). */
   priceTrendPct?: number;
   /** As-of / retrieval date for the source + date stamp (ISO or display string). */
