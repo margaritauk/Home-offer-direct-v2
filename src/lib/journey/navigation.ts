@@ -87,6 +87,18 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       description:
         "Read whether your area is a buyer's or seller's market from the underlying numbers.",
     },
+    {
+      href: "/tools/listing-alerts",
+      label: "Listing alerts & access guide",
+      description:
+        "Set up saved-search alerts on the major portals and understand what an unrepresented buyer might miss.",
+    },
+    {
+      href: "/tools/disclosure-review",
+      label: "Seller-disclosure review",
+      description:
+        "Turn the seller's disclosure into the red-flag questions an agent would ask — tailored to your state.",
+    },
   ],
   "tour-and-evaluate": [
     {
@@ -184,6 +196,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       href: "/tools/repair-request",
       label: "Repair-request Builder",
       description: "Turn findings into a neutral repair-or-credit request.",
+    },
+    {
+      href: "/tools/disclosure-review",
+      label: "Seller-disclosure review",
+      description:
+        "Walk the seller's disclosure for red flags and log questions for your inspector or attorney.",
     },
   ],
   "appraisal-and-underwriting": [
