@@ -17,5 +17,7 @@ test("entering hot numbers yields a seller's-market read", async ({ page }) => {
   await page.goto("/tools/market");
   await page.getByLabel(/months of supply/i).fill("1.5");
   await page.getByLabel(/list-to-sale ratio/i).fill("103");
-  await expect(page.getByText(/seller's market/i)).toBeVisible();
+  // The read renders the headline, a static gauge label, and an sr-only summary
+  // that all contain "seller's market"; assert the visible headline (first).
+  await expect(page.getByText(/seller's market/i).first()).toBeVisible();
 });
