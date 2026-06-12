@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { OfferTactics } from "@/components/offer/offer-tactics";
+import { CompetitiveOfferTactics } from "@/components/offer/competitive-offer-tactics";
+import { NegotiationPlaybook } from "@/components/offer/negotiation-playbook";
 import { StateFormHandoff } from "@/components/offer/state-form-handoff";
 import { ToolPageHeader } from "@/components/tools/tool-page-header";
 
 export const metadata: Metadata = {
   title: "Offer help — tactics, forms & attorney review",
   description:
-    "Understand advanced offer tactics — escalation clauses, appraisal-gap coverage, as-is offers, and rent-backs — and find the public state form (where one exists) before handing off to a flat-fee real estate attorney. Education only, not legal advice.",
+    "Model escalation clauses and offer-time appraisal-gap coverage, learn multiple-offer levers and a negotiation playbook, find the public state form (where one exists), and hand off to a flat-fee real estate attorney. Education only, not legal advice.",
 };
 
 export default function OfferHelpPage() {
@@ -24,6 +26,8 @@ export default function OfferHelpPage() {
     >
       <div className="max-w-4xl space-y-12">
         <OfferTactics />
+        <CompetitiveOfferTactics />
+        <NegotiationPlaybook />
         <StateFormHandoff />
       </div>
     </ToolPageHeader>
