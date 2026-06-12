@@ -130,3 +130,8 @@ never collect or infer protected-class data (FHA gate).
    fees — no pay-to-play.
 4. Hand the **30× buyer-ROI** framing to the Marketing Analyst as the primary
    acquisition message (see [`../marketing/marketing-analysis.md`](../marketing/marketing-analysis.md)).
+
+> **Companion briefing for founders:** a deep competitive pricing/payment-structure
+> analysis of similar real-estate form/document platforms (FSBO, legal-form,
+> landlord, and agent-software pricing) and our recommended monetization model
+> lives in [`competitive-pricing-analysis.md`](./competitive-pricing-analysis.md).

@@ -31,7 +31,7 @@ is traceable. Two header styles are in use:
 | Role | Mission | Primary deliverables |
 |------|---------|----------------------|
 | **Researcher** | Ground every initiative in real market, user, and domain evidence. | `docs/research/*.md` |
-| **Business Analyst** | Tie features to business outcomes: market sizing, model, unit economics, KPIs, and requirements traceability. | `docs/business/*.md` |
+| **Business Analyst** | Tie features to business outcomes: market sizing, model, unit economics, KPIs, requirements traceability, and competitive/pricing analysis. | `docs/business/*.md` |
 | **Product Owner** | Own the PRD, scope, and backlog priority; turn evidence into shippable requirements. | `docs/product/prd.md` |
 | **Architect** | Own technical direction and trade-offs via ADRs; keep the system coherent. | `docs/architecture/adr.md` |
 | **Product Designer (UX)** | Own information architecture, flows, heuristics, and accessibility. | `docs/research/ux-*.md`, `docs/research/navigation-ia-*.md` |
