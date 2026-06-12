@@ -269,3 +269,67 @@ consent + agency-relationship capture (no accidental dual agency) + FHA on share
 recommendations; RESPA review gates any referral/closing-tied revenue.
 
 _Source: `docs/research/collaboration-platform-research.md`._
+
+## ADR-013: Market-data seam (Null default + RentCast, new env gate) (Sprint 2 — A1)
+
+**Context:** The A1 "market-conditions read" needs the four signals an agent
+reads off a market — **months-of-supply, days-on-market, list-to-sale ratio, and
+price trend** — so an unrepresented buyer knows how aggressive to be. That data
+needs a paid feed we have wired only partially (RentCast), and the same vendor
+already backs the listings (ADR-011) and comps (`comps-source.ts`) seams. We will
+not overload the comps seam: comps reads the AVM/recent-sales endpoint, market
+reads a different, area-level endpoint, and the two are gated and killed
+independently.
+
+**Decision:** Add a **third provider seam**, a sibling of listings/comps, under
+`src/lib/market/`. All market reads go through a `MarketDataSource` contract
+(`fetchMarketStats(area): Promise<MarketStats | null>`) with two implementations:
+
+- **`NullMarketDataSource` (default)** — returns `null`/`[]`. With nothing wired,
+  A1 still works entirely on buyer-entered numbers; we never fabricate a stat.
+- **`RentCastMarketDataSource`** — calls RentCast **`/v1/markets`** (the
+  area/zip-level stats endpoint, **distinct from the AVM endpoint the comps
+  connector uses**), server-only key, mapped by a pure `mapRentCastMarket`.
+
+A server-only `getMarketDataSource()` is the single switch point, mirroring
+`getListingsDataSource()` / `getCompsDataSource()`: it returns the RentCast source
+only when **`MARKET_DATA_SOURCE === "rentcast"` AND `RENTCAST_API_KEY` is set AND
+the shared `isRentCastDisabled()` kill switch is off**, else the Null source. The
+gate uses a **new `MARKET_DATA_SOURCE` env var (default off)** — we do **not**
+overload `COMPS_DATA_SOURCE`, so market data can be turned on, off, or killed
+without touching comps. The route wrapper never 500s: it returns
+`{ stats, source }` and degrades to empty on any failure; the connector returns
+`[]`/`null` on any error and **never throws and never fabricates**.
+
+**Manual-entry-first:** A1 ships fully working with buyer-entered stats; the live
+source is **additive and gated**, not a prerequisite. There is an **open spike**
+on the exact `/v1/markets` field names (which list price the ratio uses, whether
+DOM is cumulative). Until that is verified the connector must **degrade safely** —
+unmapped fields stay manual-entry, and from the Researcher brief we already know
+`/v1/markets` does **not** supply a list-to-sale ratio or a months-of-supply
+sold-rate denominator, so those remain manual fields regardless.
+
+**The metric set is a pure lib:** the neutral signals (months-of-supply bands,
+days-on-market, list-to-sale ratio, price trend) and their interpretation
+(`classifyMarket(stats): MarketRead` → a band enum + plain-English narrative +
+trade-off framing, **never "offer $X"**) live in a pure, fully unit-tested module
+(`lib/market/classify.ts`), no React/IO — same discipline as `lib/savings.ts` and
+`lib/deadlines.ts`. The single read is computed **once** here and consumed by A2,
+I3, I4, and J4 (no divergent classifications).
+
+**Consequences:**
+- Swapping or adding a real feed later means reimplementing only
+  `src/lib/market/*` — A1's UI, the classifier, and consumers stay unchanged.
+- Three RentCast-backed seams now share one kill switch and one key but three
+  independent source vars; flipping `RENTCAST_DISABLED` cuts all three at once.
+- **FHA guardrail:** the `MarketStats`/`MarketRead` types carry **transactional
+  market data only — no demographic, school, safety, or "desirability" signals**;
+  market conditions are described neutrally, sourced, and dated.
+- **UPL/accuracy guardrail:** output is bands/facts/trade-offs, never a directive
+  number; every figure renders its source (RentCast) + as-of date with a
+  "snapshot, conditions move" caveat.
+
+### Backlog (future) — Verify + land the RentCast `/v1/markets` connector
+- Resolve the field-name spike against a live key; finish `mapRentCastMarket`.
+- Keep the `MarketStats` shape stable so the classifier and A1 UI are reused.
+- Hold the manual-entry path as the permanent fallback for thin-coverage areas.
