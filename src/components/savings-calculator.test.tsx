@@ -14,6 +14,38 @@ describe("SavingsCalculator", () => {
     );
   });
 
+  it("frames the headline claim conditionally (J2): 'up to ~2.5%, if you ask and the deal allows'", () => {
+    render(<SavingsCalculator />);
+    // The qualifier must travel WITH the dollar figure (same result region), not
+    // in a distant footnote.
+    const region = screen.getByTestId("captured-savings").closest("[aria-live]");
+    expect(region).not.toBeNull();
+    expect(region!.textContent).toMatch(/up to ~2\.5%/i);
+    expect(region!.textContent).toMatch(/if you ask and the deal allows/i);
+    // No unconditional over-promise.
+    expect(screen.queryByText(/you will save/i)).not.toBeInTheDocument();
+  });
+
+  it("shows the three preconditions and a sourced/dated seller-credit-cap note (J2)", () => {
+    render(<SavingsCalculator />);
+    expect(screen.getByText(/seller is willing to offer buyer-side compensation/i)).toBeInTheDocument();
+    expect(screen.getByText(/price reduction or a closing credit/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/seller-credit caps/i).length).toBeGreaterThan(0);
+    // Accuracy compliance: a source + date node renders.
+    expect(screen.getByText(/Aug 17, 2024/)).toBeInTheDocument();
+    expect(screen.getByText(/As of 2026/)).toBeInTheDocument();
+  });
+
+  it("at 0% capture the figure is $0 and the 'seller keeps it' framing is present (J2 edge)", () => {
+    render(<SavingsCalculator />);
+    fireEvent.change(
+      screen.getByLabelText("How much of it you negotiate to capture"),
+      { target: { value: "0" } },
+    );
+    expect(screen.getByTestId("captured-savings").textContent).toMatch(/\$0/);
+    expect(screen.getByTestId("savings-caveat").textContent).toMatch(/seller keeps it/i);
+  });
+
   it("recomputes when the capture-rate slider changes and still shows a result", () => {
     render(<SavingsCalculator />);
     const before = screen.getByTestId("captured-savings").textContent;

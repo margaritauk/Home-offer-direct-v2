@@ -138,15 +138,18 @@ export function SavingsCalculator() {
       </div>
 
       <div className="space-y-4">
-        <div className="rounded-xl bg-brand-600 p-6 text-white">
+        <div className="rounded-xl bg-brand-600 p-6 text-white" aria-live="polite">
           <p className="text-sm font-medium text-brand-100">
-            Estimated savings you capture
+            Estimated savings — up to ~2.5%, if you ask and the deal allows
           </p>
           <p className="mt-1 text-4xl font-bold" data-testid="captured-savings">
             {formatUSD(result.capturedSavings)}
           </p>
-          <p className="mt-2 text-sm text-brand-100">
-            of {formatUSD(result.negotiableCommission)} potentially negotiable
+          <p className="mt-2 text-sm text-brand-100" data-testid="savings-caveat">
+            of {formatUSD(result.negotiableCommission)} potentially negotiable —
+            only if the seller offers buyer-side compensation and you negotiate it
+            into a price reduction or credit, within your lender&apos;s
+            seller-credit caps. Otherwise the seller keeps it.
           </p>
         </div>
 
@@ -167,6 +170,27 @@ export function SavingsCalculator() {
           </div>
         </dl>
         <SanityNotes notes={savingsSanity(value)} />
+        <div className="card space-y-2 text-xs text-ink-soft">
+          <p className="font-semibold text-ink">
+            This is up to ~2.5% — not automatic. You capture it only when:
+          </p>
+          <ul className="list-disc space-y-1 pl-4">
+            <li>the seller is willing to offer buyer-side compensation,</li>
+            <li>it&apos;s structured as a price reduction or a closing credit, and</li>
+            <li>
+              it stays within your loan&apos;s seller-credit caps (conventional
+              3–9% by down payment, FHA 6%, VA 4%, USDA 6% — varies by loan type
+              and down payment; credits can&apos;t exceed your actual closing
+              costs). Confirm the cap with your lender.
+            </li>
+          </ul>
+          <p className="text-ink-muted">
+            Source: NAR settlement (effective Aug 17, 2024), buyer-side
+            compensation negotiable / not guaranteed seller-paid; lender
+            seller-credit caps per Fannie Mae / FHA / VA / USDA guidelines. As of
+            2026.
+          </p>
+        </div>
         <p className="text-xs text-ink-muted">
           Estimates only — not financial advice. Actual costs, commission, and
           what you can negotiate vary by market, lender, and deal.
