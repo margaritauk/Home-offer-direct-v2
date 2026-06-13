@@ -18,6 +18,10 @@ import {
 } from "@/lib/tools/comps";
 import { SampleCompsDataSource } from "@/lib/tools/comps-source";
 import { rankComps } from "@/lib/tools/comps-rank";
+import {
+  checkAdjustmentSize,
+  suggestAdjustmentPrompts,
+} from "@/lib/tools/comps-adjust-prompts";
 import { UndoToast } from "@/components/undo-toast";
 import { ToolDisclaimer } from "./tool-disclaimer";
 
@@ -402,6 +406,8 @@ function HomeCard({
           </button>
         </div>
 
+        <AdjustmentMethodology />
+
         {sampleShown && home.comps.length > 0 ? <SampleDataBanner /> : null}
 
         {home.comps.length === 0 ? (
@@ -460,6 +466,8 @@ function HomeCard({
                   </span>{" "}
                   · {perSqftLabel(comp.adjustedPricePerSqft)}
                 </p>
+
+                <AdjustmentGuidance subjectSqft={home.sqft} comp={comp} />
               </div>
             ))}
           </div>
@@ -537,6 +545,112 @@ function RealAutofindPanel({
       {message ? <p className="text-sm text-ink-soft">{message}</p> : null}
       {error ? <p className="text-sm text-amber-700">{error}</p> : null}
     </div>
+  );
+}
+
+/**
+ * I4 — the inline methodology explainer for guided comp adjustments. Explains
+ * the sales-comparison approach in plain English (adjust the COMP toward the
+ * subject; net the adjustments; weight closer/recent comps more) with a worked
+ * direction example, and notes the appraiser net/gross caps as CONTEXT. It
+ * surfaces methodology, never a directive value (UPL).
+ */
+function AdjustmentMethodology() {
+  return (
+    <details
+      className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm"
+      data-testid="adjustment-methodology"
+    >
+      <summary className="cursor-pointer font-medium text-ink">
+        How comp adjustments work
+      </summary>
+      <div className="mt-2 space-y-2 text-ink-soft">
+        <p>
+          You adjust each <strong>comp toward your subject</strong> — the
+          adjusted price is &quot;what this comp would have sold for if it were
+          like the home you&apos;re buying.&quot; Then you net the adjustments and
+          lean on the closest, most recent comps.
+        </p>
+        <p>
+          <strong>Direction (the classic mix-up):</strong> a comp that&apos;s{" "}
+          <em>superior</em> to your subject — bigger, nicer, extra garage —
+          adjusts <strong>DOWN</strong>. A comp that&apos;s <em>inferior</em>{" "}
+          adjusts <strong>UP</strong>. In this worksheet a{" "}
+          <strong>positive</strong> adjustment lowers the comp&apos;s implied
+          value (we subtract it), so a superior comp gets a positive number.
+        </p>
+        <p>
+          <strong>Don&apos;t over-adjust:</strong> appraisers expect a single
+          adjustment under ~10% of price, and net/gross totals under ~15%/25%. If
+          your adjustments are large, a closer comp is usually the better fix.
+          This is a DIY estimate — <strong>not an appraisal</strong>; your
+          lender&apos;s appraisal governs.
+        </p>
+      </div>
+    </details>
+  );
+}
+
+/**
+ * I4 — per-comp adjustment guidance: the category prompts, the computed size
+ * illustration, and the "adjustment looks large" heuristic. Read-only guidance;
+ * the buyer still types their own adjustment into the field above.
+ */
+function AdjustmentGuidance({
+  subjectSqft,
+  comp,
+}: {
+  subjectSqft: number;
+  comp: { salePrice: number; sqft: number; adjustment?: number };
+}) {
+  const guidance = useMemo(
+    () => suggestAdjustmentPrompts(subjectSqft, comp),
+    [subjectSqft, comp],
+  );
+  const sizeCheck = useMemo(() => checkAdjustmentSize(comp), [comp]);
+
+  return (
+    <details className="rounded-lg border border-slate-200 p-3 text-sm" data-testid="adjustment-guidance">
+      <summary className="cursor-pointer font-medium text-ink">
+        Adjustment prompts for this comp
+      </summary>
+      <div className="mt-2 space-y-3">
+        <p className="text-ink-soft" data-testid="size-hint">
+          {guidance.size.note}
+          {guidance.size.illustrativeAdjustment !== null &&
+          guidance.size.illustrativeAdjustment !== 0 ? (
+            <>
+              {" "}
+              A size-only illustration is about{" "}
+              <strong>{formatUSD(guidance.size.illustrativeAdjustment)}</strong>{" "}
+              — a starting point, not a prescribed number.
+            </>
+          ) : null}
+        </p>
+
+        {sizeCheck.note ? (
+          <p
+            role="note"
+            className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-800"
+            data-testid="large-adjustment-warning"
+          >
+            {sizeCheck.note}
+          </p>
+        ) : null}
+
+        <ul className="space-y-2">
+          {guidance.prompts.map((p) => (
+            <li key={p.id} className="rounded-lg bg-slate-50 p-2">
+              <span className="block font-medium text-ink">{p.label}</span>
+              <span className="block text-ink-soft">{p.prompt}</span>
+              <span className="mt-0.5 block text-xs text-ink-muted">
+                {p.direction}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </details>
   );
 }
 
