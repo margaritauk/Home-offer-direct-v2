@@ -97,7 +97,9 @@ export function LenderCompare() {
           them side-by-side.
         </div>
       ) : (
-        <div className="space-y-4">
+        // #166: horizontal-scroll guard so the comparison rows never force the
+        // page to scroll sideways at 360px (long money figures stay contained).
+        <div className="space-y-4 overflow-x-auto" data-testid="lender-compare-rows">
           {rows.map((row) => (
             <div
               key={row.id}

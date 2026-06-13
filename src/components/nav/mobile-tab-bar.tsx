@@ -134,7 +134,9 @@ export function MobileTabBar() {
 }
 
 function tabClass(active: boolean): string {
-  return `flex w-full flex-col items-center gap-0.5 px-1 py-2 text-[11px] font-medium transition ${
+  // #166: ≥44px tap target — py-2.5 plus the icon/label keeps every tab over the
+  // 44px minimum on mobile.
+  return `flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 px-1 py-2.5 text-[11px] font-medium transition ${
     active ? "text-brand-700" : "text-ink-muted"
   }`;
 }
