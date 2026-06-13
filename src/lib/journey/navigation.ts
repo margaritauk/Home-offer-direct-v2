@@ -37,6 +37,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
         "A balanced read on when self-representation is reasonable vs. when to bring in a flat-fee attorney — plus the post-NAR reality.",
     },
     {
+      href: "/tools/needs",
+      label: "Needs & criteria worksheet",
+      description:
+        "Capture must-haves, nice-to-haves, and deal-breakers early so your search stays disciplined.",
+    },
+    {
       href: "/tools/budget",
       label: "Budget calculator",
       description:
@@ -98,6 +104,18 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Seller-disclosure review",
       description:
         "Turn the seller's disclosure into the red-flag questions an agent would ask — tailored to your state.",
+    },
+    {
+      href: "/tools/needs",
+      label: "Needs & criteria worksheet",
+      description:
+        "Sort your must-haves, nice-to-haves, and deal-breakers — then score tours against your own criteria.",
+    },
+    {
+      href: "/tools/hoa-review",
+      label: "HOA / condo document review",
+      description:
+        "Walk the HOA/condo resale packet for reserves, special assessments, rental caps, and financing red flags.",
     },
   ],
   "tour-and-evaluate": [
@@ -202,6 +220,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       label: "Seller-disclosure review",
       description:
         "Walk the seller's disclosure for red flags and log questions for your inspector or attorney.",
+    },
+    {
+      href: "/tools/hoa-review",
+      label: "HOA / condo document review",
+      description:
+        "Review the HOA/condo resale packet for special assessments, reserves, and rental/insurance red flags.",
     },
   ],
   "appraisal-and-underwriting": [
