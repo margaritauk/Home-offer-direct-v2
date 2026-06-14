@@ -15,6 +15,7 @@ import {
   type PitiInput,
 } from "@/lib/budget";
 import { explainBudget, type BudgetInsight } from "@/lib/budget-explainer";
+import { isAiExplainerOffered } from "@/lib/ai/explainer/client-flag";
 import { budgetSanity } from "@/lib/tools/sanity";
 import { UndoToast } from "@/components/undo-toast";
 import { Term } from "@/components/term";
@@ -304,6 +305,7 @@ function PaymentMode({
         </p>
 
         <BudgetInsights insights={explainBudget(breakdown)} />
+        <BudgetAiExplainer body={{ mode: "payment", piti: input }} />
         <SanityNotes notes={budgetSanity(input)} />
       </div>
     </div>
@@ -488,6 +490,9 @@ function AffordabilityMode({
             grossMonthlyIncome: input.grossMonthlyIncome,
           })}
         />
+        <BudgetAiExplainer
+          body={{ mode: "affordability", affordability: input }}
+        />
         <SanityNotes
           notes={budgetSanity(
             {
@@ -539,6 +544,106 @@ function BudgetInsights({ insights }: { insights: BudgetInsight[] }) {
         These notes explain your own numbers — they don&apos;t recommend a loan
         or lender.
       </p>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AI budget explainer (#57) — flag-gated, behind NEXT_PUBLIC_AI_EXPLAINER.
+//
+// Default off → nothing renders and the budget UI is unchanged. When the client
+// flag is "true", an "Explain my budget (AI)" action POSTs the deterministic
+// inputs to /api/budget/explain (which gates independently and grounds the model
+// in the SAME computed numbers). The AI output is shown under a LOUD
+// "AI-generated estimate — not financial advice; confirm with a licensed lender"
+// label with a lender/pro handoff. The model only NARRATES our numbers.
+// ---------------------------------------------------------------------------
+
+/** Whether the UI may OFFER the AI explainer (default false). */
+const AI_EXPLAINER_OFFERED = isAiExplainerOffered();
+
+type AiState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "done"; text: string }
+  | { status: "unavailable" }
+  | { status: "error" };
+
+function BudgetAiExplainer({ body }: { body: Record<string, unknown> }) {
+  const [ai, setAi] = useState<AiState>({ status: "idle" });
+
+  // Default off: render nothing so the budget UI is exactly as before.
+  if (!AI_EXPLAINER_OFFERED) return null;
+
+  const explainWithAI = async () => {
+    setAi({ status: "loading" });
+    try {
+      const res = await fetch("/api/budget/explain", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = (await res.json()) as {
+        available?: boolean;
+        explanation?: { text: string } | null;
+      };
+      if (!data.available || !data.explanation) {
+        setAi({ status: "unavailable" });
+        return;
+      }
+      setAi({ status: "done", text: data.explanation.text });
+    } catch {
+      setAi({ status: "error" });
+    }
+  };
+
+  return (
+    <section aria-label="Explain my budget (AI)" className="space-y-3">
+      <button
+        type="button"
+        className="btn-secondary"
+        onClick={explainWithAI}
+        disabled={ai.status === "loading"}
+      >
+        {ai.status === "loading" ? "Explaining…" : "Explain my budget (AI)"}
+      </button>
+
+      {ai.status === "done" ? (
+        <div className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-950">
+          <p className="font-semibold uppercase tracking-wide text-indigo-900">
+            AI-generated estimate — not financial advice; confirm with a licensed
+            lender
+          </p>
+          <p className="whitespace-pre-line">{ai.text}</p>
+          <p className="text-xs text-indigo-900/80">
+            This summary only restates your own numbers above and does not
+            recommend a loan, lender, or rate.{" "}
+            <a
+              href="https://www.consumerfinance.gov/owning-a-home/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline"
+            >
+              Talk to a licensed lender or housing counselor
+            </a>{" "}
+            before you act.
+          </p>
+        </div>
+      ) : null}
+
+      {ai.status === "unavailable" ? (
+        <p className="text-sm text-ink-soft">
+          The AI explainer isn&apos;t available right now. The notes above still
+          explain your numbers.
+        </p>
+      ) : null}
+
+      {ai.status === "error" ? (
+        <p className="text-sm text-ink-soft">
+          Something went wrong reaching the AI explainer. The notes above still
+          explain your numbers.
+        </p>
+      ) : null}
     </section>
   );
 }

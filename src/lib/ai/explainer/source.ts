@@ -23,6 +23,7 @@ import type {
   AiExplainerInput,
   AiExplainerSource,
   AiExplanation,
+  BudgetExplainerInput,
 } from "./types";
 
 /**
@@ -32,6 +33,13 @@ import type {
 export class NullAiExplainer implements AiExplainerSource {
   async explainOfferStrength(
     _input: AiExplainerInput,
+  ): Promise<AiExplanation | null> {
+    void _input;
+    return null;
+  }
+
+  async explainBudget(
+    _input: BudgetExplainerInput,
   ): Promise<AiExplanation | null> {
     void _input;
     return null;

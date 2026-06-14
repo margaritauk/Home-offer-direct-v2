@@ -24,10 +24,13 @@
 
 import { screenOutput, type SafeAiInput } from "@/lib/ai/screening";
 import type { OfferInsight } from "@/lib/offer/strength";
+import type { BudgetInsight } from "@/lib/budget-explainer";
 import type {
   AiExplainerInput,
   AiExplainerSource,
   AiExplanation,
+  BudgetExplainerInput,
+  SafeBudgetInput,
 } from "./types";
 
 const GEMINI_BASE_URL =
@@ -115,6 +118,143 @@ function serializeFactors(
   }));
 }
 
+// ---------------------------------------------------------------------------
+// Budget explainer (issue #57) — same seam, same transport, same screenOutput.
+// ---------------------------------------------------------------------------
+
+/**
+ * The strict system instruction for the BUDGET explainer (#57). The model
+ * NARRATES the figures we already computed — it never calculates, recommends a
+ * loan or lender, quotes a rate as an offer, or steers. It explains what's
+ * driving the payment, where there's headroom, and what to watch.
+ *
+ * Exported so a test can assert the UPL/SAFE-Act, no-advice, no-lender, FHA, and
+ * labeling constraints are present. PURE — a constant, no network, no env.
+ */
+export const GEMINI_BUDGET_SYSTEM_INSTRUCTION = [
+  "You are an educational assistant for an UNREPRESENTED home buyer.",
+  "Your ONLY job is to explain, in plain English, the budget numbers we have",
+  "ALREADY computed and provide to you (the monthly PITI breakdown — principal,",
+  "interest, taxes, insurance, PMI, HOA — plus any affordability max price and",
+  "debt-to-income figures). You restate and clarify OUR numbers; you do not",
+  "calculate anything yourself.",
+  "",
+  "HARD RULES — you must follow every one:",
+  "1. NARRATE ONLY the numbers provided below. Do NOT compute, re-derive, add, or",
+  "   invent any number, payment, rate, or figure that is not in the provided",
+  "   data. If a number is not provided, do not state it.",
+  "2. This is EDUCATION ONLY. It is NOT legal advice and NOT financial advice.",
+  "   Never tell the buyer what to do, what price to pick, how much to put down,",
+  "   or what they can afford. Never use directive language ('you should', 'I",
+  "   recommend', 'you must').",
+  "3. Do NOT recommend, suggest, name, or rank any loan product, loan program, or",
+  "   lender, and do NOT quote, suggest, or present an interest rate as an offer",
+  "   or as something available — the rate shown is the buyer's own input that you",
+  "   are merely restating. Never steer the buyer toward any choice.",
+  "4. Explain what is DRIVING the payment (which parts are largest), where there",
+  "   is HEADROOM (e.g. relative to the debt-to-income guideline we provide), and",
+  "   what to WATCH (e.g. PMI while the loan-to-value is above 80%). Keep it",
+  "   neutral and descriptive.",
+  "5. Never reference or infer any protected class (race, color, religion,",
+  "   national origin, sex, familial status, disability, age, marital status,",
+  "   source of income) and never write a personal appeal or 'love letter'. Stick",
+  "   strictly to the neutral financial figures provided.",
+  "6. Begin your response by noting it is an educational estimate, not financial",
+  "   advice, and that the buyer should confirm with a licensed lender.",
+  "",
+  "Write 2-4 short, plain-English paragraphs (or a short bulleted list) that",
+  "summarize the provided figures. No markdown headings, no JSON.",
+].join("\n");
+
+function serializeSafeBudgetInput(safe: SafeBudgetInput): Record<string, unknown> {
+  return {
+    mode: safe.mode,
+    price: safe.price,
+    downPaymentPercent: safe.downPaymentPercent,
+    // The rate is the buyer's OWN input we are restating — never an offer.
+    ratePct: safe.ratePct,
+    termYears: safe.termYears,
+    ...(safe.grossMonthlyIncome !== undefined
+      ? { grossMonthlyIncome: safe.grossMonthlyIncome }
+      : {}),
+    ...(safe.monthlyDebts !== undefined ? { monthlyDebts: safe.monthlyDebts } : {}),
+    ...(safe.note ? { note: safe.note } : {}),
+  };
+}
+
+function serializeBudgetInsights(
+  insights: BudgetInsight[],
+): { id: string; title: string; detail: string; tone: string }[] {
+  return insights.map((i) => ({
+    id: i.id,
+    title: i.title,
+    detail: i.body,
+    tone: i.tone,
+  }));
+}
+
+/**
+ * Build the grounded user prompt for the budget explainer: the financial-only
+ * safe input, the computed PITI breakdown, the optional affordability summary,
+ * and OUR deterministic insights — all as structured JSON so the model can only
+ * restate them. PURE — no network, no env. Fully unit-testable.
+ */
+export function buildBudgetPrompt(input: BudgetExplainerInput): string {
+  return [
+    "Here are the buyer's budget inputs (financial-only transaction terms):",
+    JSON.stringify(serializeSafeBudgetInput(input.safeInput), null, 2),
+    "",
+    "Here is the monthly payment breakdown WE computed (all dollars except ltv,",
+    "which is a percent). Narrate ONLY these numbers; do not recompute them:",
+    JSON.stringify(
+      {
+        principalAndInterest: input.breakdown.pi,
+        propertyTax: input.breakdown.tax,
+        insurance: input.breakdown.insurance,
+        hoa: input.breakdown.hoa,
+        pmi: input.breakdown.pmi,
+        totalMonthly: input.breakdown.total,
+        loanAmount: input.breakdown.loanAmount,
+        ltv: input.breakdown.ltv,
+      },
+      null,
+      2,
+    ),
+    ...(input.affordability
+      ? [
+          "",
+          "Here is the affordability solve WE computed. Narrate ONLY these numbers:",
+          JSON.stringify(
+            {
+              maxPrice: input.affordability.maxPrice,
+              maxLoan: input.affordability.maxLoan,
+              bindingConstraint: input.affordability.bindingConstraint,
+            },
+            null,
+            2,
+          ),
+        ]
+      : []),
+    "",
+    "Here are the plain-English insights WE derived from these numbers. Explain",
+    "ONLY these, in plain English. Do not add or invent any number:",
+    JSON.stringify(serializeBudgetInsights(input.insights), null, 2),
+  ].join("\n");
+}
+
+/**
+ * Build the full Gemini request body for the budget explainer. PURE — composes
+ * {@link GEMINI_BUDGET_SYSTEM_INSTRUCTION} and {@link buildBudgetPrompt}.
+ */
+export function buildBudgetRequestBody(
+  input: BudgetExplainerInput,
+): GeminiRequestBody {
+  return {
+    systemInstruction: { parts: [{ text: GEMINI_BUDGET_SYSTEM_INSTRUCTION }] },
+    contents: [{ role: "user", parts: [{ text: buildBudgetPrompt(input) }] }],
+  };
+}
+
 /** The Gemini `generateContent` request body shape (the subset we send). */
 export interface GeminiRequestBody {
   systemInstruction: { parts: { text: string }[] };
@@ -183,9 +323,14 @@ export function mapGeminiResponse(payload: unknown): string | null {
  * and never fabricates.
  */
 export class GeminiAiExplainer implements AiExplainerSource {
-  async explainOfferStrength(
-    input: AiExplainerInput,
-  ): Promise<AiExplanation | null> {
+  /**
+   * Shared server-only transport: POST a prebuilt request body to Gemini and map
+   * + FHA-screen the response. Returns the safe model text or `null` on ANY
+   * failure (missing key, non-OK, thrown error, empty/unparseable, blocked).
+   * Never throws, never fabricates. Used by BOTH explainers so the connector,
+   * key handling, and {@link screenOutput} gate live in exactly one place.
+   */
+  private async generate(body: GeminiRequestBody): Promise<string | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     // No key → we can't call the model; return null rather than guess.
     if (!apiKey) return null;
@@ -202,7 +347,7 @@ export class GeminiAiExplainer implements AiExplainerSource {
           // Server secret — sent only as a header, NEVER logged or exposed.
           "x-goog-api-key": apiKey,
         },
-        body: JSON.stringify(buildGeminiRequestBody(input)),
+        body: JSON.stringify(body),
       });
       if (!res.ok) return null;
       text = mapGeminiResponse(await res.json());
@@ -217,6 +362,23 @@ export class GeminiAiExplainer implements AiExplainerSource {
     // protected class or reads like a personal appeal. Blocked → null.
     if (!screenOutput(text).safe) return null;
 
+    return text;
+  }
+
+  async explainOfferStrength(
+    input: AiExplainerInput,
+  ): Promise<AiExplanation | null> {
+    const text = await this.generate(buildGeminiRequestBody(input));
+    if (!text) return null;
     return { text, basis: input.factors.map((f) => f.id) };
+  }
+
+  async explainBudget(
+    input: BudgetExplainerInput,
+  ): Promise<AiExplanation | null> {
+    const text = await this.generate(buildBudgetRequestBody(input));
+    if (!text) return null;
+    // Basis = the deterministic insight ids we asked the model to restate.
+    return { text, basis: input.insights.map((i) => i.id) };
   }
 }

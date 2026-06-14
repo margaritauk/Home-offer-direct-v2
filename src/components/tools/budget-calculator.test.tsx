@@ -93,4 +93,14 @@ describe("BudgetCalculator", () => {
       within(container).getByText(/not financial advice/i),
     ).toBeInTheDocument();
   });
+
+  it("does NOT render the AI explainer button when NEXT_PUBLIC_AI_EXPLAINER is unset (#57 default off)", () => {
+    // The flag is read at module load; with it unset the budget UI is unchanged.
+    render(<BudgetCalculator />);
+    expect(
+      screen.queryByRole("button", { name: /Explain my budget \(AI\)/i }),
+    ).not.toBeInTheDocument();
+    // The deterministic insights still render.
+    expect(screen.getByText("What your numbers mean")).toBeInTheDocument();
+  });
 });

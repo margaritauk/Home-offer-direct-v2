@@ -17,6 +17,8 @@
 
 import type { SafeAiInput } from "@/lib/ai/screening";
 import type { OfferInsight } from "@/lib/offer/strength";
+import type { PitiBreakdown } from "@/lib/budget";
+import type { BudgetInsight } from "@/lib/budget-explainer";
 
 /**
  * The grounded input handed to an {@link AiExplainerSource}. It pairs the
@@ -41,10 +43,84 @@ export interface AiExplanation {
 }
 
 /**
+ * GROUNDING (issue #57): the budget explainer NARRATES the numbers
+ * `src/lib/budget.ts` ALREADY computed — it never calculates. Its input carries
+ * a FINANCIAL-ONLY, FHA-neutral-by-construction safe projection
+ * ({@link SafeBudgetInput} from `buildSafeBudgetInput`), the computed
+ * {@link PitiBreakdown} (principal, interest, taxes, insurance, PMI, HOA + LTV),
+ * an optional affordability summary (max price / DTI / binding cap), and OUR
+ * deterministic {@link BudgetInsight}[] (from `lib/budget-explainer.ts`). The
+ * model's only job is to restate those figures in plain English; it must not
+ * compute, recommend a loan/lender, quote a rate-as-offer, or steer.
+ */
+
+/**
+ * The mode the budget figures came from: a fixed monthly-payment estimate, or
+ * the affordability solve ("how much house can I afford").
+ */
+export type BudgetMode = "payment" | "affordability";
+
+/**
+ * A FINANCIAL-ONLY, FHA-neutral-by-construction projection of the buyer's budget
+ * inputs. There are NO demographic fields by construction; any free-text note is
+ * screened by {@link buildSafeBudgetInput}. This is the budget analogue of
+ * {@link SafeAiInput}.
+ */
+export interface SafeBudgetInput {
+  mode: BudgetMode;
+  /** Home price in dollars (payment mode) or solved max price (affordability). */
+  price: number;
+  /** Down payment as a percent of price. */
+  downPaymentPercent: number;
+  /** Annual interest rate as a percent. NARRATED only — never quoted as an offer. */
+  ratePct: number;
+  /** Loan term in years. */
+  termYears: number;
+  /** Gross monthly income in dollars, when known (affordability mode). */
+  grossMonthlyIncome?: number;
+  /** Existing monthly debt payments in dollars, when known. */
+  monthlyDebts?: number;
+  /** Optional, neutral free-text note about the budget. Screened. */
+  note?: string;
+}
+
+/** The affordability summary the budget engine already solved, when in that mode. */
+export interface BudgetAffordabilitySummary {
+  /** Max affordable home price in dollars. */
+  maxPrice: number;
+  /** Max loan amount in dollars. */
+  maxLoan: number;
+  /** Which DTI cap binds the budget. */
+  bindingConstraint: "front" | "back";
+}
+
+/**
+ * The grounded input handed to {@link AiExplainerSource.explainBudget}. It pairs
+ * the FINANCIAL-ONLY safe projection with the deterministic figures the model
+ * must stay grounded in (the computed PITI breakdown, our budget insights, and
+ * the optional affordability summary). No raw form state ever reaches a provider.
+ */
+export interface BudgetExplainerInput {
+  /** FINANCIAL-ONLY, FHA-neutral safe projection (from `buildSafeBudgetInput`). */
+  safeInput: SafeBudgetInput;
+  /** OUR computed PITI breakdown — the numbers the model narrates, never recomputes. */
+  breakdown: PitiBreakdown;
+  /** OUR deterministic budget insights the model restates in plain English. */
+  insights: BudgetInsight[];
+  /** OUR affordability solve, when the figures came from affordability mode. */
+  affordability?: BudgetAffordabilitySummary;
+}
+
+/**
  * The data-access contract. An implementation calls a real model (or returns
  * `null`). It must NEVER throw and NEVER fabricate: any failure (no key, non-OK
  * response, thrown error, empty/blocked output) resolves to `null`.
  */
 export interface AiExplainerSource {
   explainOfferStrength(input: AiExplainerInput): Promise<AiExplanation | null>;
+  /**
+   * Narrate (never compute) the budget figures `lib/budget.ts` already produced.
+   * Issue #57. Returns `null` on any failure or blocked/empty output.
+   */
+  explainBudget(input: BudgetExplainerInput): Promise<AiExplanation | null>;
 }
