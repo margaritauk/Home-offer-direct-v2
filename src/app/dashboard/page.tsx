@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
-import { WhatsNext } from "@/components/nav/whats-next";
+import { CockpitBand } from "@/components/cockpit/cockpit-band";
 import { ContactsHub } from "@/components/tools/contacts-hub";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-8">
-        <WhatsNext />
+        <CockpitBand />
       </div>
 
       <div className="mt-10">
