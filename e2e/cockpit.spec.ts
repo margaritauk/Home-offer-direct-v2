@@ -13,9 +13,11 @@ import { expect, test, type Page } from "@playwright/test";
 async function trackAHome(page: Page) {
   await page.goto("/showings");
   await page.getByRole("button", { name: /add a property manually/i }).click();
-  await page.getByLabel("Street address").fill("123 Main St");
-  await page.getByLabel("City").fill("Austin");
-  await page.getByLabel("State").fill("TX");
+  // Exact labels — the showings page also has state <select>s whose accessible
+  // names contain "State", so a substring getByLabel would be ambiguous.
+  await page.getByLabel("Street address", { exact: true }).fill("123 Main St");
+  await page.getByLabel("City", { exact: true }).fill("Austin");
+  await page.getByLabel("State", { exact: true }).fill("TX");
   await page.getByRole("button", { name: /add to tracker/i }).click();
 }
 
