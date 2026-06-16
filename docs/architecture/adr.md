@@ -333,3 +333,80 @@ I3, I4, and J4 (no divergent classifications).
 - Resolve the field-name spike against a live key; finish `mapRentCastMarket`.
 - Keep the `MarketStats` shape stable so the classifier and A1 UI are reused.
 - Hold the manual-entry path as the permanent fallback for thin-coverage areas.
+
+## ADR-014: Reminders & server scheduler (Vercel Cron + Web Push, default-off) (Sprint 1 — R1)
+
+**Context:** The riskiest part of an agent-free purchase is blowing a contingency
+deadline; the pure deadline engine (`computeMilestones`, `lib/deadlines.ts`)
+already turns the two anchor dates into the milestones that matter, but nothing
+*pushes* a buyer when one is about to cross. A reminder is "a milestone whose date
+crosses a threshold relative to today, not yet acknowledged" — so the policy is
+pure logic, but firing it needs the first always-on server job we've built. That
+job must be observable, hold secrets server-side, and not fork the deadline math
+into a second runtime. R1 ships in S1 with **no external vendor**, so it must work
+on in-stack pieces alone and ship default-off behind an opt-in.
+
+**Decision — scheduler is Vercel Cron, not Supabase pg_cron:** a Vercel Cron route
+**`/api/cron/reminders`** (hourly) runs in the same TypeScript runtime as the app
+(ADR-001), **imports the pure reminder deriver directly**, and holds the VAPID and
+cron secrets as Vercel server env. Accounts/sync are already server-side, so the
+job lives where the data and the deadline math already are. pg_cron would split
+reminder logic into SQL/Edge and duplicate the calendar math, so we reject it. The
+route is **guarded by a `CRON_SECRET`** header check and no-ops when the kill
+switch is set or no subscriptions exist.
+
+**Decision — a pure reminder core, the cron route is a thin caller:** a new
+`src/lib/reminders/` module of pure functions —
+`computeReminders(milestones, opts)` and `dueReminders(...)` — derives reminders
+from the existing `computeMilestones` output (no re-derivation of dates), is
+**fully unit-testable and idempotent**, and carries the re-fire diffing when
+contract dates move. The cron route is pure IO shell over it: derive → filter due
+→ send → record. Same discipline as `lib/deadlines.ts` / `lib/savings.ts` /
+`lib/market/classify.ts`.
+
+**Decision — two channels, in-app first:** (1) an **in-app banner** is a cockpit
+read of the pure deriver — no key, no server job, ships first; (2) **background
+Web Push** (the Web Push API + **VAPID** keys + a service worker holding a
+`PushSubscription` per user) is the additive background channel, behind a
+**`PUSH_ENABLED` flag (default-off)**. No third-party vendor, satisfying "no gate
+this sprint." (If Web Push proves flaky, the same cron route is the email sender in
+S2 — one mechanism, more channels.)
+
+**Decision — new tables, RLS-scoped, idempotent firing:** two additive tables —
+**`push_subscriptions`** (user_id, endpoint, keys, created_at) and
+**`reminder_state`** (deal_id, milestone_id, fired_at, acknowledged_at,
+last_seen_date) — both RLS-scoped via the existing **`is_deal_member`** helper
+(ADR-012), membership columns indexed, `TO authenticated`. Reminder *preferences*
+(opt-in, lead-time) persist per-tool via `useStageTool`/`useTracker` and sync to
+the deal. Firing carries an **idempotency key on `(deal_id, milestone_id,
+fired-at-bucket)`** so overlapping cron runs cannot double-fire; dates use the same
+**UTC `YYYY-MM-DD`** frame as the deadline engine for tz correctness; a date-move
+**re-fires** (the diff is in the pure core), and past-due milestones are
+**suppressed from bursts** rather than firing a backlog at once.
+
+**Decision — env + kill switch, default-off:** `VAPID_PUBLIC_KEY` (may be
+`NEXT_PUBLIC_`), `VAPID_PRIVATE_KEY` (server-only), `CRON_SECRET` (server-only). A
+new **`REMINDERS_DISABLED`** kill switch **mirrors `RENTCAST_DISABLED`**
+(`src/lib/rentcast-flag.ts`): one truthy (`1|true|yes|on`) server env var checked
+first, flippable without disturbing config (outage, cost, bad fire). Default-off ⇒
+the in-app banner ships behind the opt-in and push stays dark until
+`PUSH_ENABLED` + VAPID are set.
+
+**Consequences:**
+- The scheduler is the first always-on server job; its correctness rests on the
+  pure core's idempotency and the `(deal_id, milestone_id, fired-at-bucket)` key,
+  both unit-testable without the cron.
+- One mechanism serves two (later three) channels: the in-app banner needs no
+  infra, Web Push and the S2 email path both ride the same `/api/cron/reminders`
+  route and the same deriver.
+- Flipping `REMINDERS_DISABLED` cuts all firing at once; the cron also no-ops with
+  no subscriptions, so an empty deployment costs nothing.
+- **UPL guardrail:** reminders are *process* nudges ("schedule your inspection by
+  the contingency date"), never directive; the buyer's **contract is the source of
+  truth** and no reminder is a deadline "of record" — the copy says so.
+
+### Backlog (future) — Email channel on the same scheduler (S2)
+- Add an `EmailProvider` seam (Resend) and make `/api/cron/reminders` the
+  reminder-email sender — one mechanism, an added channel — behind `EMAIL_DISABLED`.
+- Keep `computeReminders` / `dueReminders` stable so in-app, push, and email all
+  consume one deriver with no divergent policy.
