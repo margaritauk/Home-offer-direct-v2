@@ -6,6 +6,7 @@ import { useProgress } from "@/hooks/use-progress";
 import { useShowings } from "@/hooks/use-showings";
 import { useOfferStatus } from "@/hooks/use-offer-status";
 import { useTracker } from "@/hooks/use-tracker";
+import { useFinancing } from "@/hooks/use-financing";
 import { totalTasks } from "@/lib/journey";
 import { formatISO, type MilestoneStatus } from "@/lib/deadlines";
 import { buildHomeRollups, type HomeRollup } from "@/lib/homes/rollup";
@@ -36,8 +37,10 @@ export function CockpitBand() {
   const { showings, hydrated: sHydrated } = useShowings();
   const { offers, hydrated: oHydrated } = useOfferStatus();
   const { state: tracker, hydrated: tHydrated } = useTracker();
+  const { value: financing, hydrated: fHydrated } = useFinancing();
 
-  const hydrated = pHydrated && sHydrated && oHydrated && tHydrated;
+  const hydrated =
+    pHydrated && sHydrated && oHydrated && tHydrated && fHydrated;
   const today = formatISO(Date.now());
 
   const { rollups, actions } = useMemo(() => {
@@ -52,11 +55,13 @@ export function CockpitBand() {
         closingDate: tracker.closingDate,
         offsets: tracker.offsets,
         docs: tracker.docs,
+        // S5-F1: union financing milestones into the cockpit stream.
+        financing: financing.dates,
       },
       today,
     });
     return { rollups: built, actions: rankNextActions(built, today) };
-  }, [hydrated, completed, showings, offers, tracker, today]);
+  }, [hydrated, completed, showings, offers, tracker, financing, today]);
 
   // Loading: skeleton until hydrated, no SSR/client flash.
   if (!hydrated) {

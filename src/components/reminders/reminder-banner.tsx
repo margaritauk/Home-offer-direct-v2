@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTracker } from "@/hooks/use-tracker";
+import { useFinancing } from "@/hooks/use-financing";
 import { useAuth } from "@/hooks/use-auth";
-import { computeMilestones, formatISO } from "@/lib/deadlines";
+import { formatISO } from "@/lib/deadlines";
+import { allDealMilestones } from "@/lib/milestones/all-milestones";
 import {
   computeReminders,
   armedMilestoneCount,
@@ -42,7 +44,9 @@ function readWatermark(): string {
 }
 
 export function ReminderBanner() {
-  const { state: tracker, hydrated } = useTracker();
+  const { state: tracker, hydrated: tHydrated } = useTracker();
+  const { value: financing, hydrated: fHydrated } = useFinancing();
+  const hydrated = tHydrated && fHydrated;
   const { enabled: authEnabled, user } = useAuth();
   const [lastSeen, setLastSeen] = useState("");
   const [dismissed, setDismissed] = useState(false);
@@ -62,12 +66,14 @@ export function ReminderBanner() {
 
   const milestones = useMemo(() => {
     if (!hydrated) return [];
-    return computeMilestones({
+    // S5-F1: union financing milestones into the reminder stream.
+    return allDealMilestones({
       underContractDate: tracker.underContractDate,
       closingDate: tracker.closingDate,
       offsets: tracker.offsets,
+      financing: financing.dates,
     });
-  }, [hydrated, tracker]);
+  }, [hydrated, tracker, financing]);
 
   const reminders = useMemo(
     () => computeReminders(milestones, { dealId: DEAL_KEY, leadDays: [3, 1, 0] }),

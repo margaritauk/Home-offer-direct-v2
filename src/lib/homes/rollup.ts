@@ -16,13 +16,14 @@
  */
 
 import {
-  computeMilestones,
   daysToClosing,
   statusFor,
   type DeadlineInput,
   type Milestone,
   type MilestoneStatus,
 } from "@/lib/deadlines";
+import { allDealMilestones } from "@/lib/milestones/all-milestones";
+import type { FinancingDates } from "@/lib/financing/milestones";
 import { totalDocuments } from "@/lib/documents";
 import {
   expirationInfo,
@@ -45,6 +46,12 @@ export interface TrackerSnapshot {
   closingDate: string;
   offsets: DeadlineInput["offsets"];
   docs: Record<string, boolean>;
+  /**
+   * The financing tool's persisted dates (S5-F1). When present, financing
+   * milestones are unioned into the deadline stream so they surface in the cockpit
+   * as "do this now" cards. Omitted ⇒ tracker milestones only (unchanged S1 path).
+   */
+  financing?: FinancingDates;
 }
 
 export interface RollupInput {
@@ -121,10 +128,11 @@ function computeNextDeadline(
   tracker: TrackerSnapshot,
   today: string,
 ): { next?: NextDeadline; milestones: Milestone[] } {
-  const milestones = computeMilestones({
+  const milestones = allDealMilestones({
     underContractDate: tracker.underContractDate,
     closingDate: tracker.closingDate,
     offsets: tracker.offsets,
+    financing: tracker.financing,
   });
   if (milestones.length === 0) return { milestones };
 

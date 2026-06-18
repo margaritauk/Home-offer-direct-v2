@@ -194,6 +194,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       description: "Track contingency deadlines once you're under contract.",
     },
     {
+      href: "/tools/financing",
+      label: "Financing-milestone tracker",
+      description:
+        "Start tracking your loan process — application, appraisal, underwriting, clear-to-close — as soon as you're under contract.",
+    },
+    {
       href: "/tools/escrow",
       label: "Wire-fraud Checklist & Escrow Tracker",
       description: "Verify wiring instructions by phone before you send funds.",
@@ -233,6 +239,12 @@ export const STAGE_TOOLS: Record<string, ToolLink[]> = {
       href: "/tracker",
       label: "Deadline & Document Tracker",
       description: "Track appraisal and underwriting deadlines and documents.",
+    },
+    {
+      href: "/tools/financing",
+      label: "Financing-milestone tracker",
+      description:
+        "Track the loan process — application, appraisal, underwriting conditions, clear-to-close — so financing doesn't quietly blow up your deal.",
     },
     {
       href: "/tools/clear-to-close",
