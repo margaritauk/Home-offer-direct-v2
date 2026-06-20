@@ -37,7 +37,12 @@
 
 import { matches, sortListings } from "./provider";
 import { annotateDistance } from "./distance";
-import type { Listing, ListingFilters, PropertyType } from "./types";
+import type {
+  Listing,
+  ListingContact,
+  ListingFilters,
+  PropertyType,
+} from "./types";
 
 const RENTCAST_LISTINGS_URL = "https://api.rentcast.io/v1/listings/sale";
 /** How many listings to ask RentCast for in one page. */
@@ -62,6 +67,54 @@ function asNumberOr(v: unknown, fallback: number): number {
 /** A finite number (allowing 0 and negatives, e.g. longitude), else undefined. */
 function asFiniteNumber(v: unknown): number | undefined {
   return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
+
+/** A loosely-validated email (must contain one @ and a dot in the domain). */
+function asEmail(v: unknown): string | undefined {
+  const s = asString(v)?.trim();
+  if (!s) return undefined;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : undefined;
+}
+
+/** A phone string with at least 7 digits (kept as the source provides it). */
+function asPhone(v: unknown): string | undefined {
+  const s = asString(v)?.trim();
+  if (!s) return undefined;
+  return (s.match(/\d/g) ?? []).length >= 7 ? s : undefined;
+}
+
+/** A website URL; prepends https:// when the scheme is missing. */
+function asWebsite(v: unknown): string | undefined {
+  const s = asString(v)?.trim();
+  if (!s) return undefined;
+  if (/^https?:\/\//i.test(s)) return s;
+  // Only treat it as a site if it looks domain-ish; else drop it.
+  return /\.[a-z]{2,}/i.test(s) ? `https://${s}` : undefined;
+}
+
+/**
+ * Map a RentCast `listingAgent`/`listingOffice` object to a {@link ListingContact}
+ * (Item 3 / S0b). Defensive + honest:
+ *  - reads `name`/`phone`/`email`/`website` (office has no website per RentCast,
+ *    so it stays undefined there);
+ *  - validates phone/email so a malformed value doesn't become a broken
+ *    `tel:`/`mailto:` link;
+ *  - returns `undefined` when NOTHING usable is present — never a hollow object,
+ *    never a fabricated field (mirrors the lat/lng "real or undefined" posture).
+ *  - never throws on garbage.
+ */
+export function mapListingContact(raw: unknown): ListingContact | undefined {
+  if (!isRecord(raw)) return undefined;
+  const contact: ListingContact = {};
+  const name = asString(raw.name);
+  const phone = asPhone(raw.phone);
+  const email = asEmail(raw.email);
+  const website = asWebsite(raw.website);
+  if (name) contact.name = name;
+  if (phone) contact.phone = phone;
+  if (email) contact.email = email;
+  if (website) contact.website = website;
+  return Object.keys(contact).length > 0 ? contact : undefined;
 }
 
 /**
@@ -151,6 +204,10 @@ export function mapRentCastListings(payload: unknown): Listing[] {
         city ? ` in ${city}` : ""
       }.`;
 
+    // Listing-agent / office contacts (real-or-undefined; never fabricated).
+    const listingAgent = mapListingContact(raw.listingAgent);
+    const listingOffice = mapListingContact(raw.listingOffice);
+
     out.push({
       id,
       address: address ?? id,
@@ -169,6 +226,8 @@ export function mapRentCastListings(payload: unknown): Listing[] {
       isSample: false,
       ...(lat !== undefined ? { lat } : {}),
       ...(lng !== undefined ? { lng } : {}),
+      ...(listingAgent ? { listingAgent } : {}),
+      ...(listingOffice ? { listingOffice } : {}),
     });
   }
 

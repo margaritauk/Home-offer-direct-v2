@@ -47,6 +47,24 @@ export interface Listing {
    * listing and the search carry real coordinates (see `annotateDistance`).
    */
   distance?: number;
+  /**
+   * The listing agent's contact details, when the source provides them
+   * (RentCast). Facts only — name + how to reach them. Every field is optional
+   * and only ever populated from real source data; absent fields stay
+   * `undefined`, NEVER fabricated. The buyer is reminded this agent works for
+   * the seller (see the contact block + agency reminder).
+   */
+  listingAgent?: ListingContact;
+  /** The listing brokerage/office contact details, when the source provides them. */
+  listingOffice?: ListingContact;
+}
+
+/** A real-or-undefined contact block from listing data (Item 3 / S0b). */
+export interface ListingContact {
+  name?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
 }
 
 export interface ListingFilters {
