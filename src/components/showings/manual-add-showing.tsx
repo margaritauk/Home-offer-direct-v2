@@ -2,13 +2,20 @@
 
 import { useState } from "react";
 import { useShowings } from "@/hooks/use-showings";
+import { LocationSearchBox } from "@/components/search/location-search-box";
 
 /**
  * Add a property to the tracker by hand (issue #29 / per-home tracking) — for
  * homes the buyer found off-platform (a yard sign, an open house, another
  * portal). Stored as a `manual` record so it isn't linked to a listing page.
  *
- * GUARDRAIL (#22): address/area facts only — no protected-class fields.
+ * UX continuity (Item 4 / S0b): the shared S0a {@link LocationSearchBox}
+ * pre-fills city/state (and a full street address when the pick is an address)
+ * from a resolved place, so the buyer doesn't re-type the city/state. The
+ * street-address field stays editable for a final tweak.
+ *
+ * GUARDRAIL (#22): address/area facts only — no protected-class fields. The box
+ * resolves geography only (FHA).
  */
 export function ManualAddShowing() {
   const { track, hydrated } = useShowings();
@@ -49,6 +56,18 @@ export function ManualAddShowing() {
   return (
     <form onSubmit={add} className="card space-y-3">
       <p className="text-sm font-semibold text-ink">Add a property</p>
+      <LocationSearchBox
+        label="Find the place"
+        placeholder="Search a ZIP, address, or city"
+        onResolve={(value, pickedLabel) => {
+          // A full-address pick fills the street line; any pick fills city/state.
+          if (value.mode === "current" && pickedLabel !== "Current location") {
+            setAddress(pickedLabel);
+          }
+          if (value.city) setCity(value.city);
+          if (value.state) setState(value.state);
+        }}
+      />
       <input
         type="text"
         value={address}

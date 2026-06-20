@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useGeolocation } from "@/hooks/use-geolocation";
-import { getStateOptions } from "@/lib/states";
-
-const stateOptions = getStateOptions();
+import { LocationSearchBox } from "@/components/search/location-search-box";
 
 export type LocationMode = "current" | "zip" | "city" | "state";
 
@@ -23,17 +19,35 @@ export interface LocationValue {
   radius?: number;
 }
 
-/** Radius choices (miles) for the "current location" mode. */
+/** Radius choices (miles) for a coordinate-anchored search. */
 export const RADIUS_OPTIONS = [1, 5, 10, 25] as const;
 export const DEFAULT_RADIUS = 10;
 
-const MODES: { id: LocationMode; label: string }[] = [
-  { id: "current", label: "Current location" },
-  { id: "zip", label: "ZIP" },
-  { id: "city", label: "City" },
-  { id: "state", label: "State" },
-];
+/** A human summary of the currently-active location for the "current" chip. */
+function summarize(value: LocationValue): string | null {
+  if (value.lat != null && value.lng != null) {
+    if (value.city) return value.state ? `${value.city}, ${value.state}` : value.city;
+    if (value.zip) return `ZIP ${value.zip}`;
+    return "Pinned location";
+  }
+  if (value.zip) return `ZIP ${value.zip}`;
+  if (value.city) return value.state ? `${value.city}, ${value.state}` : value.city;
+  if (value.state) return value.state;
+  return null;
+}
 
+/**
+ * Location entry for home search (UX continuity, Item 4 / S0b). The old
+ * segmented zip/city/state tablist is replaced by the shared S0a
+ * {@link LocationSearchBox} — one accessible combobox that resolves a picked
+ * place (or "use my current location") into the SAME {@link LocationValue} slice
+ * the search/distance code already consumes. The radius selector still appears
+ * whenever the active search is coordinate-anchored (lat/lng present), so the
+ * near-me distance sort behaves exactly as before.
+ *
+ * FHA: geography only — the box surfaces zip/address/city/state/county kinds and
+ * never a neighborhood typeahead.
+ */
 export function LocationSelector({
   value,
   onChange,
@@ -41,227 +55,64 @@ export function LocationSelector({
   value: LocationValue;
   onChange: (next: LocationValue) => void;
 }) {
-  const geo = useGeolocation();
-
-  // Switching modes preserves only the new mode's fields, clearing the rest so
-  // the geographic query is never ambiguous (e.g. ZIP wins over lat/lng).
-  const setMode = (mode: LocationMode) => {
-    if (mode === value.mode) return;
-    if (mode === "current") {
-      onChange({ mode, radius: value.radius ?? DEFAULT_RADIUS });
-    } else {
-      onChange({ mode });
-    }
-  };
-
-  const useMyLocation = () => {
-    geo.request();
-  };
-
-  // Geolocation resolved → fold coords into the value (keep radius). Done in an
-  // effect so onChange isn't called during render.
-  useEffect(() => {
-    if (
-      value.mode === "current" &&
-      geo.status === "granted" &&
-      geo.coords &&
-      (value.lat !== geo.coords.lat || value.lng !== geo.coords.lng)
-    ) {
-      onChange({
-        mode: "current",
-        lat: geo.coords.lat,
-        lng: geo.coords.lng,
-        radius: value.radius ?? DEFAULT_RADIUS,
-      });
-    }
-  }, [geo.status, geo.coords, value, onChange]);
-
   const hasCoords = value.lat != null && value.lng != null;
-  const fallbackMessage =
-    geo.status === "denied" || geo.status === "insecure" || geo.status === "unsupported"
-      ? geo.error
-      : null;
-
-  const loading = geo.status === "loading";
+  const active = summarize(value);
 
   return (
     <div className="space-y-3">
-      <div
-        role="tablist"
-        aria-label="Location search mode"
-        className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
-      >
-        {MODES.map((m) => {
-          const active = value.mode === m.id;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setMode(m.id)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
-                active
-                  ? "bg-white text-brand-700 shadow-sm ring-1 ring-slate-200"
-                  : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {m.label}
-            </button>
-          );
-        })}
-      </div>
+      <LocationSearchBox
+        label="Where do you want to search?"
+        placeholder="ZIP, address, city, state, or county"
+        onResolve={(next) => onChange(next)}
+      />
 
-      {value.mode === "current" ? (
-        <div className="space-y-3">
+      {active ? (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700">
+            <span aria-hidden>📍</span>
+            {active}
+          </span>
           <button
             type="button"
-            className="btn-secondary"
-            onClick={useMyLocation}
-            disabled={loading}
+            onClick={() => onChange({ mode: value.mode })}
+            className="text-ink-muted underline hover:text-ink"
           >
-            {loading ? (
-              <span
-                className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600"
-                aria-hidden
-              />
-            ) : (
-              <span aria-hidden>📍</span>
-            )}
-            {loading
-              ? "Locating…"
-              : hasCoords
-                ? "Update my location"
-                : "Use my location"}
+            Clear
           </button>
-
-          {fallbackMessage ? (
-            <p className="text-sm text-red-600" role="status">
-              {fallbackMessage}
-            </p>
-          ) : null}
-
-          {hasCoords ? (
-            <div>
-              <span className="mb-1.5 block text-sm font-medium text-ink-soft">
-                Within
-              </span>
-              <div
-                role="radiogroup"
-                aria-label="Search radius (miles)"
-                className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
-              >
-                {RADIUS_OPTIONS.map((r) => {
-                  const selected = (value.radius ?? DEFAULT_RADIUS) === r;
-                  return (
-                    <button
-                      key={r}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      onClick={() => onChange({ ...value, radius: r })}
-                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
-                        selected
-                          ? "bg-white text-brand-700 shadow-sm ring-1 ring-slate-200"
-                          : "text-ink-soft hover:text-ink"
-                      }`}
-                    >
-                      {r} mi
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
         </div>
       ) : null}
 
-      {value.mode === "zip" ? (
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">ZIP code</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={5}
-            value={value.zip ?? ""}
-            onChange={(e) => {
-              const zip = e.target.value.replace(/\D/g, "").slice(0, 5);
-              onChange({ mode: "zip", zip: zip || undefined });
-            }}
-            placeholder="e.g. 78704"
-            className="field bg-white"
-            aria-label="ZIP code"
-          />
-        </label>
-      ) : null}
-
-      {value.mode === "city" ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink-soft">City</span>
-            <input
-              type="text"
-              value={value.city ?? ""}
-              onChange={(e) =>
-                onChange({
-                  mode: "city",
-                  city: e.target.value || undefined,
-                  state: value.state,
-                })
-              }
-              placeholder="e.g. Austin"
-              className="field bg-white"
-              aria-label="City"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink-soft">
-              State <span className="font-normal text-ink-muted">(optional)</span>
-            </span>
-            <select
-              className="field bg-white"
-              value={value.state ?? ""}
-              onChange={(e) =>
-                onChange({
-                  mode: "city",
-                  city: value.city,
-                  state: e.target.value || undefined,
-                })
-              }
-              aria-label="State (optional)"
-            >
-              <option value="">Any state</option>
-              {stateOptions.map((o) => (
-                <option key={o.code} value={o.code}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      ) : null}
-
-      {value.mode === "state" ? (
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-ink-soft">State</span>
-          <select
-            className="field bg-white"
-            value={value.state ?? ""}
-            onChange={(e) =>
-              onChange({ mode: "state", state: e.target.value || undefined })
-            }
-            aria-label="State"
-            suppressHydrationWarning
+      {hasCoords ? (
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-ink-soft">
+            Within
+          </span>
+          <div
+            role="radiogroup"
+            aria-label="Search radius (miles)"
+            className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
           >
-            <option value="">All states</option>
-            {stateOptions.map((o) => (
-              <option key={o.code} value={o.code}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            {RADIUS_OPTIONS.map((r) => {
+              const selected = (value.radius ?? DEFAULT_RADIUS) === r;
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => onChange({ ...value, radius: r })}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 ${
+                    selected
+                      ? "bg-white text-brand-700 shadow-sm ring-1 ring-slate-200"
+                      : "text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  {r} mi
+                </button>
+              );
+            })}
+          </div>
+        </div>
       ) : null}
     </div>
   );
