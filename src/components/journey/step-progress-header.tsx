@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { useProgress } from "@/hooks/use-progress";
+import { useToolData } from "@/hooks/use-tool-data";
+import { useLastPosition } from "@/hooks/use-last-position";
 import { useFocusOnRouteChange } from "@/hooks/use-focus-on-route-change";
-import { isStepComplete } from "@/lib/journey/navigation";
+import { stepStatus } from "@/lib/journey/navigation";
 
 /**
  * "Where am I" progress header for a journey step page (UX continuity,
@@ -58,19 +61,27 @@ export function StepProgressHeader(props: StepProgressHeaderProps) {
   } = props;
 
   const { completed, hydrated } = useProgress();
+  const { toolData, hydrated: toolsHydrated } = useToolData();
+  const { record } = useLastPosition();
   const headingRef = useFocusOnRouteChange<HTMLHeadingElement>();
 
+  // Persist this step as the buyer's last position (resume target). Label is an
+  // app-controlled step title — never user free-text (FHA/UPL).
+  useEffect(() => {
+    record({
+      kind: "step",
+      href: `/journey/${stageSlug}/${stepSlug}`,
+      label: stepTitle,
+      stageSlug,
+      stepSlug,
+    });
+    // record identity is stable; re-run only when the step changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageSlug, stepSlug]);
+
   let status: Status = "not-started";
-  if (hydrated) {
-    const required = tasks.filter((t) => !t.optional);
-    const ticked = required.filter(
-      (t) => completed[`${stageSlug}/${stepSlug}/${t.id}`],
-    ).length;
-    if (isStepComplete(stageSlug, stepSlug, { tasks }, completed)) {
-      status = "complete";
-    } else if (ticked > 0) {
-      status = "in-progress";
-    }
+  if (hydrated && toolsHydrated) {
+    status = stepStatus(stageSlug, stepSlug, { tasks }, completed, toolData);
   }
 
   const pct = Math.round((stepNumber / totalSteps) * 100);

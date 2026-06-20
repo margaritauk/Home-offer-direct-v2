@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useProgress, taskKey } from "@/hooks/use-progress";
+import { useToolData } from "@/hooks/use-tool-data";
 import { journeyProgress } from "@/lib/journey/progress";
+import { stepStatus } from "@/lib/journey/navigation";
 import type { JourneyStage } from "@/lib/journey/types";
 
 function stageTaskKeys(stage: JourneyStage): string[] {
@@ -11,8 +13,28 @@ function stageTaskKeys(stage: JourneyStage): string[] {
   );
 }
 
+type StageState = "not-started" | "in-progress" | "complete";
+
+/** Tri-state for a stage: complete when all tasks done; in-progress when any
+ *  step is in-progress (task ticked or a mapped tool has data); else not. */
+function stageState(
+  stage: JourneyStage,
+  completed: Record<string, boolean>,
+  toolData: Record<string, unknown>,
+  complete: boolean,
+): StageState {
+  if (complete) return "complete";
+  const anyProgress = stage.steps.some(
+    (step) =>
+      stepStatus(stage.slug, step.slug, step, completed, toolData) !==
+      "not-started",
+  );
+  return anyProgress ? "in-progress" : "not-started";
+}
+
 export function JourneyOverview({ stages }: { stages: JourneyStage[] }) {
   const { isDone, completed, hydrated, reset } = useProgress();
+  const { toolData } = useToolData();
 
   // Shared computation so the journey overview and the dashboard agree.
   const prog = journeyProgress(stages, hydrated ? completed : {});
@@ -56,20 +78,34 @@ export function JourneyOverview({ stages }: { stages: JourneyStage[] }) {
           const keys = stageTaskKeys(stage);
           const done = hydrated ? keys.filter(isDone).length : 0;
           const complete = keys.length > 0 && done === keys.length;
+          const state: StageState = hydrated
+            ? stageState(stage, completed, toolData, complete)
+            : "not-started";
           const stepCount = stage.steps.length;
+          const statusLabel =
+            state === "complete"
+              ? "complete"
+              : state === "in-progress"
+                ? "in progress"
+                : "not started";
           return (
             <li key={stage.slug}>
               <Link
                 href={`/journey/${stage.slug}`}
                 className="card flex items-center gap-4 transition hover:border-brand-300 hover:shadow-md"
+                aria-label={`Stage ${stage.order}: ${stage.title} — ${statusLabel}`}
               >
                 <span
                   className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-xl ${
-                    complete ? "bg-brand-600 text-white" : "bg-brand-50"
+                    state === "complete"
+                      ? "bg-brand-600 text-white"
+                      : state === "in-progress"
+                        ? "bg-brand-100 text-brand-700 ring-2 ring-brand-300"
+                        : "bg-brand-50"
                   }`}
                   aria-hidden
                 >
-                  {complete ? "✓" : stage.icon}
+                  {state === "complete" ? "✓" : state === "in-progress" ? "◐" : stage.icon}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -78,6 +114,15 @@ export function JourneyOverview({ stages }: { stages: JourneyStage[] }) {
                     </span>
                     {stage.timeline ? (
                       <span className="text-xs text-ink-muted">· {stage.timeline}</span>
+                    ) : null}
+                    {state === "in-progress" ? (
+                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                        ◐ In progress
+                      </span>
+                    ) : state === "complete" ? (
+                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                        ✓ Complete
+                      </span>
                     ) : null}
                   </div>
                   <h3 className="truncate text-lg font-semibold">{stage.title}</h3>

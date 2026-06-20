@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getStages, totalSteps } from "@/lib/journey";
 import { formatUSD } from "@/lib/savings";
+import { ResumeCard } from "@/components/journey/resume-card";
 
 const valueProps = [
   {
@@ -50,7 +51,10 @@ export default function HomePage() {
               or closing credit, and bring in flat-fee attorneys and inspectors
               only at the moments that matter.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8">
+              <ResumeCard className="mb-4 max-w-xl" />
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Link href="/journey" className="btn-primary text-base">
                 Start the journey — free
               </Link>

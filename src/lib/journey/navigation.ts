@@ -311,6 +311,16 @@ export function stageToolsFor(stageSlug: string): ToolLink[] {
   return STAGE_TOOLS[stageSlug] ?? [];
 }
 
+/** The first matching tool's display label for a `/tools/<id>` href, if any. */
+export function toolLabelForHref(href: string): string | undefined {
+  const target = href.replace(/\/+$/, "");
+  for (const tools of Object.values(STAGE_TOOLS)) {
+    const found = tools.find((t) => t.href.replace(/\/+$/, "") === target);
+    if (found) return found.label;
+  }
+  return undefined;
+}
+
 export interface StageToolGroup {
   stageSlug: string;
   stageTitle: string;
@@ -406,6 +416,98 @@ export function journeyAnchorForTool(href: string): ToolJourneyAnchor | null {
   };
 }
 
+/**
+ * Tri-state step status (Item 2 / S0b). Derived, honest, never premature:
+ *  - **complete**   = all non-optional tasks ticked ({@link isStepComplete}).
+ *                     Tools NEVER flip a step to complete — only the checklist.
+ *  - **in-progress**= some required tasks ticked, OR a `STAGE_TOOLS`-mapped tool
+ *                     for this step's stage has saved NON-EMPTY data.
+ *  - **not-started**= none of the above.
+ */
+export type StepStatus = "not-started" | "in-progress" | "complete";
+
+/**
+ * Per-tool "has the buyer entered real data?" predicates, keyed by the tool's
+ * `useStageTool` toolId (Item 2 / S0b). Deliberately conservative so OPENING a
+ * tool ≠ progress. A tool absent from this map falls back to the default
+ * deep-not-equal-to-its-initial check in {@link toolHasData}.
+ *
+ * The value passed in is the parsed `hod:tool:<toolId>:v1` blob (or `undefined`
+ * when the tool was never opened).
+ */
+export const TOOL_DATA_PREDICATES: Record<
+  string,
+  (value: unknown) => boolean
+> = {
+  // Scorecard: at least one home added.
+  "tour-scorecard": (v) =>
+    isRecord(v) && Array.isArray(v.homes) && v.homes.length > 0,
+};
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+
+/**
+ * Whether a tool blob counts as "has data". Uses the tool's registered
+ * predicate when present; otherwise a generic "non-empty" check: a non-null
+ * object/array with at least one own value that isn't itself empty.
+ */
+export function toolHasData(toolId: string, value: unknown): boolean {
+  if (value == null) return false;
+  const predicate = TOOL_DATA_PREDICATES[toolId];
+  if (predicate) return predicate(value);
+  // Generic fallback: any array with entries, or any object with a truthy /
+  // non-empty own value, counts as data.
+  if (Array.isArray(value)) return value.length > 0;
+  if (isRecord(value)) {
+    return Object.values(value).some((v) => {
+      if (v == null) return false;
+      if (Array.isArray(v)) return v.length > 0;
+      if (typeof v === "string") return v.trim() !== "";
+      if (typeof v === "number") return v !== 0;
+      if (typeof v === "boolean") return v;
+      if (isRecord(v)) return Object.keys(v).length > 0;
+      return true;
+    });
+  }
+  return Boolean(value);
+}
+
+/** The `useStageTool` toolId a `/tools/<id>` href maps to, else undefined. */
+export function toolIdForHref(href: string): string | undefined {
+  const m = href.replace(/\/+$/, "").match(/^\/tools\/([^/]+)$/);
+  return m ? m[1] : undefined;
+}
+
+/**
+ * Compute a step's {@link StepStatus} from the progress map + the per-tool data
+ * map (toolId → parsed blob). PURE + unit-tested. `complete` strictly dominates;
+ * tool data can only ever raise a step to `in-progress`, never `complete`.
+ */
+export function stepStatus(
+  stageSlug: string,
+  stepSlug: string,
+  step: { tasks: { id: string; optional?: boolean }[] },
+  progress: CompletedTasks,
+  toolData: Record<string, unknown> = {},
+): StepStatus {
+  if (isStepComplete(stageSlug, stepSlug, step, progress)) return "complete";
+
+  const anyTaskTicked = step.tasks.some(
+    (t) => progress[taskKey(stageSlug, stepSlug, t.id)],
+  );
+  if (anyTaskTicked) return "in-progress";
+
+  // A tool mapped to this stage that has non-empty data → in-progress.
+  const stageTools = stageToolsFor(stageSlug);
+  const toolInProgress = stageTools.some((tool) => {
+    const toolId = toolIdForHref(tool.href);
+    return toolId ? toolHasData(toolId, toolData[toolId]) : false;
+  });
+  return toolInProgress ? "in-progress" : "not-started";
+}
+
 export interface NextStepInfo {
   /** 1-based index of the stage the next step belongs to. */
   stageOrder: number;
@@ -484,5 +586,81 @@ export function nextStep(progress: CompletedTasks): NextStepInfo {
     href: `/journey/${stage.slug}/${step.slug}`,
     isStart: !hasProgress,
     isComplete: false,
+  };
+}
+
+/**
+ * The buyer's last-visited position (Item 2 part 3 / S0b). Persisted as a
+ * `useStageTool("__last-position")` blob — so it auto-syncs to signed-in users
+ * for free (the sync layer enumerates every `hod:tool:*` key). Never stores user
+ * free-text: `label` is an app-controlled step/tool title only (FHA/UPL).
+ */
+export interface LastPosition {
+  kind: "step" | "tool";
+  href: string;
+  /** App-controlled human label for the resume button. */
+  label: string;
+  /** The owning step's stage/step slugs, for the "is it still incomplete?" check. */
+  stageSlug?: string;
+  stepSlug?: string;
+  updatedAt: number;
+}
+
+export interface ResumeTarget {
+  href: string;
+  label: string;
+  /** True when this came from the explicit last position (vs. computed next). */
+  fromLastPosition: boolean;
+}
+
+/**
+ * Resume precedence (Item 2 part 3 / S0b), PURE + unit-tested:
+ *  1. An explicit last position whose target step is NOT yet complete → resume
+ *     there (honor where they actually were). A `tool` position is always
+ *     honored (tools never "complete").
+ *  2. Otherwise (no position, or its step is already complete) → the computed
+ *     next action ({@link nextStep}). Resuming into a finished step is a dead
+ *     feeling; advancing is better.
+ *
+ * Returns `null` only when the whole journey is complete AND there's no live
+ * tool position — the caller then shows its "all done" state instead.
+ */
+export function resumeTarget(
+  progress: CompletedTasks,
+  lastPosition: LastPosition | null | undefined,
+): ResumeTarget | null {
+  if (lastPosition) {
+    if (lastPosition.kind === "tool") {
+      return {
+        href: lastPosition.href,
+        label: lastPosition.label,
+        fromLastPosition: true,
+      };
+    }
+    // A step position: honor it only while its step is still incomplete.
+    const { stageSlug, stepSlug } = lastPosition;
+    if (stageSlug && stepSlug) {
+      const found = flattenedSteps().find(
+        (x) => x.stage.slug === stageSlug && x.step.slug === stepSlug,
+      );
+      if (
+        found &&
+        !isStepComplete(stageSlug, stepSlug, found.step, progress)
+      ) {
+        return {
+          href: lastPosition.href,
+          label: lastPosition.label,
+          fromLastPosition: true,
+        };
+      }
+    }
+  }
+
+  const next = nextStep(progress);
+  if (next.isComplete) return null;
+  return {
+    href: next.href,
+    label: next.stepTitle,
+    fromLastPosition: false,
   };
 }

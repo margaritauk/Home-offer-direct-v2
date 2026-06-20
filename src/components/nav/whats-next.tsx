@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useProgress } from "@/hooks/use-progress";
-import { nextStep } from "@/lib/journey/navigation";
+import { useLastPosition } from "@/hooks/use-last-position";
+import { nextStep, resumeTarget } from "@/lib/journey/navigation";
 
 /**
  * Compact "what's next" wayfinding strip (#88): "Stage X of 14 — Next: <step>"
@@ -14,11 +15,44 @@ import { nextStep } from "@/lib/journey/navigation";
  */
 export function WhatsNext() {
   const { completed, hydrated } = useProgress();
+  const { position, hydrated: positionHydrated } = useLastPosition();
   const [dismissed, setDismissed] = useState(false);
 
-  if (!hydrated || dismissed) return null;
+  if (!hydrated || !positionHydrated || dismissed) return null;
 
   const info = nextStep(completed);
+
+  // Lead with an explicit "Resume: <where>" when a persisted last position
+  // exists and is still live; else fall back to the computed "What's next".
+  const resume = resumeTarget(completed, position);
+  if (resume && resume.fromLastPosition && !info.isComplete) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+            Pick up where you left off · Stage {info.stageOrder} of{" "}
+            {info.totalStages}
+          </p>
+          <p className="mt-0.5 truncate text-sm text-brand-900">
+            Resume: <span className="font-semibold">{resume.label}</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link href={resume.href} className="btn-primary">
+            Resume →
+          </Link>
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            className="text-sm font-medium text-brand-700 hover:underline"
+            aria-label="Dismiss"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (info.isComplete) {
     return (

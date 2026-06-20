@@ -1,8 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { journeyAnchorForTool } from "@/lib/journey/navigation";
+import {
+  journeyAnchorForTool,
+  toolLabelForHref,
+} from "@/lib/journey/navigation";
+import { useLastPosition } from "@/hooks/use-last-position";
 
 /**
  * The shared "back to your journey / next step" footer rendered at the bottom of
@@ -25,6 +30,20 @@ export function ToolJourneyFooter({ toolHref }: { toolHref?: string }) {
   const pathname = usePathname();
   const href = toolHref ?? pathname ?? "";
   const anchor = journeyAnchorForTool(href);
+  const { record } = useLastPosition();
+
+  // Persist this tool as the buyer's last position (resume target). Label is an
+  // app-controlled tool title — never user free-text (FHA/UPL).
+  useEffect(() => {
+    if (!href.startsWith("/tools/")) return;
+    record({
+      kind: "tool",
+      href,
+      label: toolLabelForHref(href) ?? "your last tool",
+    });
+    // record identity is stable; re-run only when the tool href changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [href]);
 
   return (
     <nav

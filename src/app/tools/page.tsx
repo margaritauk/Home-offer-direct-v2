@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { toolsByStage } from "@/lib/journey/navigation";
+import { ToolSavedDot } from "@/components/tools/tool-saved-dot";
 
 export const metadata: Metadata = {
   title: "Tools",
@@ -31,7 +32,10 @@ export default function ToolsIndexPage() {
                     href={tool.href}
                     className="card block h-full transition hover:border-brand-300 hover:shadow-md"
                   >
-                    <p className="font-semibold text-ink">{tool.label}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold text-ink">{tool.label}</p>
+                      <ToolSavedDot href={tool.href} />
+                    </div>
                     {tool.description ? (
                       <p className="mt-2 text-sm text-ink-soft">
                         {tool.description}

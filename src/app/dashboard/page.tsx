@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { CockpitBand } from "@/components/cockpit/cockpit-band";
 import { ContactsHub } from "@/components/tools/contacts-hub";
+import { ResumeCard } from "@/components/journey/resume-card";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -32,7 +33,8 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 space-y-4">
+        <ResumeCard />
         <CockpitBand />
       </div>
 
