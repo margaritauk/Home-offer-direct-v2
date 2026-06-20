@@ -58,6 +58,26 @@ export interface ScoredHomeSnapshot {
   propertyType?: PropertyType;
 }
 
+/**
+ * A buyer's OWN tour photo, attached per scored home (S0b). The data URL is a
+ * client-side downscaled JPEG (canvas re-encode), which drops EXIF/GPS as a
+ * side effect — we never persist the buyer's location trail. The optional
+ * caption is screened through `screenText` exactly like notes (FHA).
+ *
+ * FHA/UDAP: caption is screened free text; photos are of the building, never
+ * people. "Your photo" provenance is honest — never confused with the sample
+ * placeholder.
+ */
+export interface TourPhoto {
+  id: string;
+  /** Downscaled JPEG data URL (EXIF/GPS stripped via the canvas re-encode). */
+  dataUrl: string;
+  /** Optional screened caption (facts only). */
+  caption?: string;
+  /** ISO timestamp added. */
+  addedAt?: string;
+}
+
 /** One home being scored: an id/label, per-criterion ratings, and notes. */
 export interface ScoredHome {
   id: string;
@@ -74,8 +94,44 @@ export interface ScoredHome {
   ratings: Record<string, number>;
   /** Screened free-text notes (facts only). */
   notes?: string;
+  /** The buyer's own tour photos (downscaled, EXIF-stripped). */
+  tourPhotos?: TourPhoto[];
   /** ISO timestamp added; enables a "recently added" sort (S0b). */
   addedAt?: string;
+}
+
+/**
+ * Card sort orders for the scorecard (S0b). Mirrors the search browser's Sort
+ * `<select>` idiom.
+ *  - `score`   — weighted score, highest first; unrated homes last (default).
+ *  - `recent`  — most-recently-added first, via `addedAt`.
+ */
+export type ScorecardSort = "score" | "recent";
+
+/**
+ * Sort scored homes for rendering (S0b). PURE + unit-tested.
+ *
+ * `score` reuses {@link rankHomes} (stable, unrated-last). `recent` orders by
+ * `addedAt` descending (newest first); homes without a timestamp sort last,
+ * preserving their input order among themselves (stable).
+ */
+export function sortScoredHomes(
+  homes: ScoredHome[],
+  criteria: ScorecardCriterion[],
+  sort: ScorecardSort,
+): RankedHome[] {
+  const ranked = rankHomes(homes, criteria);
+  if (sort === "score") return ranked;
+  // recent: by addedAt desc, stable for ties / missing timestamps.
+  return ranked
+    .map((home, i) => ({ home, i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.home.addedAt ?? "") || -Infinity;
+      const tb = Date.parse(b.home.addedAt ?? "") || -Infinity;
+      if (tb !== ta) return tb - ta;
+      return a.i - b.i;
+    })
+    .map(({ home }) => home);
 }
 
 export interface HomeScore {

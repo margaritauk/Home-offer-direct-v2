@@ -3,6 +3,7 @@ import {
   DEFAULT_CRITERIA,
   rankHomes,
   scoreHome,
+  sortScoredHomes,
   type ScorecardCriterion,
   type ScoredHome,
 } from "./tour-scorecard";
@@ -109,6 +110,49 @@ describe("rankHomes", () => {
 
   it("returns an empty array for no homes", () => {
     expect(rankHomes([], criteria)).toEqual([]);
+  });
+});
+
+describe("sortScoredHomes", () => {
+  const homes: ScoredHome[] = [
+    {
+      id: "low",
+      label: "Low",
+      ratings: { a: 1 },
+      addedAt: "2026-01-01T00:00:00.000Z",
+    },
+    {
+      id: "high",
+      label: "High",
+      ratings: { a: 5 },
+      addedAt: "2026-02-01T00:00:00.000Z",
+    },
+    {
+      id: "unrated",
+      label: "Unrated",
+      ratings: {},
+      addedAt: "2026-03-01T00:00:00.000Z",
+    },
+  ];
+
+  it("'score' orders by weighted score with unrated last (mirrors rankHomes)", () => {
+    const sorted = sortScoredHomes(homes, criteria, "score");
+    expect(sorted.map((h) => h.id)).toEqual(["high", "low", "unrated"]);
+  });
+
+  it("'recent' orders by addedAt, newest first", () => {
+    const sorted = sortScoredHomes(homes, criteria, "recent");
+    expect(sorted.map((h) => h.id)).toEqual(["unrated", "high", "low"]);
+  });
+
+  it("'recent' keeps homes without a timestamp stable and last", () => {
+    const withMissing: ScoredHome[] = [
+      { id: "a", label: "A", ratings: {} },
+      { id: "b", label: "B", ratings: {}, addedAt: "2026-05-01T00:00:00.000Z" },
+      { id: "c", label: "C", ratings: {} },
+    ];
+    const sorted = sortScoredHomes(withMissing, criteria, "recent");
+    expect(sorted.map((h) => h.id)).toEqual(["b", "a", "c"]);
   });
 });
 

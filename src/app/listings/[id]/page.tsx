@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getListingsDataSource } from "@/lib/listings/provider";
+import {
+  getListingsDataSource,
+  isRentCastListingsActive,
+} from "@/lib/listings/provider";
 import { propertyTypeLabels } from "@/lib/listings";
 import { formatUSD } from "@/lib/savings";
 import { ListingImage } from "@/components/listing-image";
 import { AgencyExplainer } from "@/components/showings/agency-explainer";
 import { TrackShowingButton } from "@/components/showings/track-showing-button";
+import { ListingScorePanel } from "@/components/homes/listing-score-panel";
+import { ContactListingAgent } from "@/components/listings/contact-listing-agent";
+import { hasContactData } from "@/lib/listings/contact";
 
 // Listings can be live (RentCast) and looked up by id at request time, so render
 // on demand through the data-source seam rather than statically from mock ids.
@@ -43,6 +49,13 @@ export default async function ListingDetailPage({
   const { id } = await params;
   const listing = await getListingsDataSource().getById(id);
   if (!listing) notFound();
+
+  // The contact-the-agent block appears only when the RentCast connector is
+  // active AND real agent/office data exists (graceful absent-state otherwise).
+  const showContact =
+    isRentCastListingsActive() &&
+    !listing.isSample &&
+    hasContactData(listing.listingAgent, listing.listingOffice);
 
   return (
     <div className="container-page py-12 lg:py-16">
@@ -128,6 +141,30 @@ export default async function ListingDetailPage({
               state={listing.state}
             />
           </div>
+
+          <div className="mt-4">
+            <ListingScorePanel
+              listing={{
+                id: listing.id,
+                address: listing.address,
+                city: listing.city,
+                state: listing.state,
+                price: listing.price,
+                beds: listing.beds,
+                baths: listing.baths,
+                sqft: listing.sqft,
+                propertyType: listing.propertyType,
+              }}
+            />
+          </div>
+
+          {showContact ? (
+            <ContactListingAgent
+              agent={listing.listingAgent}
+              office={listing.listingOffice}
+              address={listing.address}
+            />
+          ) : null}
         </aside>
       </div>
 

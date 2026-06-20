@@ -2,6 +2,10 @@ import Link from "next/link";
 import { propertyTypeLabels, type Listing } from "@/lib/listings";
 import { formatUSD } from "@/lib/savings";
 import { ListingImage } from "@/components/listing-image";
+import {
+  AddToScorecardButton,
+  myHomeFromListing,
+} from "@/components/homes/add-to-scorecard-button";
 
 export function ListingCard({ listing }: { listing: Listing }) {
   return (
@@ -44,6 +48,9 @@ export function ListingCard({ listing }: { listing: Listing }) {
             {propertyTypeLabels[listing.propertyType]}
           </span>
           <span>{listing.daysOnMarket}d on market</span>
+        </div>
+        <div className="mt-3">
+          <AddToScorecardButton home={myHomeFromListing(listing)} compact />
         </div>
       </div>
     </Link>
