@@ -31,7 +31,11 @@ export function useMyHomes(): { homes: MyHome[]; hydrated: boolean } {
           address: l.address,
           city: l.city,
           state: l.state,
+          price: l.price,
+          beds: l.beds,
+          baths: l.baths,
           sqft: l.sqft,
+          propertyType: l.propertyType,
         })),
         showings: records.map((r) => ({
           listingId: r.listingId,

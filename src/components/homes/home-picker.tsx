@@ -3,21 +3,30 @@
 import { useMemo, useState } from "react";
 import { useMyHomes } from "@/hooks/use-my-homes";
 import { screenText } from "@/lib/ai/screening";
+import { formatUSD } from "@/lib/savings";
+import { ListingImage } from "@/components/listing-image";
+import { LocationSearchBox } from "@/components/search/location-search-box";
+import { propertyTypeLabels } from "@/lib/listings/types";
 import type { HomeSource, MyHome } from "@/lib/homes/my-homes";
 
 /**
- * Reusable "add a home" picker (issue #112).
+ * Reusable "add a home" picker (issue #112; redesigned for UX continuity Item 1
+ * phase-1 / S0a).
  *
- * Lets the buyer pick a home they already have in the app — from home search
- * (listings), their tracked showings, or the tour scorecard — with a source
- * filter + a search box, plus a manual-entry fallback for a home that isn't in
- * any source yet. Calls back `onPick(home)` with a {@link MyHome}; the host tool
- * decides what to do with it (prefill a label, add a row, set a property field).
+ * The "Home search" source now renders a PHOTO + FACTS mini-browser (reusing
+ * {@link ListingImage} + the `ListingCard` fact line) instead of a text-only
+ * list, so the buyer recognizes the home they're adding. On pick it returns the
+ * whole {@link MyHome} (listingId + price/beds/baths/sqft) — the host stores the
+ * snapshot, the link is no longer discarded.
  *
- * GUARDRAIL (FHA, #112): only address/transaction facts are surfaced or
- * collected. The manual-entry free text is run through {@link screenText} so a
- * protected-class signal can never enter a tool's persisted state via the
- * picker.
+ * The manual-entry fallback stays, but its address now resolves through the
+ * shared {@link LocationSearchBox} (Item 4) so a manually-added home carries
+ * structured city/state/zip. The free text is still run through
+ * {@link screenText}.
+ *
+ * GUARDRAIL (FHA): only address/transaction facts are surfaced or collected;
+ * the manual free text is screened so a protected-class signal can never enter a
+ * tool's persisted state via the picker. Location resolution is geography only.
  */
 
 const SOURCE_TABS: HomeSource[] = [
@@ -25,6 +34,17 @@ const SOURCE_TABS: HomeSource[] = [
   "Your showings",
   "Tour scorecard",
 ];
+
+function FactLine({ home }: { home: MyHome }) {
+  const facts: string[] = [];
+  if (typeof home.beds === "number") facts.push(`${home.beds} bd`);
+  if (typeof home.baths === "number") facts.push(`${home.baths} ba`);
+  if (typeof home.sqft === "number")
+    facts.push(`${home.sqft.toLocaleString()} sqft`);
+  if (home.propertyType) facts.push(propertyTypeLabels[home.propertyType]);
+  if (facts.length === 0) return null;
+  return <span className="text-xs text-ink-soft">{facts.join(" · ")}</span>;
+}
 
 export function HomePicker({
   onPick,
@@ -38,7 +58,6 @@ export function HomePicker({
   const [open, setOpen] = useState(false);
   const [source, setSource] = useState<HomeSource>("Home search");
   const [query, setQuery] = useState("");
-  const [manual, setManual] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -56,16 +75,18 @@ export function HomePicker({
     setQuery("");
   };
 
-  const addManual = () => {
-    const screened = screenText(manual).text.trim();
+  /** Manual add: screen the label, build a MyHome from the resolved place. */
+  const addManual = (label: string, city?: string, state?: string) => {
+    const screened = screenText(label).text.trim();
     if (!screened) return;
     pick({
       key: `manual:${screened.toLowerCase()}`,
       label: screened,
       address: screened,
+      city,
+      state,
       source: "Home search",
     });
-    setManual("");
   };
 
   if (!open) {
@@ -134,21 +155,43 @@ export function HomePicker({
           one manually below.
         </p>
       ) : (
-        <ul className="max-h-60 space-y-2 overflow-y-auto">
+        <ul className="max-h-72 space-y-2 overflow-y-auto">
           {filtered.map((home) => (
             <li key={home.key}>
               <button
                 type="button"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-left text-sm hover:border-brand-300"
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-lg border border-slate-200 p-2 text-left hover:border-brand-300"
                 onClick={() => pick(home)}
               >
-                <span className="block truncate font-medium text-ink">
-                  {home.label}
-                </span>
-                <span className="block text-xs text-ink-muted">
-                  {[home.city, home.state].filter(Boolean).join(", ")}
-                  {home.city || home.state ? " · " : ""}
-                  {home.source}
+                {home.listingId ? (
+                  <ListingImage
+                    id={home.listingId}
+                    propertyType={home.propertyType ?? "single-family"}
+                    className="h-14 w-20 shrink-0 rounded-md"
+                  />
+                ) : (
+                  <span
+                    className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md bg-slate-100 text-lg"
+                    aria-hidden
+                  >
+                    🏠
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  {typeof home.price === "number" ? (
+                    <span className="block text-sm font-bold text-ink">
+                      {formatUSD(home.price)}
+                    </span>
+                  ) : null}
+                  <span className="block truncate text-sm font-medium text-ink">
+                    {home.label}
+                  </span>
+                  <span className="block truncate text-xs text-ink-muted">
+                    {[home.city, home.state].filter(Boolean).join(", ")}
+                    {home.city || home.state ? " · " : ""}
+                    {home.source}
+                  </span>
+                  <FactLine home={home} />
                 </span>
               </button>
             </li>
@@ -156,35 +199,17 @@ export function HomePicker({
         </ul>
       )}
 
-      <div className="border-t border-slate-200 pt-4">
-        <label className="block">
-          <span className="text-sm font-medium text-ink-soft">
-            Or enter an address manually
-          </span>
-          <div className="mt-1 flex gap-2">
-            <input
-              type="text"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              placeholder="123 Maple St"
-              value={manual}
-              onChange={(e) => setManual(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addManual();
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="btn-primary shrink-0"
-              onClick={addManual}
-              disabled={!manual.trim()}
-            >
-              Add
-            </button>
-          </div>
-        </label>
+      <div className="space-y-2 border-t border-slate-200 pt-4">
+        <p className="text-sm font-medium text-ink-soft">
+          Or add a home by address
+        </p>
+        <LocationSearchBox
+          label="Home address or city"
+          placeholder="123 Maple St, or a ZIP / city"
+          onResolve={(value, label) =>
+            addManual(label, value.city, value.state)
+          }
+        />
       </div>
     </div>
   );

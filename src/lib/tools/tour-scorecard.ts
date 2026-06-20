@@ -12,6 +12,8 @@
  * the component. Nothing here solicits or stores protected-class signals.
  */
 
+import type { PropertyType } from "@/lib/listings/types";
+
 /** A criterion the buyer rates 1–5, with a relative importance weight. */
 export interface ScorecardCriterion {
   id: string;
@@ -36,15 +38,44 @@ export const DEFAULT_CRITERIA: ScorecardCriterion[] = [
   { id: "commute", label: "Commute", hint: "Time to the places you go", weight: 2 },
 ];
 
+/**
+ * A facts-only snapshot of the listing a scored home was created from, copied at
+ * add-time so the scorecard entry stays self-explanatory (photo + price/beds/
+ * baths/sqft) even if the underlying feed swaps. Mirrors the `ShowingRecord`
+ * snapshot posture.
+ *
+ * FHA: facts only — address/price/beds/baths/sqft/type. NO protected-class
+ * field is ever captured here (same posture as `MyHome` and `ShowingRecord`).
+ */
+export interface ScoredHomeSnapshot {
+  address: string;
+  city?: string;
+  state?: string;
+  price?: number;
+  beds?: number;
+  baths?: number;
+  sqft?: number;
+  propertyType?: PropertyType;
+}
+
 /** One home being scored: an id/label, per-criterion ratings, and notes. */
 export interface ScoredHome {
   id: string;
-  /** Display label (e.g. address). Facts only. */
+  /** Display label (e.g. address). Still the manual-entry / fallback text. */
   label: string;
+  /** The originating listing id, when added from search/showings. */
+  listingId?: string;
+  /**
+   * Facts copied at add-time so the card can show the home, not a string.
+   * Facts/buyer-content only — no protected-class field (FHA).
+   */
+  snapshot?: ScoredHomeSnapshot;
   /** Map of criterion id -> rating 1–5. Missing/0 means "not rated". */
   ratings: Record<string, number>;
   /** Screened free-text notes (facts only). */
   notes?: string;
+  /** ISO timestamp added; enables a "recently added" sort (S0b). */
+  addedAt?: string;
 }
 
 export interface HomeScore {

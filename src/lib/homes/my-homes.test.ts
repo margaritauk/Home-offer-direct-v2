@@ -62,6 +62,39 @@ describe("aggregateHomes", () => {
     expect(home.key).toBe("listing:l1");
   });
 
+  it("widens listing facts (price/beds/baths/propertyType) through to MyHome", () => {
+    const [home] = aggregateHomes({
+      listings: [
+        {
+          id: "l1",
+          address: "1 Oak Ave",
+          price: 525000,
+          beds: 3,
+          baths: 2,
+          sqft: 1840,
+          propertyType: "single-family",
+        },
+      ],
+    });
+    expect(home.price).toBe(525000);
+    expect(home.beds).toBe(3);
+    expect(home.baths).toBe(2);
+    expect(home.sqft).toBe(1840);
+    expect(home.propertyType).toBe("single-family");
+  });
+
+  it("leaves the widened facts undefined for showing/scorecard sources", () => {
+    const homes = aggregateHomes({
+      showings: [{ listingId: "s1", address: "2 Elm St" }],
+      scorecard: [{ id: "h1", label: "3 Pine Rd" }],
+    });
+    for (const home of homes) {
+      expect(home.price).toBeUndefined();
+      expect(home.beds).toBeUndefined();
+      expect(home.propertyType).toBeUndefined();
+    }
+  });
+
   it("uppercases the state code", () => {
     const [home] = aggregateHomes({
       listings: [{ id: "l1", address: "1 Oak Ave", state: "tx" }],

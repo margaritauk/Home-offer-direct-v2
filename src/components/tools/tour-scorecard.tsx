@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { useStageTool } from "@/hooks/use-stage-tool";
 import { HomePicker } from "@/components/homes/home-picker";
+import { ListingImage } from "@/components/listing-image";
 import { screenText } from "@/lib/ai/screening";
+import { formatUSD } from "@/lib/savings";
+import { propertyTypeLabels } from "@/lib/listings/types";
+import type { MyHome } from "@/lib/homes/my-homes";
 import {
   DEFAULT_CRITERIA,
   rankHomes,
@@ -17,15 +21,51 @@ interface ScorecardState {
 
 const INITIAL: ScorecardState = { homes: [] };
 
+function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `home-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function newHome(): ScoredHome {
   return {
-    id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `home-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    id: newId(),
     label: "",
     ratings: {},
     notes: "",
+    addedAt: new Date().toISOString(),
+  };
+}
+
+/** Build a {@link ScoredHome} from a picked {@link MyHome}, carrying the link. */
+function homeFromPick(home: MyHome): ScoredHome {
+  const hasFacts =
+    Boolean(home.address) ||
+    home.price != null ||
+    home.beds != null ||
+    home.baths != null ||
+    home.sqft != null;
+  return {
+    id: newId(),
+    label: home.label,
+    ...(home.listingId ? { listingId: home.listingId } : {}),
+    ...(hasFacts
+      ? {
+          snapshot: {
+            address: home.address ?? home.label,
+            ...(home.city ? { city: home.city } : {}),
+            ...(home.state ? { state: home.state } : {}),
+            ...(home.price != null ? { price: home.price } : {}),
+            ...(home.beds != null ? { beds: home.beds } : {}),
+            ...(home.baths != null ? { baths: home.baths } : {}),
+            ...(home.sqft != null ? { sqft: home.sqft } : {}),
+            ...(home.propertyType ? { propertyType: home.propertyType } : {}),
+          },
+        }
+      : {}),
+    ratings: {},
+    notes: "",
+    addedAt: new Date().toISOString(),
   };
 }
 
@@ -45,9 +85,9 @@ export function TourScorecard() {
   const addHome = () =>
     save((prev) => ({ homes: [...prev.homes, newHome()] }));
 
-  /** Add a home prefilled with a picked label (from search / showings). */
-  const addHomeWithLabel = (label: string) =>
-    save((prev) => ({ homes: [...prev.homes, { ...newHome(), label }] }));
+  /** Add a home from the picker, carrying its listingId + snapshot + addedAt. */
+  const addHomeFromPick = (home: MyHome) =>
+    save((prev) => ({ homes: [...prev.homes, homeFromPick(home)] }));
 
   const removeHome = (id: string) =>
     save((prev) => ({ homes: prev.homes.filter((h) => h.id !== id) }));
@@ -77,7 +117,7 @@ export function TourScorecard() {
         <div className="flex flex-wrap gap-2">
           <HomePicker
             label="Add from search / showings"
-            onPick={(home) => addHomeWithLabel(home.label)}
+            onPick={addHomeFromPick}
           />
           <button type="button" className="btn-primary" onClick={addHome}>
             Add a home
@@ -92,7 +132,7 @@ export function TourScorecard() {
 
       {value.homes.length === 0 ? (
         <div className="card text-center text-sm text-ink-soft">
-          No homes yet. Add a home you toured to start scoring it.
+          No homes yet. Add one from your search, your showings, or by address.
         </div>
       ) : (
         <div className="space-y-6">
@@ -123,7 +163,7 @@ export function TourScorecard() {
                   <span className="flex items-center gap-3">
                     <span className="font-semibold text-brand-700">#{h.rank}</span>
                     <span className="font-medium text-ink">
-                      {h.label || "Untitled home"}
+                      {h.snapshot?.address || h.label || "Untitled home"}
                     </span>
                   </span>
                   <span className="font-semibold text-ink">
@@ -140,6 +180,23 @@ export function TourScorecard() {
         keep notes factual. Free-text notes are screened to keep out
         protected-class details under fair-housing rules.
       </ToolDisclaimer>
+    </div>
+  );
+}
+
+/** The facts row drawn from a home's snapshot. */
+function SnapshotFacts({ snapshot }: { snapshot: NonNullable<ScoredHome["snapshot"]> }) {
+  const facts: string[] = [];
+  if (typeof snapshot.beds === "number") facts.push(`${snapshot.beds} bd`);
+  if (typeof snapshot.baths === "number") facts.push(`${snapshot.baths} ba`);
+  if (typeof snapshot.sqft === "number")
+    facts.push(`${snapshot.sqft.toLocaleString()} sqft`);
+  if (snapshot.propertyType) facts.push(propertyTypeLabels[snapshot.propertyType]);
+  return (
+    <div className="text-sm text-ink-soft">
+      {[snapshot.city, snapshot.state].filter(Boolean).join(", ")}
+      {(snapshot.city || snapshot.state) && facts.length > 0 ? " · " : ""}
+      {facts.join(" · ")}
     </div>
   );
 }
@@ -166,28 +223,71 @@ function HomeCard({
     onNotes(screened);
   };
 
+  const linked = Boolean(home.snapshot);
+
   return (
     <div className="card space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <label className="block flex-1">
-          <span className="text-sm font-medium text-ink-soft">Home / address</span>
-          <input
-            type="text"
-            className="field mt-1"
-            placeholder="123 Maple St"
-            value={home.label}
-            onChange={(e) => onLabel(e.target.value)}
-          />
-        </label>
-        <button
-          type="button"
-          className="btn-secondary mt-6 shrink-0"
-          onClick={onRemove}
-          aria-label={`Remove ${home.label || "home"}`}
-        >
-          Remove
-        </button>
-      </div>
+      {linked && home.snapshot ? (
+        // Linked / snapshot header: photo + facts, so the entry is self-explanatory.
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 gap-4">
+            <ListingImage
+              id={home.listingId ?? home.id}
+              propertyType={home.snapshot.propertyType ?? "single-family"}
+              className="h-20 w-28 shrink-0 rounded-lg"
+            />
+            <div className="min-w-0">
+              {typeof home.snapshot.price === "number" ? (
+                <p className="text-lg font-bold text-ink">
+                  {formatUSD(home.snapshot.price)}
+                </p>
+              ) : null}
+              <p className="truncate font-medium text-ink">
+                {home.snapshot.address}
+              </p>
+              <SnapshotFacts snapshot={home.snapshot} />
+              {home.listingId ? (
+                <a
+                  href={`/listings/${home.listingId}`}
+                  className="mt-1 inline-block text-sm font-medium text-brand-700 hover:underline"
+                >
+                  View listing →
+                </a>
+              ) : null}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary shrink-0"
+            onClick={onRemove}
+            aria-label={`Remove ${home.snapshot.address}`}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        // Manual header: an editable address input (the only place typing remains).
+        <div className="flex items-start justify-between gap-4">
+          <label className="block flex-1">
+            <span className="text-sm font-medium text-ink-soft">Home / address</span>
+            <input
+              type="text"
+              className="field mt-1"
+              placeholder="123 Maple St"
+              value={home.label}
+              onChange={(e) => onLabel(e.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn-secondary mt-6 shrink-0"
+            onClick={onRemove}
+            aria-label={`Remove ${home.label || "home"}`}
+          >
+            Remove
+          </button>
+        </div>
+      )}
 
       <div className="space-y-3">
         {DEFAULT_CRITERIA.map((c) => (

@@ -19,6 +19,8 @@
  * them; the aggregator itself only passes through factual fields.
  */
 
+import type { PropertyType } from "@/lib/listings/types";
+
 /** Where a candidate home came from, for labeling in the picker. */
 export type HomeSource = "Home search" | "Your showings" | "Tour scorecard";
 
@@ -35,8 +37,16 @@ export interface MyHome {
   state?: string;
   /** The originating listing id, when this home maps to a real listing. */
   listingId?: string;
+  /** List price in dollars, when the source carries it (listings do). */
+  price?: number;
+  /** Bedroom count, when known. */
+  beds?: number;
+  /** Bathroom count, when known. */
+  baths?: number;
   /** Living area in sqft, when the source carries it (listings do). */
   sqft?: number;
+  /** Property type, when known — drives the placeholder image + a facts chip. */
+  propertyType?: PropertyType;
   /** Which source surfaced this home. */
   source: HomeSource;
 }
@@ -47,7 +57,11 @@ export interface ListingSource {
   address: string;
   city?: string;
   state?: string;
+  price?: number;
+  beds?: number;
+  baths?: number;
   sqft?: number;
+  propertyType?: PropertyType;
 }
 
 /** A tracked-showing-shaped source row (subset of `ShowingRecord`). */
@@ -144,7 +158,11 @@ export function aggregateHomes(sources: HomeSources): MyHome[] {
       city: existing.city ?? candidate.city,
       state: existing.state ?? candidate.state,
       listingId: existing.listingId ?? candidate.listingId,
+      price: existing.price ?? candidate.price,
+      beds: existing.beds ?? candidate.beds,
+      baths: existing.baths ?? candidate.baths,
       sqft: existing.sqft ?? candidate.sqft,
+      propertyType: existing.propertyType ?? candidate.propertyType,
     });
   };
 
@@ -158,7 +176,11 @@ export function aggregateHomes(sources: HomeSources): MyHome[] {
       city: l.city,
       state: l.state ? l.state.toUpperCase() : undefined,
       listingId: l.id,
+      price: l.price,
+      beds: l.beds,
+      baths: l.baths,
       sqft: l.sqft,
+      propertyType: l.propertyType,
       source: "Home search",
     });
   }
