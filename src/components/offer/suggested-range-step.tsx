@@ -24,6 +24,7 @@ import { DisclaimerBanner } from "@/components/disclaimer-banner";
 import { TrustCallout } from "@/components/trust-callout";
 import { ValidatedNumberField } from "@/components/tools/validated-field";
 import { MarketReadCard } from "@/components/tools/market-read-card";
+import { InPlaceExplainer } from "@/components/ai/in-place-explainer";
 
 /**
  * A2 — "What should I offer?" band/step INSIDE the Offer Builder (+ bundled I3).
@@ -220,6 +221,25 @@ export function SuggestedRangeStep({ listPrice }: { listPrice?: number }) {
                 ) : null}
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {/* AI2 — grounded explainer (default-OFF "Coming soon"). The MOST
+            conservative surface: it restates that comps + the market SUGGEST A
+            RANGE and the buyer decides — never "offer $X". Only offered once a
+            real comp-anchored band exists. */}
+        {band.basis.hasComps ? (
+          <div className="mt-4">
+            <InPlaceExplainer
+              endpoint="/api/offer/price-band/explain"
+              body={{ comps: compsRaw, market, listPrice }}
+              buttonLabel="Explain my suggested range (AI)"
+              ariaLabel="Explain my suggested price range (AI)"
+              loudLabel="AI-generated, educational only — a range, not advice, and not a number to offer"
+              restatesNote="This summary only restates the comps + market range above — comps and the market suggest a range, and you decide what to offer; it never tells you a price."
+              handoffHref="https://www.americanbar.org/groups/legal_services/flh-home/"
+              handoffLabel="Talk to a licensed real-estate attorney or professional"
+            />
           </div>
         ) : null}
       </section>

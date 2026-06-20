@@ -24,6 +24,8 @@ import type {
   AiExplainerSource,
   AiExplanation,
   BudgetExplainerInput,
+  DisclosureExplainerInput,
+  PriceBandExplainerInput,
 } from "./types";
 
 /**
@@ -40,6 +42,20 @@ export class NullAiExplainer implements AiExplainerSource {
 
   async explainBudget(
     _input: BudgetExplainerInput,
+  ): Promise<AiExplanation | null> {
+    void _input;
+    return null;
+  }
+
+  async explainPriceBand(
+    _input: PriceBandExplainerInput,
+  ): Promise<AiExplanation | null> {
+    void _input;
+    return null;
+  }
+
+  async explainDisclosure(
+    _input: DisclosureExplainerInput,
   ): Promise<AiExplanation | null> {
     void _input;
     return null;

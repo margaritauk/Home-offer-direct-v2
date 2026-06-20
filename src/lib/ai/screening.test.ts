@@ -196,4 +196,37 @@ describe("screenOutput", () => {
   it("passes empty output", () => {
     expect(screenOutput("").safe).toBe(true);
   });
+
+  // S7-AI2 — UPL: reject any directive to offer/bid/pay a specific number.
+  it("rejects a directive 'offer $X' number", () => {
+    const r = screenOutput("Based on the comps, you should offer $410,000.");
+    expect(r.safe).toBe(false);
+    expect(r.reason).toMatch(/directive-price/i);
+  });
+
+  it("rejects 'I'd offer 405k' and 'bid $420,000' directives", () => {
+    expect(screenOutput("Honestly, I'd offer around 405k here.").safe).toBe(
+      false,
+    );
+    expect(screenOutput("You could bid $420,000 to win it.").safe).toBe(false);
+    expect(screenOutput("Come in at $399,000.").safe).toBe(false);
+    expect(screenOutput("I recommend you offer the asking price.").safe).toBe(
+      false,
+    );
+  });
+
+  it("PASSES neutral narration of a RANGE (not a directive)", () => {
+    // The conservative A2 narration restates a range — no offer/bid/pay verb
+    // precedes a number, so it stays safe.
+    expect(
+      screenOutput(
+        "Your comps suggest a range of $380,000–$420,000. The market read leans balanced, so the middle of that range is a common reference. You decide what to offer.",
+      ).safe,
+    ).toBe(true);
+    // A bare fact ("the asking price is $400,000") is not a directive.
+    expect(
+      screenOutput("The asking price is $400,000, above what comps support.")
+        .safe,
+    ).toBe(true);
+  });
 });

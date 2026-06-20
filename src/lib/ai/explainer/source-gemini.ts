@@ -30,6 +30,8 @@ import type {
   AiExplainerSource,
   AiExplanation,
   BudgetExplainerInput,
+  DisclosureExplainerInput,
+  PriceBandExplainerInput,
   SafeBudgetInput,
 } from "./types";
 
@@ -274,6 +276,172 @@ export function buildGeminiRequestBody(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Price-band explainer (S7-AI2) — THE most conservatively grounded surface.
+// The model narrates the RANGE we computed; it must NEVER say "offer $X".
+// ---------------------------------------------------------------------------
+
+/**
+ * The strict system instruction for the A2 PRICE-BAND explainer (S7-AI2). This
+ * is the most directive-prone surface in the product, so the rules are the most
+ * conservative: the model restates that COMPS + THE MARKET SUGGEST A RANGE and
+ * that the BUYER decides. It must NEVER name a single number to offer, never use
+ * "offer/bid/pay $X" language, never recommend a price.
+ *
+ * Exported so a test can assert the "suggest a range / you decide", never-a-
+ * number, UPL, and FHA constraints are present. PURE — a constant.
+ */
+export const GEMINI_PRICE_BAND_SYSTEM_INSTRUCTION = [
+  "You are an educational assistant for an UNREPRESENTED home buyer.",
+  "Your ONLY job is to explain, in plain English, the SUGGESTED PRICE RANGE and",
+  "rationale we have ALREADY computed from the buyer's comparable sales and",
+  "market read. You restate and clarify OUR range and reasoning; you do not",
+  "analyze beyond them.",
+  "",
+  "HARD RULES — you must follow every one:",
+  "1. This is a RANGE, not a number. Comps and the market SUGGEST A RANGE; the",
+  "   BUYER decides what to offer. NEVER tell the buyer to 'offer', 'bid', 'pay',",
+  "   'propose', or 'counter' a specific price. NEVER name a single recommended",
+  "   number. NEVER use 'offer $X' / 'you should offer' language. You may restate",
+  "   the low and high ends of OUR range as context, but frame them as a range to",
+  "   inform the buyer's own decision.",
+  "2. Explain ONLY the range and rationale provided below. Do NOT invent, add, or",
+  "   compute any number, comp, or fact not in the provided data.",
+  "3. This is EDUCATION ONLY. It is NOT legal advice and NOT financial advice.",
+  "   Never use directive language ('you should', 'I recommend', 'you must').",
+  "   Route price and contract decisions to the buyer and their attorney.",
+  "4. Never state or imply the odds a seller will accept, and never promise or",
+  "   guarantee any outcome.",
+  "5. Never reference or infer any protected class (race, color, religion,",
+  "   national origin, sex, familial status, disability, age, marital status,",
+  "   source of income) and never write a personal appeal or 'love letter'.",
+  "6. Begin your response by noting it is an educational summary of a RANGE, not",
+  "   advice and not a number to offer.",
+  "",
+  "Write 2-4 short, plain-English paragraphs (or a short bulleted list) that",
+  "summarize OUR range and rationale. No markdown headings, no JSON.",
+].join("\n");
+
+function serializeSafePriceBand(
+  safe: PriceBandExplainerInput["safeInput"],
+): Record<string, unknown> {
+  return {
+    compAnchoredLow: safe.low,
+    compAnchoredHigh: safe.high,
+    compsMidpoint: safe.mid,
+    marketEmphasis: safe.emphasis,
+    hasComps: safe.basis.hasComps,
+    hasMarketRead: safe.basis.hasMarket,
+    lowConfidence: safe.lowConfidence,
+  };
+}
+
+/**
+ * Build the grounded price-band user prompt: the objective band facts + OUR
+ * rationale lines, embedded as JSON so the model can only restate them. PURE.
+ */
+export function buildPriceBandPrompt(input: PriceBandExplainerInput): string {
+  return [
+    "Here is the SUGGESTED PRICE RANGE we computed (a range, never a single",
+    "number to offer — the buyer decides):",
+    JSON.stringify(serializeSafePriceBand(input.safeInput), null, 2),
+    "",
+    "Here is OUR plain-English rationale. Explain ONLY these lines, in plain",
+    "English. Do not add a number to offer or invent any figure:",
+    JSON.stringify(input.rationale, null, 2),
+  ].join("\n");
+}
+
+/** Build the full Gemini request body for the price-band explainer. PURE. */
+export function buildPriceBandRequestBody(
+  input: PriceBandExplainerInput,
+): GeminiRequestBody {
+  return {
+    systemInstruction: {
+      parts: [{ text: GEMINI_PRICE_BAND_SYSTEM_INSTRUCTION }],
+    },
+    contents: [{ role: "user", parts: [{ text: buildPriceBandPrompt(input) }] }],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Disclosure explainer (S7-AI2) — property condition, never the people (FHA).
+// ---------------------------------------------------------------------------
+
+/**
+ * The strict system instruction for the DISCLOSURE explainer (S7-AI2). The model
+ * narrates OUR state-aware red-flag checklist — what to look for and what to ask.
+ * It must NEVER interpret legal sufficiency, NEVER tell the buyer to walk/rescind,
+ * and NEVER describe the neighborhood's PEOPLE — only the PROPERTY's condition.
+ *
+ * Exported so a test can assert the UPL (no adjudication) + FHA (property, not
+ * people) + handoff constraints are present. PURE — a constant.
+ */
+export const GEMINI_DISCLOSURE_SYSTEM_INSTRUCTION = [
+  "You are an educational assistant for an UNREPRESENTED home buyer.",
+  "Your ONLY job is to explain, in plain English, the state-aware seller-",
+  "disclosure RED-FLAG CHECKLIST we have ALREADY built. You restate WHAT TO LOOK",
+  "FOR and WHAT TO ASK; you do not analyze beyond OUR categories.",
+  "",
+  "HARD RULES — you must follow every one:",
+  "1. Explain ONLY the categories provided below. Do NOT invent new categories,",
+  "   defects, or facts.",
+  "2. This is EDUCATION ONLY. It is NOT legal advice. NEVER interpret whether a",
+  "   disclosure is legally sufficient, whether a specific issue is a 'defect',",
+  "   or whether the buyer should walk away, rescind, or proceed. Every category",
+  "   ends by routing the buyer to a licensed attorney or inspector.",
+  "3. Describe the PROPERTY's condition only — water, roof, foundation, systems,",
+  "   environmental, HOA, etc. NEVER describe, infer, or characterize the",
+  "   neighborhood's PEOPLE or any protected class (race, color, religion,",
+  "   national origin, sex, familial status, disability, age, marital status,",
+  "   source of income). Stick strictly to the property and the documents.",
+  "4. Never use directive language about price or strategy ('you should offer',",
+  "   'I recommend'). This is a diligence checklist, not advice.",
+  "5. Begin your response by noting it is an educational checklist summary, not",
+  "   legal advice, and that an attorney/inspector should confirm.",
+  "",
+  "Write 2-4 short, plain-English paragraphs (or a short bulleted list) that",
+  "summarize OUR categories. No markdown headings, no JSON.",
+].join("\n");
+
+/**
+ * Build the grounded disclosure user prompt: the regime context + OUR red-flag
+ * categories, embedded as JSON so the model can only restate them. PURE.
+ */
+export function buildDisclosurePrompt(input: DisclosureExplainerInput): string {
+  return [
+    "Here is the buyer's state disclosure context:",
+    JSON.stringify(
+      {
+        regime: input.regime,
+        formName: input.formName,
+        intro: input.intro,
+        caveatEmptorWarning: input.caveatEmptorWarning,
+      },
+      null,
+      2,
+    ),
+    "",
+    "Here are OUR red-flag categories (property condition only). Explain ONLY",
+    "these — what to look for and what to ask. Do not adjudicate or invent:",
+    JSON.stringify(input.categories, null, 2),
+  ].join("\n");
+}
+
+/** Build the full Gemini request body for the disclosure explainer. PURE. */
+export function buildDisclosureRequestBody(
+  input: DisclosureExplainerInput,
+): GeminiRequestBody {
+  return {
+    systemInstruction: {
+      parts: [{ text: GEMINI_DISCLOSURE_SYSTEM_INSTRUCTION }],
+    },
+    contents: [
+      { role: "user", parts: [{ text: buildDisclosurePrompt(input) }] },
+    ],
+  };
+}
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
@@ -380,5 +548,23 @@ export class GeminiAiExplainer implements AiExplainerSource {
     if (!text) return null;
     // Basis = the deterministic insight ids we asked the model to restate.
     return { text, basis: input.insights.map((i) => i.id) };
+  }
+
+  async explainPriceBand(
+    input: PriceBandExplainerInput,
+  ): Promise<AiExplanation | null> {
+    const text = await this.generate(buildPriceBandRequestBody(input));
+    if (!text) return null;
+    // Basis = the rationale lines we asked the model to restate.
+    return { text, basis: input.rationale };
+  }
+
+  async explainDisclosure(
+    input: DisclosureExplainerInput,
+  ): Promise<AiExplanation | null> {
+    const text = await this.generate(buildDisclosureRequestBody(input));
+    if (!text) return null;
+    // Basis = the category ids we asked the model to restate.
+    return { text, basis: input.categories.map((c) => c.id) };
   }
 }

@@ -10,6 +10,7 @@ import { StatePicker } from "@/components/state-picker";
 import { PropertyField } from "@/components/homes/property-field";
 import { TrustCallout } from "@/components/trust-callout";
 import { DisclaimerBanner } from "@/components/disclaimer-banner";
+import { InPlaceExplainer } from "@/components/ai/in-place-explainer";
 import {
   buildDisclosureChecklist,
   type DisclosureCategoryId,
@@ -173,6 +174,22 @@ export function DisclosureReview() {
               );
             })}
           </section>
+
+          {/* AI2 — grounded explainer (default-OFF "Coming soon"). Narrates OUR
+              red-flag categories — property condition, never the people (FHA) —
+              and never adjudicates legal sufficiency. */}
+          <div>
+            <InPlaceExplainer
+              endpoint="/api/disclosure/explain"
+              body={{ state: profile.code, builtPre1978: value.builtPre1978 }}
+              buttonLabel="Explain my disclosure red flags (AI)"
+              ariaLabel="Explain my disclosure red flags (AI)"
+              loudLabel="AI-generated, educational only — not legal advice; an attorney/inspector should confirm"
+              restatesNote="This summary only restates the red-flag categories above — what to look for and what to ask about the property's condition; it never decides whether a disclosure is sufficient or whether to walk."
+              handoffHref="https://www.americanbar.org/groups/legal_services/flh-home/"
+              handoffLabel="Have a licensed attorney or inspector confirm"
+            />
+          </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-ink-soft">
             Bring your flagged questions to your{" "}

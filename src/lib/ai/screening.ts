@@ -197,6 +197,31 @@ const LOVE_LETTER_PATTERNS: { label: string; pattern: RegExp }[] = [
   },
 ];
 
+/**
+ * UPL DIRECTIVE-PRICE patterns (S7-AI2). The A2 price-band + offer explainers
+ * narrate a RANGE the buyer decides from — they must NEVER emit a directive to
+ * offer/bid/pay a specific number ("offer $X", "you should offer 400k", "bid
+ * $410,000", "I'd offer $X"). These match a directive VERB immediately tied to a
+ * dollar figure, which is the unauthorized-practice line. They deliberately do
+ * NOT match neutral narration of a range ("comps suggest $380,000–$420,000") or
+ * a fact ("the asking price is $400,000"), because no offer/bid/pay directive
+ * precedes the number there.
+ */
+const DIRECTIVE_PRICE_PATTERNS: { label: string; pattern: RegExp }[] = [
+  {
+    label: "directive price ('offer $X')",
+    // <directive verb> ... <money>  — verb and the number within a few words.
+    pattern:
+      /\b(offer|bid|pay|propose|counter|come\s+in\s+at|go\s+(?:up\s+)?to|put\s+in)\b[^.$\n]{0,40}\$?\s?\d{1,3}(?:[,\d]{2,}|(?:\.\d+)?\s?[km])\b/i,
+  },
+  {
+    label: "directive price ('offer $X')",
+    // "offer/bid/pay a price of $X", "should offer $X"
+    pattern:
+      /\b(should|recommend|suggest\s+you|advise\s+you\s+to|i['’]?d|we['’]?d|you\s+must|you\s+ought\s+to)\b[^.$\n]{0,30}\b(offer|bid|pay|propose|counter)\b/i,
+  },
+];
+
 /** What we replace a stripped protected-class match with. */
 const REDACTION = "[removed]";
 
@@ -261,11 +286,15 @@ export function screenOutput(text: string): ScreenOutputResult {
   for (const { label, pattern } of LOVE_LETTER_PATTERNS) {
     if (pattern.test(text)) matched.add(label);
   }
+  // UPL: reject any directive to offer/bid/pay a specific price (S7-AI2).
+  for (const { label, pattern } of DIRECTIVE_PRICE_PATTERNS) {
+    if (pattern.test(text)) matched.add(label);
+  }
 
   if (matched.size > 0) {
     return {
       safe: false,
-      reason: `Blocked: response referenced protected-class or personal-appeal content (${[...matched].join(", ")}).`,
+      reason: `Blocked: response referenced protected-class, personal-appeal, or directive-price content (${[...matched].join(", ")}).`,
       matchedClasses: [...matched],
     };
   }

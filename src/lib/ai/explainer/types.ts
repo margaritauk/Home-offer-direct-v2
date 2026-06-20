@@ -112,6 +112,72 @@ export interface BudgetExplainerInput {
 }
 
 /**
+ * GROUNDING (S7-AI2) — PRICE BAND. The A2 suggested-range surface is the MOST
+ * directive-prone feature in the product, so this is the most conservatively
+ * grounded explainer. The model narrates the RANGE + rationale that
+ * `suggestPriceBand` (`lib/offer/suggested-price.ts`) ALREADY produced — comps +
+ * the market read suggest a range; the BUYER decides. It must NEVER say
+ * "offer $X", never pick a single number, and never tell the buyer what to do.
+ *
+ * The input carries ONLY objective price/market facts already in the band: the
+ * comp-anchored low/high/mid, where the market read leans, our rationale lines,
+ * and the basis flags. There is NO demographic field by construction.
+ */
+export interface SafePriceBandInput {
+  /** Comp-anchored low end (dollars), or null when there are no comps. */
+  low: number | null;
+  /** Comp-anchored high end (dollars), or null when there are no comps. */
+  high: number | null;
+  /** Comps midpoint, for transparency, or null. */
+  mid: number | null;
+  /** Where the market read leans within the band ("lower"|"middle"|"upper"|"none"). */
+  emphasis: string;
+  /** Whether comps / a market read were present. */
+  basis: { hasComps: boolean; hasMarket: boolean };
+  /** True when the comp set is thin/weak — confidence is limited. */
+  lowConfidence: boolean;
+}
+
+/**
+ * The grounded input handed to {@link AiExplainerSource.explainPriceBand}. It
+ * pairs the objective price-band projection with OUR deterministic rationale
+ * lines the model must restate. No raw form state ever reaches a provider.
+ */
+export interface PriceBandExplainerInput {
+  /** Objective, comp-anchored price-band projection (no demographic field). */
+  safeInput: SafePriceBandInput;
+  /** OUR deterministic rationale lines — facts + trade-offs, never a directive. */
+  rationale: string[];
+}
+
+/**
+ * GROUNDING (S7-AI2) — DISCLOSURE. The model narrates OUR state-aware disclosure
+ * red-flag checklist (`buildDisclosureChecklist`) in plain English: what to look
+ * for and what to ask. It must NEVER interpret legal sufficiency ("this is a
+ * defect, rescind") and NEVER describe the neighborhood's PEOPLE — only the
+ * PROPERTY's condition (FHA). Every category routes back to a licensed pro.
+ */
+export interface SafeDisclosureCategory {
+  id: string;
+  label: string;
+  whatToLookFor: string;
+  askYourPro: string;
+}
+
+export interface DisclosureExplainerInput {
+  /** The state's disclosure regime (e.g. "statutory-form"|"limited"). */
+  regime: string;
+  /** The mandated/standard form name, when the state has one. */
+  formName?: string;
+  /** Plain-English expectation-setting intro for this state's regime. */
+  intro: string;
+  /** True for caveat-emptor-leaning states — "silence is not a guarantee". */
+  caveatEmptorWarning: boolean;
+  /** OUR red-flag categories the model restates (property condition only). */
+  categories: SafeDisclosureCategory[];
+}
+
+/**
  * The data-access contract. An implementation calls a real model (or returns
  * `null`). It must NEVER throw and NEVER fabricate: any failure (no key, non-OK
  * response, thrown error, empty/blocked output) resolves to `null`.
@@ -123,4 +189,20 @@ export interface AiExplainerSource {
    * Issue #57. Returns `null` on any failure or blocked/empty output.
    */
   explainBudget(input: BudgetExplainerInput): Promise<AiExplanation | null>;
+  /**
+   * Narrate (never decide) the A2 suggested price RANGE + rationale
+   * `suggestPriceBand` already produced. S7-AI2 — the most conservatively
+   * grounded surface: "comps + the market suggest a range; you decide," NEVER
+   * "offer $X." Returns `null` on any failure or blocked/empty output.
+   */
+  explainPriceBand(
+    input: PriceBandExplainerInput,
+  ): Promise<AiExplanation | null>;
+  /**
+   * Narrate (never adjudicate) OUR state-aware disclosure red-flag checklist.
+   * S7-AI2. Returns `null` on any failure or blocked/empty output.
+   */
+  explainDisclosure(
+    input: DisclosureExplainerInput,
+  ): Promise<AiExplanation | null>;
 }
