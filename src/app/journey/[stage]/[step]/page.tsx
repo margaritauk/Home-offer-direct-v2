@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { flattenedSteps, getStep, stepNeighbors } from "@/lib/journey";
+import { flattenedSteps, getStages, getStep, stepNeighbors } from "@/lib/journey";
 import { getTerms } from "@/lib/glossary";
 import { StepChecklist } from "@/components/step-checklist";
+import { StepProgressHeader } from "@/components/journey/step-progress-header";
 import { StateAwareCallout, type StateTopic } from "@/components/state-aware-callout";
 import { ProHandoff } from "@/components/pro-handoff";
 import { StageToolLinks } from "@/components/nav/stage-tool-links";
@@ -63,6 +64,11 @@ export default async function StepPage({
   if (!found) notFound();
   const { stage, step } = found;
   const { prev, next } = stepNeighbors(stageSlug, stepSlug);
+  const flat = flattenedSteps();
+  const stepNumber =
+    flat.findIndex(
+      (x) => x.stage.slug === stageSlug && x.step.slug === stepSlug,
+    ) + 1;
   const relatedTerms = step.terms ? getTerms(step.terms) : [];
   const stateTopic = stateTopicFor(stage.slug, step.slug);
   const proRole = proHandoffFor(stage.slug, step.slug);
@@ -79,11 +85,18 @@ export default async function StepPage({
 
       <div className="mt-4 grid gap-10 lg:grid-cols-[1fr_22rem]">
         <article className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
-            Stage {stage.order}: {stage.title}
-          </p>
-          <h1 className="mt-1 text-3xl font-bold">{step.title}</h1>
-          <p className="mt-3 text-lg text-ink-soft">{step.summary}</p>
+          <StepProgressHeader
+            stageOrder={stage.order}
+            totalStages={getStages().length}
+            stageTitle={stage.title}
+            stageSlug={stage.slug}
+            stepSlug={step.slug}
+            stepTitle={step.title}
+            stepSummary={step.summary}
+            stepNumber={stepNumber}
+            totalSteps={flat.length}
+            tasks={step.tasks}
+          />
           {step.timeline ? (
             <p className="mt-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm text-ink-soft">
               ⏱ {step.timeline}

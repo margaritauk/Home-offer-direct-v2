@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ToolJourneyFooter } from "./tool-journey-footer";
 
 /**
  * Shared shell for every `/tools/*` page (UX audit IA fix). Renders the standard
@@ -44,6 +45,7 @@ export function ToolPageHeader({
         <p className="mt-4 text-lg text-ink-soft">{intro}</p>
       </div>
       <div className="mt-8">{children}</div>
+      <ToolJourneyFooter />
     </div>
   );
 }

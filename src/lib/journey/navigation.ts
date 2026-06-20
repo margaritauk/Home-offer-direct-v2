@@ -344,6 +344,68 @@ export function toolsByStage(): StageToolGroup[] {
   return groups;
 }
 
+/**
+ * The journey anchor for a tool — the "back to your journey" + "next step" deep
+ * links a {@link ToolJourneyFooter} renders so a tool never dead-ends.
+ *
+ * `nextHref`/`nextLabel` are present whenever there's a step after the owning
+ * stage (or a "back to journey ✓" terminus on the final stage); they're omitted
+ * only for the unmapped-tool degrade case (back-link to `/journey` only).
+ */
+export interface ToolJourneyAnchor {
+  backHref: string;
+  backLabel: string;
+  nextHref: string;
+  nextLabel: string;
+}
+
+/**
+ * Resolve a tool's `href` (e.g. `/tools/tour-scorecard`) to its journey anchor:
+ * the owning stage's first step (back) + the step after the owning stage (next).
+ *
+ * Order-resolution rule (pure, mirrors {@link toolsByStage}'s "first stage wins"
+ * dedupe so a multi-stage tool resolves deterministically):
+ *  1. Owning stage = the FIRST stage (in journey order) whose `STAGE_TOOLS` list
+ *     contains the href.
+ *  2. `backHref` = the owning stage's first step page; label names the stage.
+ *  3. `nextHref` = the step AFTER the owning stage's LAST step, in
+ *     `flattenedSteps()` order. If the owning stage is the final stage, "next"
+ *     becomes "Back to journey ✓" → `/journey`.
+ *  4. If the tool is in NO stage list, return `null` — the footer degrades to a
+ *     single back-link to `/journey` (no dead-end, ever).
+ *
+ * Normalizes a trailing slash on `href` so `/tools/x` and `/tools/x/` match.
+ */
+export function journeyAnchorForTool(href: string): ToolJourneyAnchor | null {
+  const target = href.replace(/\/+$/, "") || "/";
+  const stages = getStages();
+
+  const owningStage = stages.find((stage) =>
+    stageToolsFor(stage.slug).some(
+      (tool) => tool.href.replace(/\/+$/, "") === target,
+    ),
+  );
+  if (!owningStage || owningStage.steps.length === 0) return null;
+
+  const firstStep = owningStage.steps[0];
+  const lastStep = owningStage.steps[owningStage.steps.length - 1];
+
+  const flat = flattenedSteps();
+  const lastIdx = flat.findIndex(
+    (x) => x.stage.slug === owningStage.slug && x.step.slug === lastStep.slug,
+  );
+  const after = lastIdx >= 0 ? flat[lastIdx + 1] : undefined;
+
+  return {
+    backHref: `/journey/${owningStage.slug}/${firstStep.slug}`,
+    backLabel: `Back to ${owningStage.title}`,
+    nextHref: after
+      ? `/journey/${after.stage.slug}/${after.step.slug}`
+      : "/journey",
+    nextLabel: after ? `Next: ${after.step.title}` : "Back to journey",
+  };
+}
+
 export interface NextStepInfo {
   /** 1-based index of the stage the next step belongs to. */
   stageOrder: number;
